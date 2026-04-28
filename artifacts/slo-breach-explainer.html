@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SLO Breach Explainer — {{SLO_NAME}}</title>
+<style>
+  :root {
+    --bg-page: #0f1b2a;
+    --bg-surface: #192534;
+    --bg-surface-2: #1f2d3d;
+    --border: #2a3a4f;
+    --text-primary: #e9ebed;
+    --text-secondary: #95a5b8;
+    --link: #539fe5;
+    --link-hover: #89bdee;
+    --status-error: #ff5d64;
+    --status-warning: #ffa552;
+    --status-success: #6aaf3f;
+    --status-info: #539fe5;
+    --burn-bar-bg: #2a3a4f;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: "Open Sans", "Segoe UI", -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; }
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .title-block h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .title-block .subtitle {
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(255, 93, 100, 0.15);
+    color: var(--status-error);
+    border: 1px solid rgba(255, 93, 100, 0.4);
+  }
+  .status-pill.warning { background: rgba(255, 165, 82, 0.15); color: var(--status-warning); border-color: rgba(255, 165, 82, 0.4); }
+  .status-pill.success { background: rgba(106, 175, 63, 0.15); color: var(--status-success); border-color: rgba(106, 175, 63, 0.4); }
+  .actions { display: flex; gap: 8px; }
+  .btn {
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { border-color: var(--link); color: var(--link); }
+  .btn-primary { background: var(--link); border-color: var(--link); color: #0f1b2a; font-weight: 600; }
+  .btn-primary:hover { background: var(--link-hover); color: #0f1b2a; }
+  .grid-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .card .label { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .card .value { font-size: 20px; font-weight: 600; }
+  .card .delta { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+  .section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .section-body { padding: 16px 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--text-secondary); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { padding: 10px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  td.numeric { text-align: right; font-variant-numeric: tabular-nums; }
+  .burn-row { display: grid; grid-template-columns: 80px 1fr 100px 80px; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .burn-row:last-child { border-bottom: none; }
+  .burn-window { color: var(--text-secondary); font-size: 12px; }
+  .burn-bar { background: var(--burn-bar-bg); height: 8px; border-radius: 4px; overflow: hidden; }
+  .burn-fill { height: 100%; background: linear-gradient(90deg, var(--status-warning), var(--status-error)); }
+  .multiplier { font-weight: 600; color: var(--status-error); }
+  .gauge {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .gauge-bar {
+    flex: 1;
+    height: 14px;
+    background: var(--burn-bar-bg);
+    border-radius: 7px;
+    overflow: hidden;
+    position: relative;
+  }
+  .gauge-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--status-error), var(--status-warning), var(--status-success));
+    transition: width 0.3s;
+  }
+  .interpretation {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: var(--bg-surface-2);
+    border-left: 3px solid var(--status-info);
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+  .deep-links { display: flex; flex-wrap: wrap; gap: 8px; }
+  .deep-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--link);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .deep-link:hover { border-color: var(--link); }
+  .deep-link::after { content: "→"; opacity: 0.7; }
+  .footer-meta {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .footer-meta dl { display: grid; grid-template-columns: 180px 1fr; gap: 4px 12px; margin: 0; }
+  .footer-meta dt { color: var(--text-secondary); }
+  .footer-meta dd { margin: 0; color: var(--text-primary); font-family: "SF Mono", "Monaco", monospace; font-size: 11px; }
+  code { font-family: "SF Mono", "Monaco", monospace; background: var(--bg-surface-2); padding: 1px 6px; border-radius: 3px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="title-block">
+      <h1>🚨 SLO Breach Explainer — <code>{{SLO_NAME}}</code></h1>
+      <div class="subtitle">
+        Breach started <strong>{{BREACH_START_ISO}}</strong> · {{BREACH_DURATION}} ago · Region <code>{{AWS_REGION}}</code>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn">{{SAVE_ARTIFACT_BUTTON}}</button>
+      <button class="btn">{{SHARE_BUTTON}}</button>
+    </div>
+  </div>
+
+  <div class="grid-summary">
+    <div class="card">
+      <div class="label">Status</div>
+      <div class="value"><span class="status-pill">{{BURN_CLASSIFICATION}}</span></div>
+      <div class="delta">{{BURN_INTERPRETATION_SHORT}}</div>
+    </div>
+    <div class="card">
+      <div class="label">SLO Target</div>
+      <div class="value">{{SLO_TARGET_PCT}}%</div>
+      <div class="delta">over {{SLO_WINDOW}}</div>
+    </div>
+    <div class="card">
+      <div class="label">Current Attainment</div>
+      <div class="value">{{CURRENT_ATTAINMENT_PCT}}%</div>
+      <div class="delta">{{ATTAINMENT_DELTA}} vs target</div>
+    </div>
+    <div class="card">
+      <div class="label">Error Budget Remaining</div>
+      <div class="value">{{BUDGET_REMAINING_PCT}}%</div>
+      <div class="delta">{{BUDGET_REMAINING_RAW}}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Error budget gauge</div>
+    <div class="section-body">
+      <div class="gauge">
+        <div class="gauge-bar"><div class="gauge-fill" style="width: {{BUDGET_REMAINING_PCT}}%"></div></div>
+        <div style="font-weight: 600; min-width: 70px; text-align: right;">{{BUDGET_REMAINING_PCT}}%</div>
+      </div>
+      <div class="interpretation">{{BUDGET_INTERPRETATION}}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Burn rate</div>
+    <div class="section-body">
+      <div class="burn-row">
+        <div class="burn-window">1 hour</div>
+        <div class="burn-bar"><div class="burn-fill" style="width: {{BURN_1H_PCT}}%"></div></div>
+        <div class="numeric">{{BURN_1H_RATE}}</div>
+        <div class="numeric multiplier">{{BURN_1H_MULTIPLIER}}×</div>
+      </div>
+      <div class="burn-row">
+        <div class="burn-window">6 hours</div>
+        <div class="burn-bar"><div class="burn-fill" style="width: {{BURN_6H_PCT}}%"></div></div>
+        <div class="numeric">{{BURN_6H_RATE}}</div>
+        <div class="numeric multiplier">{{BURN_6H_MULTIPLIER}}×</div>
+      </div>
+      <div class="burn-row">
+        <div class="burn-window">24 hours</div>
+        <div class="burn-bar"><div class="burn-fill" style="width: {{BURN_24H_PCT}}%"></div></div>
+        <div class="numeric">{{BURN_24H_RATE}}</div>
+        <div class="numeric multiplier">{{BURN_24H_MULTIPLIER}}×</div>
+      </div>
+      <div class="interpretation">{{BURN_INTERPRETATION_LONG}}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Top impacted operations</div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Operation</th>
+            <th class="numeric">Bad events</th>
+            <th class="numeric">% of breach</th>
+            <th class="numeric">p99 latency</th>
+            <th class="numeric">Error rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{IMPACTED_OPERATIONS_ROWS}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Correlated changes <span style="color: var(--text-secondary); font-weight: 400; font-size: 12px;">CloudTrail, breach window ± 30m</span></div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Event</th>
+            <th>Resource</th>
+            <th>Principal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{CORRELATED_EVENTS_ROWS}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Ranked hypotheses</div>
+    <div class="section-body">
+      {{RANKED_HYPOTHESES_BLOCK}}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Open in CloudWatch</div>
+    <div class="section-body">
+      <div class="deep-links">
+        <a class="deep-link" href="{{LINK_SLO_DETAIL}}">Jump to SLO detail in CloudWatch Console</a>
+        <a class="deep-link" href="{{LINK_SERVICE_MAP}}">Service map at breach start</a>
+        <a class="deep-link" href="{{LINK_LOGS_INSIGHTS}}">Logs Insights for breach window</a>
+        <a class="deep-link" href="{{LINK_CLOUDTRAIL}}">CloudTrail event search</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-meta">
+    <dl>
+      <dt>Source</dt><dd>{{SOURCE_MCP_SERVERS}}</dd>
+      <dt>Time range</dt><dd>{{TIME_RANGE_START}} → {{TIME_RANGE_END}} (UTC)</dd>
+      <dt>MCP tools called</dt><dd>{{MCP_TOOLS_LIST}}</dd>
+      <dt>Queries used</dt><dd>{{QUERIES_USED}}</dd>
+      <dt>Confidence</dt><dd>{{CAUSAL_CONFIDENCE}}</dd>
+    </dl>
+  </div>
+
+</div>
+</body>
+</html>

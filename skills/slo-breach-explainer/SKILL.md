@@ -94,8 +94,34 @@ If burn rate cannot be computed (insufficient samples), say so explicitly in the
 section. Do **not** fabricate values. The footer's `confidence` field exists exactly for
 this case.
 
-## Cowork vs Claude Code
+## HTML artifact template
 
-In **Cowork** (desktop), prefer rendering as an HTML artifact for richer visuals (sparkline
-SVG for burn rate, mini service map). In **Claude Code** (terminal), the Markdown form
-above is the default. Both must contain identical data — just different rendering.
+For Cowork (or any surface that renders HTML artifacts), use the artifact template at
+`artifacts/slo-breach-explainer.html` and populate the `{{PLACEHOLDERS}}` with actual
+data collected during the investigation. The template encodes the visual grammar
+(burn-rate bars, error-budget gauge, impacted-operation table, ranked hypotheses,
+deep-link block, metadata footer) — do not redesign it per investigation.
+
+Placeholder reference (non-exhaustive — open the file for the full list):
+
+- `{{SLO_NAME}}`, `{{BREACH_START_ISO}}`, `{{BREACH_DURATION}}`, `{{AWS_REGION}}`
+- `{{BURN_CLASSIFICATION}}` — Fast burn / Slow burn / Recovered, budget depleted
+- `{{SLO_TARGET_PCT}}`, `{{CURRENT_ATTAINMENT_PCT}}`, `{{BUDGET_REMAINING_PCT}}`,
+  `{{BUDGET_REMAINING_RAW}}`
+- `{{BURN_1H_RATE}}` / `{{BURN_1H_MULTIPLIER}}` / `{{BURN_1H_PCT}}` (similar for 6h, 24h).
+  `{{BURN_*_PCT}}` is the bar fill width — clamp to 0–100.
+- `{{IMPACTED_OPERATIONS_ROWS}}` — `<tr><td>op</td><td class="numeric">n</td>…</tr>`
+- `{{CORRELATED_EVENTS_ROWS}}` — same shape, or one `<tr><td colspan="4">No CloudTrail
+  changes in window.</td></tr>` if empty
+- `{{RANKED_HYPOTHESES_BLOCK}}` — inline the `top-suspected-cause` artifact body here
+- Deep-link placeholders: `{{LINK_SLO_DETAIL}}`, `{{LINK_SERVICE_MAP}}`,
+  `{{LINK_LOGS_INSIGHTS}}`, `{{LINK_CLOUDTRAIL}}` — generated via `open-in-cloudwatch`
+- `{{SAVE_ARTIFACT_BUTTON}}`, `{{SHARE_BUTTON}}` — keep the labels short ("Save
+  artifact", "Share")
+- Footer: `{{SOURCE_MCP_SERVERS}}`, `{{TIME_RANGE_START}}`, `{{TIME_RANGE_END}}`,
+  `{{MCP_TOOLS_LIST}}`, `{{QUERIES_USED}}`, `{{CAUSAL_CONFIDENCE}}`
+
+In **Claude Code** (terminal), the Markdown form above is the default. Both surfaces
+must contain identical data — only the rendering differs. Never fabricate values to fill
+a placeholder; if a value is unknown, render the placeholder with an explicit
+"unavailable" string and mark it in the metadata footer's `confidence` field.

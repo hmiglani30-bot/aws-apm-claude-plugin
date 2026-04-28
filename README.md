@@ -156,6 +156,12 @@ aws-apm-claude-plugin/
 │   ├── top-suspected-cause/
 │   ├── open-in-cloudwatch/
 │   └── aws-apm-setup/
+├── artifacts/                # HTML artifact templates with {{PLACEHOLDERS}}
+│   ├── slo-breach-explainer.html
+│   ├── trace-waterfall.html
+│   ├── service-health-card.html
+│   ├── top-suspected-cause.html
+│   └── investigation-summary.html
 ├── commands/                 # Slash commands
 │   ├── cw-investigate-slo.md
 │   ├── cw-investigate-latency.md

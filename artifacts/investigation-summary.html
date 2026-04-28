@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Investigation Summary — {{INCIDENT_TITLE}}</title>
+<style>
+  :root {
+    --bg-page: #0f1b2a;
+    --bg-surface: #192534;
+    --bg-surface-2: #1f2d3d;
+    --border: #2a3a4f;
+    --text-primary: #e9ebed;
+    --text-secondary: #95a5b8;
+    --link: #539fe5;
+    --link-hover: #89bdee;
+    --status-error: #ff5d64;
+    --status-warning: #ffa552;
+    --status-success: #6aaf3f;
+    --status-info: #539fe5;
+    --timeline-line: #2a3a4f;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: "Open Sans", "Segoe UI", -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; }
+
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .title-block h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+  }
+  .subtitle { color: var(--text-secondary); font-size: 13px; }
+  .actions { display: flex; gap: 8px; }
+  .btn {
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { border-color: var(--link); color: var(--link); }
+  .btn-primary { background: var(--link); border-color: var(--link); color: #0f1b2a; font-weight: 600; }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .hero-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+  }
+  .hero-card.root-cause { border-left: 4px solid var(--status-error); }
+  .hero-card .label { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .hero-card .root-cause-text { font-size: 17px; font-weight: 600; line-height: 1.4; margin-bottom: 8px; }
+  .hero-card .root-cause-detail { color: var(--text-secondary); font-size: 13px; }
+
+  .impact-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .impact-stat .num { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .impact-stat .lbl { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .section-body { padding: 18px; }
+
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: var(--timeline-line);
+  }
+  .timeline-event {
+    position: relative;
+    padding: 8px 0 16px 0;
+  }
+  .timeline-event::before {
+    content: "";
+    position: absolute;
+    left: -25px;
+    top: 14px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--bg-page);
+    border: 2px solid var(--text-secondary);
+  }
+  .timeline-event.detect::before { border-color: var(--status-warning); }
+  .timeline-event.escalate::before { border-color: var(--status-error); background: var(--status-error); }
+  .timeline-event.mitigate::before { border-color: var(--status-info); }
+  .timeline-event.resolve::before { border-color: var(--status-success); background: var(--status-success); }
+  .te-time {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-family: "SF Mono", "Monaco", monospace;
+    margin-bottom: 2px;
+  }
+  .te-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .te-detail { color: var(--text-secondary); font-size: 13px; }
+
+  .remediation-list { list-style: none; padding: 0; margin: 0; counter-reset: step; }
+  .remediation-list li {
+    padding: 12px 14px 12px 48px;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    position: relative;
+    counter-increment: step;
+  }
+  .remediation-list li::before {
+    content: counter(step);
+    position: absolute;
+    left: 14px;
+    top: 12px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--link);
+    color: var(--bg-page);
+    font-weight: 700;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .rem-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .rem-detail { color: var(--text-secondary); font-size: 13px; }
+  .rem-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .rem-tag.immediate { background: rgba(255, 93, 100, 0.15); color: var(--status-error); }
+  .rem-tag.short-term { background: rgba(255, 165, 82, 0.15); color: var(--status-warning); }
+  .rem-tag.long-term { background: rgba(83, 159, 229, 0.15); color: var(--link); }
+
+  .impact-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .impact-tile {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .impact-tile .lbl { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .impact-tile .val { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--text-secondary); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { padding: 10px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+
+  .deep-links { display: flex; flex-wrap: wrap; gap: 8px; }
+  .deep-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--link);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .deep-link:hover { border-color: var(--link); }
+  .deep-link::after { content: "→"; opacity: 0.7; }
+
+  .footer-meta {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .footer-meta dl { display: grid; grid-template-columns: 180px 1fr; gap: 4px 12px; margin: 0; }
+  .footer-meta dt { color: var(--text-secondary); }
+  .footer-meta dd { margin: 0; color: var(--text-primary); font-family: "SF Mono", "Monaco", monospace; font-size: 11px; }
+  code { font-family: "SF Mono", "Monaco", monospace; background: var(--bg-surface-2); padding: 1px 6px; border-radius: 3px; font-size: 12px; }
+
+  .severity-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .severity-pill.sev1 { background: rgba(255, 93, 100, 0.18); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.5); }
+  .severity-pill.sev2 { background: rgba(255, 165, 82, 0.18); color: var(--status-warning); border: 1px solid rgba(255, 165, 82, 0.5); }
+  .severity-pill.sev3 { background: rgba(83, 159, 229, 0.18); color: var(--link); border: 1px solid rgba(83, 159, 229, 0.5); }
+  .severity-pill.resolved { background: rgba(106, 175, 63, 0.18); color: var(--status-success); border: 1px solid rgba(106, 175, 63, 0.5); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="title-block">
+      <h1>📋 Investigation Summary — {{INCIDENT_TITLE}}</h1>
+      <div class="subtitle">
+        <span class="severity-pill {{SEVERITY_CLASS}}">{{SEVERITY}}</span>
+        Service <code>{{SERVICE_NAME}}</code> ·
+        {{INCIDENT_DATE}} ·
+        Region <code>{{AWS_REGION}}</code>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn">{{SAVE_ARTIFACT_BUTTON}}</button>
+      <button class="btn btn-primary">{{SHARE_BUTTON}}</button>
+    </div>
+  </div>
+
+  <div class="hero-grid">
+    <div class="hero-card root-cause">
+      <div class="label">Root cause</div>
+      <div class="root-cause-text">{{ROOT_CAUSE}}</div>
+      <div class="root-cause-detail">{{ROOT_CAUSE_DETAIL}}</div>
+    </div>
+    <div class="hero-card">
+      <div class="label">Impact</div>
+      <div class="impact-stats">
+        <div class="impact-stat">
+          <div class="num">{{DURATION}}</div>
+          <div class="lbl">Duration</div>
+        </div>
+        <div class="impact-stat">
+          <div class="num">{{AFFECTED_USERS}}</div>
+          <div class="lbl">Affected users</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Timeline</div>
+    <div class="section-body">
+      <div class="timeline">
+        {{TIMELINE_EVENTS}}
+        <!-- Each event:
+        <div class="timeline-event detect|escalate|mitigate|resolve">
+          <div class="te-time">{{EVENT_TIME_UTC}}</div>
+          <div class="te-title">{{EVENT_TITLE}}</div>
+          <div class="te-detail">{{EVENT_DETAIL}}</div>
+        </div>
+        -->
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Detailed impact</div>
+    <div class="section-body">
+      <div class="impact-detail-grid">
+        <div class="impact-tile">
+          <div class="lbl">Failed requests</div>
+          <div class="val">{{FAILED_REQUESTS}}</div>
+        </div>
+        <div class="impact-tile">
+          <div class="lbl">Error budget consumed</div>
+          <div class="val">{{ERROR_BUDGET_CONSUMED}}</div>
+        </div>
+        <div class="impact-tile">
+          <div class="lbl">Peak error rate</div>
+          <div class="val">{{PEAK_ERROR_RATE}}%</div>
+        </div>
+        <div class="impact-tile">
+          <div class="lbl">Peak p99 latency</div>
+          <div class="val">{{PEAK_P99}} ms</div>
+        </div>
+      </div>
+      <p style="margin-top: 14px; color: var(--text-secondary); font-size: 13px;">{{IMPACT_NARRATIVE}}</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Remediation steps</div>
+    <div class="section-body">
+      <ol class="remediation-list">
+        {{REMEDIATION_STEPS}}
+        <!-- Each: <li><div class="rem-title">{{TITLE}}<span class="rem-tag immediate|short-term|long-term">{{TAG}}</span></div><div class="rem-detail">{{DETAIL}}</div></li> -->
+      </ol>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Contributing changes <span style="color: var(--text-secondary); font-weight: 400; font-size: 12px;">CloudTrail, breach window ± 30m</span></div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Event</th>
+            <th>Resource</th>
+            <th>Principal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{CONTRIBUTING_CHANGES_ROWS}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Open in CloudWatch</div>
+    <div class="section-body">
+      <div class="deep-links">
+        <a class="deep-link" href="{{LINK_SERVICE_DETAIL}}">Jump to service detail in CloudWatch Console</a>
+        <a class="deep-link" href="{{LINK_SERVICE_MAP}}">Service map at incident time</a>
+        <a class="deep-link" href="{{LINK_SLO_DETAIL}}">SLO detail</a>
+        <a class="deep-link" href="{{LINK_LOGS_INSIGHTS}}">Logs Insights for incident window</a>
+        <a class="deep-link" href="{{LINK_TRACES}}">X-Ray traces from this window</a>
+        <a class="deep-link" href="{{LINK_CLOUDTRAIL}}">CloudTrail event search</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-meta">
+    <dl>
+      <dt>Source</dt><dd>{{SOURCE_MCP_SERVERS}}</dd>
+      <dt>Time range</dt><dd>{{TIME_RANGE_START}} → {{TIME_RANGE_END}} (UTC)</dd>
+      <dt>MCP tools called</dt><dd>{{MCP_TOOLS_LIST}}</dd>
+      <dt>Sub-artifacts</dt><dd>{{SUB_ARTIFACTS_USED}}</dd>
+      <dt>Confidence in root cause</dt><dd>{{ROOT_CAUSE_CONFIDENCE}}</dd>
+    </dl>
+  </div>
+
+</div>
+</body>
+</html>

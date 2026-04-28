@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Top Suspected Cause — {{INVESTIGATION_TITLE}}</title>
+<style>
+  :root {
+    --bg-page: #0f1b2a;
+    --bg-surface: #192534;
+    --bg-surface-2: #1f2d3d;
+    --border: #2a3a4f;
+    --text-primary: #e9ebed;
+    --text-secondary: #95a5b8;
+    --link: #539fe5;
+    --link-hover: #89bdee;
+    --status-error: #ff5d64;
+    --status-warning: #ffa552;
+    --status-success: #6aaf3f;
+    --status-info: #539fe5;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: "Open Sans", "Segoe UI", -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; }
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .title-block h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+  }
+  .subtitle { color: var(--text-secondary); font-size: 13px; }
+  .actions { display: flex; gap: 8px; }
+  .btn {
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { border-color: var(--link); color: var(--link); }
+
+  .hypothesis {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--status-info);
+    border-radius: 8px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .hypothesis.high { border-left-color: var(--status-error); }
+  .hypothesis.medium { border-left-color: var(--status-warning); }
+  .hypothesis.low { border-left-color: var(--text-secondary); }
+
+  .hyp-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hyp-header .rank-claim {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .rank {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  .claim {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .elaboration {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-top: 4px;
+    font-style: italic;
+  }
+  .confidence-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .confidence-badge.high { background: rgba(255, 93, 100, 0.18); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.5); }
+  .confidence-badge.medium { background: rgba(255, 165, 82, 0.18); color: var(--status-warning); border: 1px solid rgba(255, 165, 82, 0.5); }
+  .confidence-badge.low { background: rgba(149, 165, 184, 0.15); color: var(--text-secondary); border: 1px solid rgba(149, 165, 184, 0.3); }
+
+  .hyp-body { padding: 14px 18px; }
+
+  .evidence-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .evidence-card {
+    display: flex;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .evidence-icon {
+    flex-shrink: 0;
+    font-size: 18px;
+    line-height: 1;
+  }
+  .evidence-content { flex: 1; }
+  .evidence-kind {
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+  }
+  .evidence-text { color: var(--text-primary); }
+  .evidence-text a { color: var(--link); text-decoration: none; }
+  .evidence-text a:hover { text-decoration: underline; }
+  .evidence-citation {
+    color: var(--text-secondary);
+    font-size: 11px;
+    margin-top: 4px;
+    font-family: "SF Mono", "Monaco", monospace;
+  }
+
+  .why-confidence {
+    padding: 10px 14px;
+    background: var(--bg-surface-2);
+    border-left: 3px solid var(--status-info);
+    border-radius: 4px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .why-confidence .label {
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .next-step {
+    padding: 10px 14px;
+    background: rgba(83, 159, 229, 0.08);
+    border: 1px solid rgba(83, 159, 229, 0.25);
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  .next-step .label {
+    color: var(--link);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .next-step code {
+    display: block;
+    margin-top: 6px;
+    padding: 8px 10px;
+    background: var(--bg-page);
+    border-radius: 4px;
+    font-size: 12px;
+    word-break: break-all;
+  }
+
+  .ruled-out-section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 12px;
+  }
+  .ruled-out-section h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .ruled-out-list { list-style: none; margin: 0; padding: 0; }
+  .ruled-out-list li {
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .ruled-out-list li:last-child { border-bottom: none; }
+  .ruled-out-list li::before { content: "✗ "; color: var(--text-secondary); margin-right: 4px; }
+
+  .footer-meta {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .footer-meta dl { display: grid; grid-template-columns: 180px 1fr; gap: 4px 12px; margin: 0; }
+  .footer-meta dt { color: var(--text-secondary); }
+  .footer-meta dd { margin: 0; color: var(--text-primary); font-family: "SF Mono", "Monaco", monospace; font-size: 11px; }
+  code { font-family: "SF Mono", "Monaco", monospace; background: var(--bg-surface-2); padding: 1px 6px; border-radius: 3px; font-size: 12px; }
+
+  .deep-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--link);
+    font-size: 13px;
+    text-decoration: none;
+    margin-top: 6px;
+  }
+  .deep-link:hover { border-color: var(--link); }
+  .deep-link::after { content: "→"; opacity: 0.7; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="title-block">
+      <h1>🔍 Top Suspected Cause</h1>
+      <div class="subtitle">
+        Investigation: <code>{{INVESTIGATION_TITLE}}</code> · Window {{INVESTIGATION_WINDOW}} · Region <code>{{AWS_REGION}}</code>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn">{{SAVE_ARTIFACT_BUTTON}}</button>
+      <button class="btn">{{SHARE_BUTTON}}</button>
+    </div>
+  </div>
+
+  <!-- HYPOTHESIS TEMPLATE — repeat 2–4 times. Set class on .hypothesis to high|medium|low. -->
+  <div class="hypothesis {{HYP1_CONFIDENCE_CLASS}}">
+    <div class="hyp-header">
+      <div class="rank-claim">
+        <div class="rank">#1</div>
+        <div class="claim">{{HYP1_CLAIM}}</div>
+        <div class="elaboration">{{HYP1_ELABORATION}}</div>
+      </div>
+      <span class="confidence-badge {{HYP1_CONFIDENCE_CLASS}}">{{HYP1_CONFIDENCE}} confidence</span>
+    </div>
+    <div class="hyp-body">
+      <div class="evidence-grid">
+        {{HYP1_EVIDENCE_CARDS}}
+        <!-- Each card:
+        <div class="evidence-card">
+          <div class="evidence-icon">📈</div>
+          <div class="evidence-content">
+            <div class="evidence-kind">Metric</div>
+            <div class="evidence-text">{{METRIC_OBSERVATION}}</div>
+            <div class="evidence-citation">{{METRIC_REF}}</div>
+          </div>
+        </div>
+        -->
+      </div>
+      <div class="why-confidence">
+        <div class="label">Why this confidence</div>
+        {{HYP1_WHY_CONFIDENCE}}
+      </div>
+      <div class="next-step">
+        <div class="label">Next step (read-only)</div>
+        {{HYP1_NEXT_STEP_TEXT}}
+        <code>{{HYP1_NEXT_STEP_QUERY}}</code>
+        <a class="deep-link" href="{{HYP1_NEXT_STEP_LINK}}">Jump to CloudWatch Console</a>
+      </div>
+    </div>
+  </div>
+  <!-- /HYPOTHESIS -->
+
+  <div class="hypothesis {{HYP2_CONFIDENCE_CLASS}}">
+    <div class="hyp-header">
+      <div class="rank-claim">
+        <div class="rank">#2</div>
+        <div class="claim">{{HYP2_CLAIM}}</div>
+        <div class="elaboration">{{HYP2_ELABORATION}}</div>
+      </div>
+      <span class="confidence-badge {{HYP2_CONFIDENCE_CLASS}}">{{HYP2_CONFIDENCE}} confidence</span>
+    </div>
+    <div class="hyp-body">
+      <div class="evidence-grid">
+        {{HYP2_EVIDENCE_CARDS}}
+      </div>
+      <div class="why-confidence">
+        <div class="label">Why this confidence</div>
+        {{HYP2_WHY_CONFIDENCE}}
+      </div>
+      <div class="next-step">
+        <div class="label">Next step (read-only)</div>
+        {{HYP2_NEXT_STEP_TEXT}}
+        <code>{{HYP2_NEXT_STEP_QUERY}}</code>
+        <a class="deep-link" href="{{HYP2_NEXT_STEP_LINK}}">Jump to CloudWatch Console</a>
+      </div>
+    </div>
+  </div>
+
+  {{HYP3_BLOCK_OPTIONAL}}
+  {{HYP4_BLOCK_OPTIONAL}}
+
+  <div class="ruled-out-section">
+    <h3>Considered and ruled out</h3>
+    <ul class="ruled-out-list">
+      {{RULED_OUT_ITEMS}}
+      <!-- Each: <li>{{CLAIM}} — ruled out because {{EVIDENCE}}</li> -->
+    </ul>
+  </div>
+
+  <div class="footer-meta">
+    <dl>
+      <dt>Source</dt><dd>{{SOURCE_MCP_SERVERS}}</dd>
+      <dt>Time range</dt><dd>{{TIME_RANGE_START}} → {{TIME_RANGE_END}} (UTC)</dd>
+      <dt>MCP tools called</dt><dd>{{MCP_TOOLS_LIST}}</dd>
+      <dt>Hypotheses considered</dt><dd>{{HYP_TOTAL_CONSIDERED}} ({{HYP_RANKED_COUNT}} ranked, {{HYP_RULED_OUT_COUNT}} ruled out)</dd>
+    </dl>
+  </div>
+
+</div>
+</body>
+</html>

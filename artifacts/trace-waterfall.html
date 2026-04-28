@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Trace Waterfall — {{TRACE_ID_SHORT}}</title>
+<style>
+  :root {
+    --bg-page: #0f1b2a;
+    --bg-surface: #192534;
+    --bg-surface-2: #1f2d3d;
+    --border: #2a3a4f;
+    --text-primary: #e9ebed;
+    --text-secondary: #95a5b8;
+    --link: #539fe5;
+    --link-hover: #89bdee;
+    --status-error: #ff5d64;
+    --status-warning: #ffa552;
+    --status-success: #6aaf3f;
+    --status-info: #539fe5;
+    --critical-path: #ffd166;
+
+    /* service color palette — assign deterministically per service name */
+    --svc-1: #539fe5;
+    --svc-2: #8b6cef;
+    --svc-3: #2dbeb1;
+    --svc-4: #ff8a65;
+    --svc-5: #c889ff;
+    --svc-6: #6aaf3f;
+    --svc-7: #ffa552;
+    --svc-8: #ec407a;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: "Open Sans", "Segoe UI", -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px; }
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .title-block h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+  }
+  .subtitle { color: var(--text-secondary); font-size: 13px; }
+  .actions { display: flex; gap: 8px; }
+  .btn {
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { border-color: var(--link); color: var(--link); }
+  .grid-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .card .label { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .card .value { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .section-body { padding: 16px 18px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; font-size: 12px; color: var(--text-secondary); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .swatch { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
+  .legend-critical { display: inline-block; width: 16px; border-top: 2px dashed var(--critical-path); }
+
+  .waterfall {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 0;
+  }
+  .span-row {
+    display: contents;
+  }
+  .span-meta {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .span-meta .span-name { font-size: 13px; font-weight: 500; }
+  .span-meta .span-service { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+  .span-meta.depth-1 { padding-left: 24px; }
+  .span-meta.depth-2 { padding-left: 36px; }
+  .span-meta.depth-3 { padding-left: 48px; }
+  .span-meta.depth-4 { padding-left: 60px; }
+  .span-track {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    border-left: 1px solid var(--border);
+    height: 36px;
+    padding: 0;
+  }
+  .span-bar {
+    position: absolute;
+    top: 9px;
+    height: 18px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: filter 0.15s;
+  }
+  .span-bar:hover { filter: brightness(1.2); }
+  .span-bar.svc-1 { background: var(--svc-1); }
+  .span-bar.svc-2 { background: var(--svc-2); }
+  .span-bar.svc-3 { background: var(--svc-3); }
+  .span-bar.svc-4 { background: var(--svc-4); }
+  .span-bar.svc-5 { background: var(--svc-5); }
+  .span-bar.svc-6 { background: var(--svc-6); }
+  .span-bar.svc-7 { background: var(--svc-7); }
+  .span-bar.svc-8 { background: var(--svc-8); }
+  .span-bar.error { box-shadow: 0 0 0 2px var(--status-error); border: 1px solid var(--status-error); }
+  .span-bar.critical { box-shadow: 0 0 0 2px var(--critical-path); }
+  .span-bar .bar-label {
+    position: absolute;
+    left: 100%;
+    margin-left: 8px;
+    top: -1px;
+    color: var(--text-primary);
+    font-size: 11px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .span-bar .self-time {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 2px;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--text-secondary); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { padding: 10px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  td.numeric { text-align: right; font-variant-numeric: tabular-nums; }
+  td.error-cell { color: var(--status-error); }
+
+  .deep-links { display: flex; flex-wrap: wrap; gap: 8px; }
+  .deep-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--link);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .deep-link:hover { border-color: var(--link); }
+  .deep-link::after { content: "→"; opacity: 0.7; }
+
+  .footer-meta {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .footer-meta dl { display: grid; grid-template-columns: 180px 1fr; gap: 4px 12px; margin: 0; }
+  .footer-meta dt { color: var(--text-secondary); }
+  .footer-meta dd { margin: 0; color: var(--text-primary); font-family: "SF Mono", "Monaco", monospace; font-size: 11px; }
+  code { font-family: "SF Mono", "Monaco", monospace; background: var(--bg-surface-2); padding: 1px 6px; border-radius: 3px; font-size: 12px; }
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .status-pill.error { background: rgba(255, 93, 100, 0.15); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.4); }
+  .status-pill.ok { background: rgba(106, 175, 63, 0.15); color: var(--status-success); border: 1px solid rgba(106, 175, 63, 0.4); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="title-block">
+      <h1>⏱️ Trace Waterfall — <code>{{TRACE_ID_SHORT}}</code></h1>
+      <div class="subtitle">
+        Entry <code>{{ENTRY_SERVICE}}.{{ENTRY_OPERATION}}</code> · {{TRACE_TIMESTAMP}} · Region <code>{{AWS_REGION}}</code>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn">{{SAVE_ARTIFACT_BUTTON}}</button>
+      <button class="btn">{{SHARE_BUTTON}}</button>
+    </div>
+  </div>
+
+  <div class="grid-summary">
+    <div class="card">
+      <div class="label">Total duration</div>
+      <div class="value">{{TOTAL_DURATION_MS}} ms</div>
+    </div>
+    <div class="card">
+      <div class="label">Status</div>
+      <div class="value"><span class="status-pill {{STATUS_PILL_CLASS}}">{{TRACE_STATUS}}</span></div>
+    </div>
+    <div class="card">
+      <div class="label">Spans captured</div>
+      <div class="value">{{SPANS_CAPTURED}}/{{SPANS_TOTAL}}</div>
+    </div>
+    <div class="card">
+      <div class="label">Critical path</div>
+      <div class="value">{{CRITICAL_PATH_PCT}}%</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      Waterfall
+      <div class="legend">
+        <div class="legend-item"><span class="swatch" style="background: var(--svc-1)"></span> {{SERVICE_LEGEND_1}}</div>
+        <div class="legend-item"><span class="swatch" style="background: var(--svc-2)"></span> {{SERVICE_LEGEND_2}}</div>
+        <div class="legend-item"><span class="swatch" style="background: var(--svc-3)"></span> {{SERVICE_LEGEND_3}}</div>
+        <div class="legend-item"><span class="swatch" style="background: var(--svc-4)"></span> {{SERVICE_LEGEND_4}}</div>
+        <div class="legend-item"><span class="swatch" style="background: rgba(0,0,0,0.4); border: 1px solid var(--text-secondary);"></span> self-time</div>
+        <div class="legend-item"><span class="legend-critical"></span> critical path</div>
+        <div class="legend-item"><span class="swatch" style="background: transparent; border: 2px solid var(--status-error)"></span> error span</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="waterfall">
+        {{WATERFALL_SPAN_ROWS}}
+        <!-- Each span row populates two grid cells, e.g.:
+        <div class="span-meta depth-0"><div class="span-name">{{SPAN_NAME}}</div><div class="span-service">{{SPAN_SERVICE}}</div></div>
+        <div class="span-track">
+          <div class="span-bar svc-1 critical" style="left: {{START_PCT}}%; width: {{WIDTH_PCT}}%;">
+            <div class="self-time" style="left: {{SELF_OFFSET_PCT}}%; width: {{SELF_WIDTH_PCT}}%;"></div>
+            <div class="bar-label">{{TOTAL_MS}}ms (self {{SELF_MS}}ms)</div>
+          </div>
+        </div>
+        -->
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Where the time went <span style="color: var(--text-secondary); font-weight: 400; font-size: 12px;">ranked by self-time</span></div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Span</th>
+            <th>Service</th>
+            <th class="numeric">Self-time</th>
+            <th class="numeric">% of total</th>
+            <th>Code</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{TOP_SPANS_ROWS}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Dependency contribution</div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Dependency</th>
+            <th class="numeric">Calls</th>
+            <th class="numeric">Total time</th>
+            <th class="numeric">% of trace</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{DEPENDENCY_ROWS}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Errors</div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Span</th>
+            <th>Exception</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ERROR_ROWS_OR_NONE}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Open in CloudWatch</div>
+    <div class="section-body">
+      <div class="deep-links">
+        <a class="deep-link" href="{{LINK_FULL_TRACE}}">Jump to full trace in CloudWatch Console</a>
+        <a class="deep-link" href="{{LINK_SERVICE_MAP}}">Service map at trace time</a>
+        <a class="deep-link" href="{{LINK_LOGS_FOR_REQUEST}}">Logs for this requestId</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-meta">
+    <dl>
+      <dt>Source</dt><dd>{{SOURCE_MCP_SERVERS}}</dd>
+      <dt>Trace time</dt><dd>{{TRACE_TIMESTAMP}}</dd>
+      <dt>MCP tools called</dt><dd>{{MCP_TOOLS_LIST}}</dd>
+      <dt>Spans captured</dt><dd>{{SPANS_CAPTURED}}/{{SPANS_TOTAL}} ({{SPANS_CAPTURED_PCT}}%)</dd>
+      <dt>Confidence in attribution</dt><dd>{{ATTRIBUTION_CONFIDENCE}}</dd>
+    </dl>
+  </div>
+
+</div>
+</body>
+</html>

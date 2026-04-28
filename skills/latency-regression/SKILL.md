@@ -92,11 +92,41 @@ Common root causes to consider, ranked by base rate:
 
 Each hypothesis needs evidence from ≥2 sources before it ranks "High confidence."
 
+### Phase 6 — Follow dependencies (cascading health check)
+
+If Phase 5's top hypothesis is **downstream dependency degradation** — or a single
+downstream call dominates the latency budget from Phase 2 — follow the chain one hop:
+
+1. **Pick the slowest / most-implicated dependency.** Use the dependency that contributes
+   the largest share of the operation's p99 (from Phase 2's latency budget) or the one
+   named in the top hypothesis. Pick at most one.
+2. **Run a service health snapshot on it.** Invoke the `service-health-card` skill on
+   the dependency, scoped to the regression window.
+3. **Include the result in the final summary.** Add a "Downstream dependency health"
+   section to the Trace Waterfall Summary or Service Health Card output, showing the
+   dependency's RED-metric verdict and its own latency baseline comparison. If the
+   dependency's p99 has *also* regressed by ≥1.5× over its own baseline, escalate the
+   "downstream dependency" hypothesis to High confidence and note that the regression
+   likely originated upstream of this service.
+4. **Cap the chain at depth 2.** If the dependency's health card implicates *its*
+   dependency, you may follow one more hop (depth 2) — but stop there. Note "Further
+   dependencies not auto-followed" in the summary. Never follow a third hop. This is
+   the loop guard.
+5. **Skip the cascade entirely** if:
+   - No single dependency dominates the latency budget (work is local CPU / GC / DB
+     query plan)
+   - Top hypothesis is a code change or capacity issue with no downstream component
+   - The implicated dependency is outside the user's account
+
 ## Final artifact
 
 End with **Trace Waterfall Summary** for the worst operation. If multiple operations are
 affected, also produce a **Service Health Card**. Always include **Top Suspected Cause**
 when you have ranked hypotheses.
+
+For a full postmortem-style writeup (timeline + root cause + impact + remediation),
+use the artifact template at `artifacts/investigation-summary.html` and populate the
+`{{PLACEHOLDERS}}` with actual data — see that file for the full placeholder list.
 
 ## What this skill does NOT do
 

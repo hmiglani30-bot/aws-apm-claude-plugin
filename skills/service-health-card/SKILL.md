@@ -93,3 +93,37 @@ The verdict is derived deterministically from the data — do not stylize it.
 - **Dependencies table caps at 3.** If the service has more, show top 3 by call volume
   and add a deep link to "see all dependencies."
 - **Changes table is omitted** if no events; replace with one-liner.
+
+## HTML artifact template
+
+For Cowork (or any surface that renders HTML artifacts), use the artifact template at
+`artifacts/service-health-card.html` and populate the `{{PLACEHOLDERS}}` with actual
+data. The template encodes the verdict badge, RED metric tiles (with sparkline / gauge),
+SLO status pills, dependency table, and recent-changes table — do not redesign it.
+
+Placeholder reference (non-exhaustive):
+
+- `{{SERVICE_NAME}}`, `{{AWS_REGION}}`, `{{ENVIRONMENT}}`, `{{GENERATED_AT}}`
+- `{{VERDICT}}` (Healthy / Degraded / Unhealthy) + `{{VERDICT_CLASS}}` (`healthy` /
+  `degraded` / `unhealthy`) — derived deterministically per the verdict rules above
+- `{{REQUEST_RATE_NOW}}` / `{{REQUEST_RATE_BASELINE}}` / `{{REQUEST_RATE_DELTA}}` /
+  `{{REQUEST_RATE_DELTA_CLASS}}` (`up-bad` / `up-good` / `down-bad` / `down-good` /
+  `neutral`) — sparkline polyline as `{{REQUEST_RATE_SPARKLINE}}`, formatted
+  `x1,y1 x2,y2 ...` over a 100×30 viewBox
+- `{{ERROR_RATE_NOW}}` / `{{ERROR_RATE_BASELINE}}` / `{{ERROR_RATE_DELTA}}` /
+  `{{ERROR_RATE_DELTA_CLASS}}` and gauge: `{{ERROR_GAUGE_PCT}}` (0–100) +
+  `{{ERROR_GAUGE_CLASS}}` (`healthy` / `degraded` / `unhealthy`)
+- `{{P99_NOW}}`, `{{P50_NOW}}`, `{{P90_NOW}}`, `{{P99_BASELINE}}`, `{{P99_DELTA}}`,
+  `{{P99_DELTA_CLASS}}`, `{{P99_SPARKLINE}}`
+- `{{SLO_PILLS_OR_EMPTY}}` — emit one `<div class="slo-pill healthy|warning|breach">…</div>`
+  per SLO, or the "No SLOs configured" empty-line block
+- `{{DEPENDENCY_ROWS}}` — top 3 with `<span class="dep-status healthy|warning|breach">…</span>`
+- `{{RECENT_CHANGES_ROWS_OR_NONE}}` — rows, or `<tr><td colspan="4">No CloudTrail events
+  in last 24h.</td></tr>`
+- Deep-link placeholders: `{{LINK_SERVICE_DETAIL}}`, `{{LINK_SERVICE_MAP}}`,
+  `{{LINK_SLO_LIST}}` — generated via `open-in-cloudwatch`
+- `{{SAVE_ARTIFACT_BUTTON}}`, `{{SHARE_BUTTON}}` — short labels
+- Footer: `{{SOURCE_MCP_SERVERS}}`, `{{MCP_TOOLS_LIST}}`, `{{CONFIDENCE}}`
+
+In **Claude Code** (terminal), use the Markdown form above. Both must contain identical
+data — only the rendering differs.

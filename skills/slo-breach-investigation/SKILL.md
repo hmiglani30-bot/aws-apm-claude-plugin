@@ -109,6 +109,32 @@ hypothesis must include:
 Bias toward hypotheses with multi-source evidence (metric + trace + deploy correlation).
 A hypothesis backed only by metrics is weaker than one with a matching trace exception.
 
+### Phase 6 — Follow dependencies (cascading health check)
+
+If Phase 5's top hypothesis implicates a **downstream dependency** (a service / DB / API
+this service calls, or a downstream Application Signals service shown on the trace path),
+follow the chain one hop:
+
+1. **Pick the implicated dependency.** Use the dependency named in the top hypothesis or
+   the slowest / most-failing dependency surfaced in Phases 2–3. Pick at most one — do
+   not fan out across every dependency.
+2. **Run a service health snapshot on it.** Invoke the `service-health-card` skill on
+   the dependency, scoped to the same time window as the breach.
+3. **Include the result in the final summary.** The dependency's verdict (Healthy /
+   Degraded / Unhealthy), its own RED metric deltas, and any of its own SLOs in
+   Warning / Breach get embedded in the Explainer artifact under a "Downstream
+   dependency health" subsection. If the dependency is itself Unhealthy, escalate the
+   ranking of the "downstream dependency degradation" hypothesis accordingly.
+4. **Cap the chain at depth 2.** If the dependency's health card itself implicates
+   *its* dependency, you may follow one more hop (depth 2) — but stop there. Note
+   "Further dependencies not auto-followed; investigate manually" in the summary.
+   Never follow a third hop, even if implicated. This is the loop guard.
+5. **Skip the cascade entirely** if:
+   - No dependency is implicated (top hypothesis is a code change, GC, capacity, etc.)
+   - The implicated dependency is outside the user's account (3rd-party API) — note it
+     in the summary and recommend the user contact the owning team
+   - The dependency was already covered by an earlier phase's data with high confidence
+
 ## Final artifact
 
 Always end with the **SLO Breach Explainer** artifact (see `slo-breach-explainer` skill).
@@ -120,8 +146,13 @@ That artifact is the canonical output — it must include:
 - Top impacted operations (with % contribution)
 - Correlated deploys / config changes
 - Ranked hypotheses
+- Downstream dependency health (from Phase 6, when applicable)
 - Deep links into CloudWatch console (use `open-in-cloudwatch` skill)
 - Metadata footer: source metric, time range, queries used, MCP tools called, confidence
+
+For a full postmortem-style writeup (timeline + root cause + impact + remediation),
+use the artifact template at `artifacts/investigation-summary.html` and populate the
+`{{PLACEHOLDERS}}` with actual data — see that file for the full placeholder list.
 
 ## Action safety
 
