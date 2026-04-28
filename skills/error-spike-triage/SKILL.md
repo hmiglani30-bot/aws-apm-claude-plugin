@@ -69,6 +69,40 @@ How to surface progress while the triage runs:
    - % of total requests failing
    - Estimated affected users (if request volume is high enough to assume distinct users)
 
+### Phase 1b — Compute blast radius
+
+Before localizing, compute the **blast radius** of the spike. This
+becomes a section of the final artifact and feeds the
+`copy-to-incident` skill's customer / exec summaries. Capture all of:
+
+- **Affected operations** — names + share of total error volume.
+- **Callers** — every Application Signals service hitting these
+  operations during the spike. Pull from the service map.
+- **AZ / region** — concentrated in one AZ (single-instance / AZ issue)
+  or fleet-wide? If the metric supports per-AZ breakdown, compute it;
+  else note "AZ breakdown unavailable."
+- **Customer segments** — group failed requests by `tenantId`,
+  `customerTier`, or whatever segmentation tag the service emits. If no
+  such tag exists, note "customer-segment data unavailable" rather than
+  guessing.
+- **Upstream services** — for each caller, note whether *they* are also
+  spiking errors or alarming. A caller that's silently absorbing 5xx is
+  different from one that's also breaching.
+- **Estimated failed requests** — bad-event count over the spike window.
+  Compute as: `(error rate now − baseline error rate) × request rate ×
+  duration`. Round and surface uncertainty (e.g. "~1,200 failed
+  requests, ±20%").
+- **Severity label** — proposed SEV1 / SEV2 / SEV3 / SEV4:
+  - SEV1: 5xx, customer-facing, broad caller fan-out, >5% of total
+    requests failing
+  - SEV2: 5xx, customer-facing, narrow scope OR <5% but rising
+  - SEV3: internal-only callers OR pure 4xx storm with low rate
+  - SEV4: internal tooling / synthetics-only impact
+  This is a **proposal** — the IC makes the final call.
+
+Render this as a "Blast radius" subsection. If any field is unavailable,
+say so explicitly rather than omitting the line.
+
 ### Phase 2 — Localize: which operation, which exception class?
 
 1. Rank operations on the service by error count contribution.
@@ -143,6 +177,64 @@ in Phase 3 consistently fail at a downstream span — follow the chain one hop:
    - The implicated dependency is outside the user's account (3rd-party API)
    - The spike is purely 4xx with no downstream involvement
 
+## False-positive / noisy-spike handling
+
+Before presenting a verdict, run these checks. If any apply, the spike
+may be a measurement artifact or operationally-expected and not a real
+customer-impacting problem. Surface the finding **above** the artifact
+and downgrade the verdict accordingly.
+
+1. **Traffic too low** — request rate is <1 req/min, or <1% of typical.
+   A handful of error events flips a low-volume service into "spike" by
+   percentage. Note: "Low traffic — single-event sensitivity, error rate
+   may not represent meaningful impact."
+2. **Sample size too small** — fewer than 100 requests in the spike
+   window. Error rate math is unreliable. Note: "Sample size <100 — rate
+   confidence is Low."
+3. **Deploy window expected** — CloudTrail shows a `RegisterTaskDefinition`
+   / `UpdateService` / `UpdateFunctionCode` exactly at spike start AND
+   the team has documented "expected error blip during deploy" pattern.
+   If the spike decays within the post-deploy stabilization window,
+   label "Expected deploy-window noise" — but do NOT auto-suppress.
+4. **Alarm / SLO recently edited** — `PutMetricAlarm` in the last 24h
+   tightened the threshold. The metric may not have moved; the bar
+   moved. Surface the edit and the "before" threshold so the user can
+   judge. Same applies if the SLO fed by this metric was just retargeted.
+5. **Missing data** — metric publisher gaps, agent restart, region-wide
+   CloudWatch incident. Detect via timestamps with no datapoints. Note:
+   "Missing data — error rate computation includes treat-missing-data
+   behavior; verify in console."
+6. **Synthetic-only failure** — the spike is from synthetics canary
+   traffic only; real-user traffic to the same operations looks normal.
+   Often a canary credential / network issue, not service. Note:
+   "Synthetics-only — real user traffic on the same operations is
+   healthy."
+
+If two or more conditions hold, downgrade to ⚠️ and lead with "Possible
+false positive — <reasons>." Do not present 🔴 spike until at least one
+false-positive condition is ruled out OR the user confirms it's real.
+
+## Degraded telemetry handling
+
+If the inputs you need are unavailable, the triage must gracefully
+degrade rather than fabricate. Detect each gap and apply the matching
+rule. Cap final confidence based on the worst gap, and tell the user
+explicitly which signals were missing.
+
+| Gap | Detect | Behavior | Confidence cap |
+|---|---|---|---|
+| Traces missing | `search_traces` for failed traces returns 0 results when error metrics show events | Skip Phases 3 + 6 trace-based steps; rely on metrics + logs only | Medium |
+| Logs not correlated to traces | No `traceId` field on log lines for the affected operation | Surface log patterns without trace cross-reference; note explicitly | Medium |
+| Logs Insights query times out / returns empty | `StartQuery` succeeds but `GetQueryResults` returns no rows for the spike window | Skip pattern detection; surface raw error counts only | Medium |
+| SLOs absent | `list_slos` returns empty; spike has no SLO consumer | Continue — error-spike-triage doesn't require SLOs. Note "no SLO context" in artifact | None |
+| CloudTrail denied | `AccessDenied` on `LookupEvents` / Lake / Logs integration | Skip Phase 4 entirely; surface "Cannot correlate with CloudTrail" | Medium |
+| Operation-level metrics flat | `get_service_operations` returns no per-operation breakdown | Skip Phase 2 ranking; analyze service-level only | Medium |
+| Application Signals service map empty | No callers / dependencies returned | Skip blast radius "Callers" + "Upstream services" lines | Low for blast radius |
+| All telemetry unavailable | `list_services` errors or returns empty | Stop. Run `/cw-doctor` and `/cw-set-context` first | N/A — refuse to run |
+
+Always tell the user which signals degraded. A hedged artifact beats a
+confident-looking one built on missing data.
+
 ## Final artifact
 
 **Lead with a one-line verdict** before presenting the artifact. The verdict goes
@@ -156,10 +248,20 @@ The verdict must name (1) the magnitude of the spike, (2) the worst operation, (
 the dominant exception class or pattern, and (4) the top-ranked hypothesis with its
 confidence. Never hide the verdict inside the artifact.
 
-Then present **Service Health Card** + **Top Suspected Cause**. Include deep links to:
+Then present **Service Health Card** + **Top Suspected Cause**. Include
+deep links to:
 - Logs Insights query that surfaced the patterns
 - Application Signals operation view
 - The specific traces sampled
+
+Both artifacts must include:
+- **Blast radius** subsection (from Phase 1b): callers, AZ/region scope,
+  customer segments, upstream services, estimated failed requests,
+  proposed severity label.
+- **Owner + suggested page** (from `service-ownership` skill).
+- **False-positive checks** — list each condition checked + result.
+- **Degraded-telemetry note** (if any signal was missing) with the
+  capped confidence label.
 
 For a full postmortem-style writeup (timeline + root cause + impact + remediation),
 use the artifact template at `artifacts/investigation-summary.html` and populate the
