@@ -5,7 +5,7 @@
       "args": ["awslabs.cloudwatch-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "default",
-        "AWS_REGION": "us-east-1",
+        "AWS_REGION": "us-east-2",
         "FASTMCP_LOG_LEVEL": "ERROR"
       }
     },
@@ -14,7 +14,7 @@
       "args": ["awslabs.cloudwatch-applicationsignals-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "default",
-        "AWS_REGION": "us-east-1",
+        "AWS_REGION": "us-east-2",
         "FASTMCP_LOG_LEVEL": "ERROR"
       }
     },
@@ -23,7 +23,7 @@
       "args": ["awslabs.cloudtrail-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "default",
-        "AWS_REGION": "us-east-1",
+        "AWS_REGION": "us-east-2",
         "FASTMCP_LOG_LEVEL": "ERROR"
       }
     },
