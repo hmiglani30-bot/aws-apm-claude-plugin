@@ -1,5 +1,11 @@
 # AWS APM — Claude Code & Cowork plugin
 
+[![tests](https://github.com/hmiglani30/aws-apm-claude-plugin/actions/workflows/tests.yml/badge.svg)](https://github.com/hmiglani30/aws-apm-claude-plugin/actions/workflows/tests.yml)
+[![version](https://img.shields.io/badge/version-0.2.1-blue)](.claude-plugin/plugin.json)
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-8A2BE2)](https://code.claude.com/docs/en/plugins-reference)
+[![Cowork](https://img.shields.io/badge/Cowork-compatible-teal)](https://www.anthropic.com/news/cowork)
+
 > A personal-prototype investigation method for **SREs and service-owning
 > developers** debugging production APM issues backed by AWS Application Signals,
 > X-Ray, CloudWatch, and CloudTrail. Encodes a fixed multi-phase workflow,
@@ -8,8 +14,7 @@
 
 > **Not an official AWS or Anthropic product.** See [Ownership](#ownership).
 
-**Current version:** `0.2.1` &nbsp;·&nbsp; **License:** MIT &nbsp;·&nbsp;
-**Ships in:** Claude Code, Cowork.
+**Ships in:** Claude Code (terminal / IDE / web), Cowork (desktop).
 &nbsp;·&nbsp; Docs: [ARCHITECTURE](ARCHITECTURE.md) ·
 [MCP-TOOL-CONTRACTS](MCP-TOOL-CONTRACTS.md) ·
 [ACTION-SAFETY-MODEL](ACTION-SAFETY-MODEL.md) ·
@@ -195,6 +200,7 @@ verify the model's reasoning before acting.
 - ⏱️ **Trace Waterfall Summary** — top slow spans by self-time, dependency contribution, span-to-code, Mermaid gantt
 - 🟢 **Service Health Card** — RED metrics (5m + 24h baseline), SLO status, top dependencies, recent CloudTrail changes
 - 🔍 **Top Suspected Cause** — ranked hypotheses with evidence cards (metric / log / trace / deploy), confidence, falsifiable next step
+- 📋 **Investigation Summary** — wrapper report for `slo-breach-investigation`, `latency-regression`, `error-spike-triage`: verdict callout, ranked hypotheses, evidence cards
 - 🔗 **Open in CloudWatch** — deep links into the AWS console with service / operation / time range / filters preserved
 
 Tier 3 components render as rich **HTML artifacts** in Cowork (sparklines,
