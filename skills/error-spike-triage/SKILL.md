@@ -34,6 +34,24 @@ If an availability SLO is breaching as a result, prefer
 - `awslabs.cloudwatch-mcp-server` — Logs Insights for pattern detection
 - `awslabs.cloudtrail-mcp-server` — change correlation
 
+## Presentation
+
+How to surface progress while the triage runs:
+
+1. **Show reasoning before each phase.** Before each phase, write a one-line thought
+   explaining what you are about to do and why — e.g. "Grouping log lines by
+   `errorType` to see whether this is one exception class spiking or a fan-out across
+   many." Make the triage inspectable, not a black box.
+2. **Label tool calls in human-readable terms.** When invoking MCP tools, prefix each
+   call with a plain-English label ("Pulling error rate vs baseline…", "Running
+   Logs Insights for top exception classes…", "Sampling failed traces…") rather than
+   dumping raw API or tool names. Raw names go in the metadata footer.
+3. **Track phases with `TodoWrite`.** At the start of the workflow, create a todo
+   per phase (Quantify spike, Localize, Pull failing traces, Correlate changes,
+   Hypothesize, Follow dependencies). Mark each `in_progress` when you start it and
+   `completed` when its data is in hand. Exactly one phase is `in_progress` at a
+   time.
+
 ## Triage workflow
 
 ### Phase 1 — Quantify the spike
@@ -127,7 +145,18 @@ in Phase 3 consistently fail at a downstream span — follow the chain one hop:
 
 ## Final artifact
 
-End with **Service Health Card** + **Top Suspected Cause**. Include deep links to:
+**Lead with a one-line verdict** before presenting the artifact. The verdict goes
+ABOVE the artifact, in plain text, so it's the first thing the user reads. Shape:
+
+> 🔴 **5xx rate up 14× since 14:20 UTC** on `POST /checkout` — single
+> `NullPointerException` cluster, correlated with deploy at 14:18 UTC. Top
+> hypothesis: bad deploy (High confidence).
+
+The verdict must name (1) the magnitude of the spike, (2) the worst operation, (3)
+the dominant exception class or pattern, and (4) the top-ranked hypothesis with its
+confidence. Never hide the verdict inside the artifact.
+
+Then present **Service Health Card** + **Top Suspected Cause**. Include deep links to:
 - Logs Insights query that surfaced the patterns
 - Application Signals operation view
 - The specific traces sampled

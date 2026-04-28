@@ -39,6 +39,24 @@ If the alarm is on a metric that maps to an SLO that is *also* breaching, prefer
 
 If any required MCP is not connected, run the `aws-apm-setup` skill before continuing.
 
+## Presentation
+
+How to surface progress while the alarm-response runs:
+
+1. **Show reasoning before each phase.** Before each phase, write a one-line thought
+   explaining what you are about to do and why — e.g. "Resolving the alarm to its
+   underlying metric and dimensions before deciding whether this is a latency, error,
+   or capacity story." Make the response inspectable, not a black box.
+2. **Label tool calls in human-readable terms.** When invoking MCP tools, prefix each
+   call with a plain-English label ("Resolving alarm config…", "Pulling alarm metric
+   vs baseline…", "Searching CloudTrail for changes near the state transition…")
+   rather than dumping raw API or tool names. Raw names go in the metadata footer.
+3. **Track phases with `TodoWrite`.** At the start of the workflow, create a todo
+   per phase (Parse alarm, Pull current values, Correlate traces/logs, Check
+   CloudTrail, Rank hypotheses). Mark each `in_progress` when you start it and
+   `completed` when its data is in hand. Exactly one phase is `in_progress` at a
+   time.
+
 ## Investigation workflow
 
 ### Phase 1 — Parse alarm details
@@ -131,7 +149,19 @@ is weaker than one with a matching trace exception or a coincident deploy.
 
 ## Final artifact
 
-Always end with **Service Health Card** (for the affected service) + **Top Suspected
+**Lead with a one-line verdict** before presenting the artifact. The verdict goes
+ABOVE the artifact, in plain text, so it's the first thing the user reads. Shape:
+
+> 🟠 **`PaymentLatency-p99` alarm fired at 14:23 UTC** — p99 up 4× from baseline on
+> `payment-service`. Top hypothesis: deploy at 14:18 UTC (High confidence).
+
+The verdict must name (1) the alarm and when it fired, (2) the magnitude of the
+underlying metric move, (3) the affected service, and (4) the top-ranked hypothesis
+with its confidence. If the alarm is flapping or noisy, lead with that instead
+("⚠️ Flapping alarm — 6 transitions in 30 min, likely a tuning issue, not a service
+problem"). Never hide the verdict inside the artifact.
+
+Then present **Service Health Card** (for the affected service) + **Top Suspected
 Cause** (for the ranked hypotheses). Both artifacts must include their metadata footer.
 
 The Service Health Card must include:

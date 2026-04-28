@@ -34,6 +34,24 @@ strict superset.
 - `awslabs.cloudwatch-mcp-server` — supporting metric math and logs
 - `awslabs.cloudtrail-mcp-server` — change correlation
 
+## Presentation
+
+How to surface progress while the investigation runs:
+
+1. **Show reasoning before each phase.** Before each phase, write a one-line thought
+   explaining what you are about to do and why — e.g. "Comparing current p99 to the
+   same-hour baseline from 1d and 7d ago to confirm this is a real regression and not
+   a daily-traffic pattern." Make the investigation inspectable, not a black box.
+2. **Label tool calls in human-readable terms.** When invoking MCP tools, prefix each
+   call with a plain-English label ("Pulling p50/p90/p99…", "Sampling slow traces…",
+   "Building latency budget for the worst operation…") rather than dumping raw API
+   or tool names. Raw names go in the metadata footer, not the running narrative.
+3. **Track phases with `TodoWrite`.** At the start of the workflow, create a todo
+   per phase (Confirm regression, Localize, Sample slow traces, Correlate changes,
+   Hypothesize, Follow dependencies). Mark each `in_progress` when you start it and
+   `completed` when its data is in hand. Exactly one phase is `in_progress` at a
+   time.
+
 ## Investigation workflow
 
 ### Phase 1 — Confirm the regression is real
@@ -120,9 +138,20 @@ downstream call dominates the latency budget from Phase 2 — follow the chain o
 
 ## Final artifact
 
-End with **Trace Waterfall Summary** for the worst operation. If multiple operations are
-affected, also produce a **Service Health Card**. Always include **Top Suspected Cause**
-when you have ranked hypotheses.
+**Lead with a one-line verdict** before presenting the artifact. The verdict goes
+ABOVE the artifact, in plain text, so it's the first thing the user reads. Shape:
+
+> 🟠 **p99 up 3.2× on `POST /checkout`** — 78% of the regression is downstream
+> `payment-service` latency. Top hypothesis: payment-service degraded after its
+> 14:05 UTC deploy (High confidence).
+
+The verdict must name (1) the magnitude of the regression, (2) the worst operation,
+(3) where the time went (local vs which dependency), and (4) the top-ranked
+hypothesis with its confidence. Never hide the verdict inside the artifact.
+
+Then present **Trace Waterfall Summary** for the worst operation. If multiple
+operations are affected, also produce a **Service Health Card**. Always include
+**Top Suspected Cause** when you have ranked hypotheses.
 
 For a full postmortem-style writeup (timeline + root cause + impact + remediation),
 use the artifact template at `artifacts/investigation-summary.html` and populate the
