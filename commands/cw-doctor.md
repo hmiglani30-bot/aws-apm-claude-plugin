@@ -1,7 +1,13 @@
 ---
 description: Run a single end-to-end diagnostic on the AWS APM plugin — MCP servers, AWS identity, region, Application Signals, logs, traces, CloudTrail — and render a ready / not-ready verdict
 argument-hint: [verbose]
-allowed-tools: [Read, Bash, Grep]
+allowed-tools:
+  - Read
+  - Bash
+  - Grep
+  - "mcp__awslabs.cloudwatch-mcp-server__*"
+  - "mcp__awslabs.cloudwatch-applicationsignals-mcp-server__*"
+  - "mcp__awslabs.cloudtrail-mcp-server__*"
 ---
 
 # /cw-doctor

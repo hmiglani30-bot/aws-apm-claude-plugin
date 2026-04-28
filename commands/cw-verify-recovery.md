@@ -1,7 +1,13 @@
 ---
 description: Verify a service has recovered after a mitigation — checks SLO burn stopped, p99 returned to baseline, error rate normalized, traces no longer fail at the prior bad span, and alarms recovered to OK
 argument-hint: <service-name> [mitigation-time-iso]
-allowed-tools: [Read, Bash, Grep]
+allowed-tools:
+  - Read
+  - Bash
+  - Grep
+  - "mcp__awslabs.cloudwatch-mcp-server__*"
+  - "mcp__awslabs.cloudwatch-applicationsignals-mcp-server__*"
+  - "mcp__awslabs.cloudtrail-mcp-server__*"
 ---
 
 # /cw-verify-recovery
