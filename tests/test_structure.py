@@ -47,6 +47,29 @@ EXPECTED_MCP_SERVERS = {
     "awslabs.aws-documentation-mcp-server",
 }
 
+EXPECTED_ARTIFACTS = {
+    "slo-breach-explainer.html",
+    "trace-waterfall.html",
+    "service-health-card.html",
+    "top-suspected-cause.html",
+    "investigation-summary.html",
+}
+
+# Workflow skills that must include a Phase 6 cascading dependency check.
+WORKFLOW_SKILLS_WITH_PHASE_6 = {
+    "slo-breach-investigation",
+    "latency-regression",
+    "error-spike-triage",
+}
+
+# Tier 3 skills that must reference an HTML artifact template.
+SKILLS_REFERENCING_ARTIFACTS = {
+    "slo-breach-explainer": "artifacts/slo-breach-explainer.html",
+    "trace-waterfall-summary": "artifacts/trace-waterfall.html",
+    "service-health-card": "artifacts/service-health-card.html",
+    "top-suspected-cause": "artifacts/top-suspected-cause.html",
+}
+
 
 def parse_frontmatter(text: str) -> dict[str, str]:
     """Parse a markdown YAML frontmatter block. Stdlib-only, single-line values."""
@@ -179,6 +202,65 @@ class TestDocs(unittest.TestCase):
 
     def test_license_exists(self) -> None:
         self.assertTrue((ROOT / "LICENSE").exists())
+
+
+class TestArtifacts(unittest.TestCase):
+    def test_artifacts_dir_exists(self) -> None:
+        self.assertTrue((ROOT / "artifacts").is_dir(), "missing artifacts/ directory")
+
+    def test_all_expected_artifacts_present(self) -> None:
+        artifacts_dir = ROOT / "artifacts"
+        actual = {p.name for p in artifacts_dir.iterdir() if p.is_file() and p.suffix == ".html"}
+        self.assertEqual(actual, EXPECTED_ARTIFACTS)
+
+    def test_each_artifact_has_doctype_and_cloudscape_tokens(self) -> None:
+        for name in EXPECTED_ARTIFACTS:
+            with self.subTest(artifact=name):
+                text = (ROOT / "artifacts" / name).read_text()
+                self.assertIn("<!DOCTYPE html>", text, f"{name}: missing doctype")
+                # Cloudscape dark theme tokens that the prompt explicitly required.
+                for token in ("#0f1b2a", "#192534", "#539fe5"):
+                    self.assertIn(token, text, f"{name}: missing Cloudscape token {token}")
+
+    def test_each_artifact_has_placeholders_and_buttons(self) -> None:
+        for name in EXPECTED_ARTIFACTS:
+            with self.subTest(artifact=name):
+                text = (ROOT / "artifacts" / name).read_text()
+                self.assertIn("{{", text, f"{name}: no {{{{PLACEHOLDER}}}} found")
+                self.assertIn("}}", text, f"{name}: no {{{{PLACEHOLDER}}}} found")
+                self.assertIn("CloudWatch Console", text,
+                              f"{name}: missing 'Jump to CloudWatch Console' deep link")
+                self.assertIn("SAVE_ARTIFACT_BUTTON", text,
+                              f"{name}: missing Save Artifact button placeholder")
+                self.assertIn("SHARE_BUTTON", text,
+                              f"{name}: missing Share button placeholder")
+
+
+class TestSkillTemplateReferences(unittest.TestCase):
+    def test_tier3_skills_reference_html_template(self) -> None:
+        for skill, expected_ref in SKILLS_REFERENCING_ARTIFACTS.items():
+            with self.subTest(skill=skill):
+                text = (ROOT / "skills" / skill / "SKILL.md").read_text()
+                self.assertIn(expected_ref, text,
+                              f"{skill}/SKILL.md must reference {expected_ref}")
+                self.assertIn("{{PLACEHOLDERS}}", text,
+                              f"{skill}/SKILL.md must instruct populating {{{{PLACEHOLDERS}}}}")
+
+
+class TestWorkflowPhase6(unittest.TestCase):
+    def test_workflow_skills_have_phase_6(self) -> None:
+        for skill in WORKFLOW_SKILLS_WITH_PHASE_6:
+            with self.subTest(skill=skill):
+                text = (ROOT / "skills" / skill / "SKILL.md").read_text()
+                self.assertIn("Phase 6", text,
+                              f"{skill}/SKILL.md must include a Phase 6 section")
+                self.assertIn("Follow dependencies", text,
+                              f"{skill}/SKILL.md Phase 6 must be 'Follow dependencies'")
+                # Loop guard: the prompt requires depth 2 cap.
+                self.assertIn("depth 2", text,
+                              f"{skill}/SKILL.md Phase 6 must cap recursion at depth 2")
+                self.assertIn("service-health-card", text,
+                              f"{skill}/SKILL.md Phase 6 must invoke service-health-card on the dependency")
 
 
 if __name__ == "__main__":

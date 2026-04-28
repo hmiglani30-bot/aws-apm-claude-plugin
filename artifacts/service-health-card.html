@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Service Health — {{SERVICE_NAME}}</title>
+<style>
+  :root {
+    --bg-page: #0f1b2a;
+    --bg-surface: #192534;
+    --bg-surface-2: #1f2d3d;
+    --border: #2a3a4f;
+    --text-primary: #e9ebed;
+    --text-secondary: #95a5b8;
+    --link: #539fe5;
+    --link-hover: #89bdee;
+    --status-error: #ff5d64;
+    --status-warning: #ffa552;
+    --status-success: #6aaf3f;
+    --status-info: #539fe5;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: "Open Sans", "Segoe UI", -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; }
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .title-block h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .subtitle { color: var(--text-secondary); font-size: 13px; }
+  .actions { display: flex; gap: 8px; }
+  .btn {
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { border-color: var(--link); color: var(--link); }
+
+  .verdict-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .verdict-badge.healthy { background: rgba(106, 175, 63, 0.15); color: var(--status-success); border: 1px solid rgba(106, 175, 63, 0.4); }
+  .verdict-badge.degraded { background: rgba(255, 165, 82, 0.15); color: var(--status-warning); border: 1px solid rgba(255, 165, 82, 0.4); }
+  .verdict-badge.unhealthy { background: rgba(255, 93, 100, 0.15); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.4); }
+  .verdict-badge::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 8px currentColor;
+  }
+
+  .section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .section-body { padding: 16px 18px; }
+
+  .red-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .red-tile {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .red-tile .label { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .red-tile .value { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .red-tile .baseline { color: var(--text-secondary); font-size: 12px; margin-top: 4px; }
+  .red-tile .delta { font-size: 12px; font-weight: 600; margin-top: 6px; }
+  .red-tile .delta.up-bad { color: var(--status-error); }
+  .red-tile .delta.up-good { color: var(--status-success); }
+  .red-tile .delta.down-bad { color: var(--status-error); }
+  .red-tile .delta.down-good { color: var(--status-success); }
+  .red-tile .delta.neutral { color: var(--text-secondary); }
+
+  .gauge-row { display: flex; align-items: center; gap: 14px; margin-top: 8px; }
+  .gauge-bar { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .gauge-fill { height: 100%; }
+  .gauge-fill.healthy { background: var(--status-success); }
+  .gauge-fill.degraded { background: var(--status-warning); }
+  .gauge-fill.unhealthy { background: var(--status-error); }
+
+  .sparkline { height: 30px; margin-top: 8px; display: block; }
+
+  .slo-pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .slo-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    font-size: 12px;
+  }
+  .slo-pill .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .slo-pill.healthy .dot { background: var(--status-success); }
+  .slo-pill.warning .dot { background: var(--status-warning); }
+  .slo-pill.breach .dot { background: var(--status-error); }
+  .slo-pill .slo-name { font-weight: 500; color: var(--text-primary); }
+  .slo-pill .slo-meta { color: var(--text-secondary); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--text-secondary); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { padding: 10px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  td.numeric { text-align: right; font-variant-numeric: tabular-nums; }
+  .dep-status { display: inline-flex; align-items: center; gap: 6px; }
+  .dep-status .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dep-status.healthy .dot { background: var(--status-success); }
+  .dep-status.warning .dot { background: var(--status-warning); }
+  .dep-status.breach .dot { background: var(--status-error); }
+
+  .deep-links { display: flex; flex-wrap: wrap; gap: 8px; }
+  .deep-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--link);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .deep-link:hover { border-color: var(--link); }
+  .deep-link::after { content: "→"; opacity: 0.7; }
+
+  .footer-meta {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .footer-meta dl { display: grid; grid-template-columns: 180px 1fr; gap: 4px 12px; margin: 0; }
+  .footer-meta dt { color: var(--text-secondary); }
+  .footer-meta dd { margin: 0; color: var(--text-primary); font-family: "SF Mono", "Monaco", monospace; font-size: 11px; }
+  code { font-family: "SF Mono", "Monaco", monospace; background: var(--bg-surface-2); padding: 1px 6px; border-radius: 3px; font-size: 12px; }
+  .empty-line { color: var(--text-secondary); font-style: italic; font-size: 13px; padding: 6px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="title-block">
+      <h1>
+        🟢 Service Health — <code>{{SERVICE_NAME}}</code>
+        <span class="verdict-badge {{VERDICT_CLASS}}">{{VERDICT}}</span>
+      </h1>
+      <div class="subtitle">
+        Region <code>{{AWS_REGION}}</code> · Environment <code>{{ENVIRONMENT}}</code> · Generated {{GENERATED_AT}}
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn">{{SAVE_ARTIFACT_BUTTON}}</button>
+      <button class="btn">{{SHARE_BUTTON}}</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">RED metrics <span style="color: var(--text-secondary); font-weight: 400; font-size: 12px;">last 5 min vs same window 24h ago</span></div>
+    <div class="section-body">
+      <div class="red-grid">
+
+        <div class="red-tile">
+          <div class="label">Request rate</div>
+          <div class="value">{{REQUEST_RATE_NOW}} <span style="font-size: 13px; color: var(--text-secondary); font-weight: 400;">req/s</span></div>
+          <svg class="sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+            <polyline fill="none" stroke="#539fe5" stroke-width="1.5" points="{{REQUEST_RATE_SPARKLINE}}" />
+          </svg>
+          <div class="baseline">24h ago: {{REQUEST_RATE_BASELINE}} req/s</div>
+          <div class="delta {{REQUEST_RATE_DELTA_CLASS}}">{{REQUEST_RATE_DELTA}}</div>
+        </div>
+
+        <div class="red-tile">
+          <div class="label">Error rate</div>
+          <div class="value">{{ERROR_RATE_NOW}} <span style="font-size: 13px; color: var(--text-secondary); font-weight: 400;">%</span></div>
+          <div class="gauge-row">
+            <div class="gauge-bar"><div class="gauge-fill {{ERROR_GAUGE_CLASS}}" style="width: {{ERROR_GAUGE_PCT}}%"></div></div>
+          </div>
+          <div class="baseline">24h ago: {{ERROR_RATE_BASELINE}}%</div>
+          <div class="delta {{ERROR_RATE_DELTA_CLASS}}">{{ERROR_RATE_DELTA}}</div>
+        </div>
+
+        <div class="red-tile">
+          <div class="label">Latency p99</div>
+          <div class="value">{{P99_NOW}} <span style="font-size: 13px; color: var(--text-secondary); font-weight: 400;">ms</span></div>
+          <svg class="sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+            <polyline fill="none" stroke="#ff8a65" stroke-width="1.5" points="{{P99_SPARKLINE}}" />
+          </svg>
+          <div class="baseline">p50 {{P50_NOW}}ms · p90 {{P90_NOW}}ms · 24h p99 {{P99_BASELINE}}ms</div>
+          <div class="delta {{P99_DELTA_CLASS}}">{{P99_DELTA}}</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">SLO status</div>
+    <div class="section-body">
+      <div class="slo-pill-row">
+        {{SLO_PILLS_OR_EMPTY}}
+        <!-- Either:
+        <div class="slo-pill healthy"><span class="dot"></span><span class="slo-name">{{SLO_NAME}}</span><span class="slo-meta">{{TARGET}}% / {{CURRENT}}% · {{BUDGET}}% budget</span></div>
+        ...or, if no SLOs: <div class="empty-line">No SLOs configured for this service. Recommend defining availability + latency SLOs via Application Signals.</div>
+        -->
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Top dependencies</div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Dependency</th>
+            <th class="numeric">Calls/min</th>
+            <th class="numeric">p99</th>
+            <th class="numeric">Errors</th>
+            <th>Health</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{DEPENDENCY_ROWS}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Recent changes <span style="color: var(--text-secondary); font-weight: 400; font-size: 12px;">CloudTrail, last 24h on this service</span></div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Event</th>
+            <th>Resource</th>
+            <th>Principal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{RECENT_CHANGES_ROWS_OR_NONE}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Open in CloudWatch</div>
+    <div class="section-body">
+      <div class="deep-links">
+        <a class="deep-link" href="{{LINK_SERVICE_DETAIL}}">Jump to service detail in CloudWatch Console</a>
+        <a class="deep-link" href="{{LINK_SERVICE_MAP}}">Service map</a>
+        <a class="deep-link" href="{{LINK_SLO_LIST}}">SLO list</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-meta">
+    <dl>
+      <dt>Source</dt><dd>{{SOURCE_MCP_SERVERS}}</dd>
+      <dt>Time range</dt><dd>last 5 min (current) vs same window 24h ago</dd>
+      <dt>MCP tools called</dt><dd>{{MCP_TOOLS_LIST}}</dd>
+      <dt>Confidence</dt><dd>{{CONFIDENCE}}</dd>
+    </dl>
+  </div>
+
+</div>
+</body>
+</html>

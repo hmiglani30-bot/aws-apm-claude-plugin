@@ -88,6 +88,41 @@ gantt
 - **Code column** is empty when Application Signals doesn't provide span-to-code (e.g.
   manual instrumentation, unsupported runtime). Do not fabricate.
 
+## HTML artifact template
+
+For Cowork (or any surface that renders HTML artifacts), use the artifact template at
+`artifacts/trace-waterfall.html` and populate the `{{PLACEHOLDERS}}` with actual data.
+The template renders an SVG-free CSS waterfall with service-colored span bars,
+self-time annotations, error highlighting, and a critical-path mark — do not redesign it
+per trace.
+
+Placeholder reference (non-exhaustive — open the file for the full list):
+
+- `{{TRACE_ID_SHORT}}`, `{{ENTRY_SERVICE}}`, `{{ENTRY_OPERATION}}`, `{{TRACE_TIMESTAMP}}`,
+  `{{AWS_REGION}}`
+- `{{TOTAL_DURATION_MS}}`, `{{TRACE_STATUS}}` (`ok` or `error`),
+  `{{STATUS_PILL_CLASS}}` (`ok` / `error`)
+- `{{SPANS_CAPTURED}}`, `{{SPANS_TOTAL}}`, `{{SPANS_CAPTURED_PCT}}`, `{{CRITICAL_PATH_PCT}}`
+- `{{SERVICE_LEGEND_1..4}}` — service name → `svc-N` color
+- `{{WATERFALL_SPAN_ROWS}}` — emit two grid cells per span. Set:
+  - `depth-N` class on `.span-meta` to indent by call depth (0–4)
+  - `svc-N` class on `.span-bar` to color-match the service in the legend
+  - inline `left: <START_PCT>%; width: <WIDTH_PCT>%` on `.span-bar`
+  - inline `left: <SELF_OFFSET_PCT>%; width: <SELF_WIDTH_PCT>%` on `.self-time` overlay
+  - add `.error` class to error spans, `.critical` to spans on the critical path
+- `{{TOP_SPANS_ROWS}}` — top-3 by self-time, with `<code>class.method</code>` in the
+  Code column when Application Signals provides span-to-code, empty otherwise
+- `{{DEPENDENCY_ROWS}}` — sum self-time per service tier (db / api / queue)
+- `{{ERROR_ROWS_OR_NONE}}` — `<tr><td>span</td><td>class</td><td>msg</td></tr>` rows,
+  or one `<tr><td colspan="3">No errors in this trace.</td></tr>`
+- Deep-link placeholders: `{{LINK_FULL_TRACE}}`, `{{LINK_SERVICE_MAP}}`,
+  `{{LINK_LOGS_FOR_REQUEST}}` — generated via `open-in-cloudwatch`
+- `{{SAVE_ARTIFACT_BUTTON}}`, `{{SHARE_BUTTON}}` — short labels
+- Footer: `{{SOURCE_MCP_SERVERS}}`, `{{MCP_TOOLS_LIST}}`, `{{ATTRIBUTION_CONFIDENCE}}`
+
+In **Claude Code** (terminal), use the Markdown / Mermaid form above. The HTML template
+is for surfaces that can render it.
+
 ## What this is NOT
 
 - Not a flame graph — a flame graph is denser and harder to scan in 3am light.

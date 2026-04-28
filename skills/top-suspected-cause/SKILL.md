@@ -89,3 +89,40 @@ confidence requires ≥2 independent sources (metric + trace, deploy + log patte
 - ❌ Recommending a write action ("create alarm to watch this") in Next Step without
   routing through a confirmation gate.
 - ❌ Ranking purely by user-impact when confidence varies — confidence dominates.
+
+## HTML artifact template
+
+For Cowork (or any surface that renders HTML artifacts), use the artifact template at
+`artifacts/top-suspected-cause.html` and populate the `{{PLACEHOLDERS}}` with actual
+data. The template encodes the ranked-hypothesis cards (with confidence badges,
+iconized evidence, why-this-confidence callout, falsifiable next step) and the
+"Considered and ruled out" section — do not redesign it.
+
+Placeholder reference (non-exhaustive):
+
+- `{{INVESTIGATION_TITLE}}`, `{{INVESTIGATION_WINDOW}}`, `{{AWS_REGION}}`
+- Per hypothesis (1..N, repeat for 2–4 hypotheses):
+  - `{{HYP1_CLAIM}}`, `{{HYP1_ELABORATION}}` (one-line italic elaboration)
+  - `{{HYP1_CONFIDENCE}}` (`HIGH` / `MEDIUM` / `LOW`) + `{{HYP1_CONFIDENCE_CLASS}}`
+    (`high` / `medium` / `low`)
+  - `{{HYP1_EVIDENCE_CARDS}}` — emit one `<div class="evidence-card">…</div>` per
+    evidence item. Use the iconized kinds:
+    - 📈 Metric · 📜 Log · 🧵 Trace · 🛠️ CloudTrail
+    Each card has `{{EVIDENCE_KIND}}`, `{{EVIDENCE_TEXT}}`, `{{EVIDENCE_CITATION}}`
+    (a metric ID, log group / queryId, trace ID, or CloudTrail event ID).
+  - `{{HYP1_WHY_CONFIDENCE}}` — one sentence explaining the floor and ceiling
+  - `{{HYP1_NEXT_STEP_TEXT}}` — describe the read-only verification
+  - `{{HYP1_NEXT_STEP_QUERY}}` — the exact Logs Insights / metric-math / CLI command
+  - `{{HYP1_NEXT_STEP_LINK}}` — deep link via `open-in-cloudwatch`
+- `{{HYP3_BLOCK_OPTIONAL}}` / `{{HYP4_BLOCK_OPTIONAL}}` — emit a full `<div class="hypothesis">…</div>`
+  block when present, leave empty otherwise
+- `{{RULED_OUT_ITEMS}}` — `<li>{{CLAIM}} — ruled out because {{EVIDENCE}}</li>` rows;
+  always include this section even when empty (one `<li>None — all hypotheses
+  retained.</li>`)
+- `{{SAVE_ARTIFACT_BUTTON}}`, `{{SHARE_BUTTON}}` — short labels
+- Footer: `{{SOURCE_MCP_SERVERS}}`, `{{TIME_RANGE_START}}`, `{{TIME_RANGE_END}}`,
+  `{{MCP_TOOLS_LIST}}`, `{{HYP_TOTAL_CONSIDERED}}`, `{{HYP_RANKED_COUNT}}`,
+  `{{HYP_RULED_OUT_COUNT}}`
+
+In **Claude Code** (terminal), use the Markdown form above. Both must contain identical
+data — only the rendering differs.

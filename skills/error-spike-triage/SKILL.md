@@ -100,12 +100,41 @@ Common root causes ranked by base rate:
 5. **Bad input from a single caller** — 4xx storm from one IP / userId. Less common but
    visible in logs by `requestId` / `principalId`.
 
+### Phase 6 — Follow dependencies (cascading health check)
+
+If Phase 5's top hypothesis is **downstream dependency failing** — or the failed traces
+in Phase 3 consistently fail at a downstream span — follow the chain one hop:
+
+1. **Pick the implicated downstream service.** Use the dependency named in the top
+   hypothesis or the downstream span where the exception was thrown. Pick at most one.
+2. **Run a service health snapshot on it.** Invoke the `service-health-card` skill on
+   the dependency, scoped to the spike window.
+3. **Include the result in the final summary.** Add a "Downstream dependency health"
+   section to the Service Health Card / Top Suspected Cause output, showing the
+   dependency's RED-metric verdict and any of its own SLOs in Warning / Breach. If the
+   dependency's error rate has also spiked or any of its SLOs is breaching, escalate the
+   "downstream dependency failing" hypothesis to High confidence and note that the
+   spike most likely originated upstream of this service.
+4. **Cap the chain at depth 2.** If the dependency's health card implicates *its*
+   dependency, you may follow one more hop (depth 2) — but stop there. Note "Further
+   dependencies not auto-followed" in the summary. Never follow a third hop. This is
+   the loop guard.
+5. **Skip the cascade entirely** if:
+   - Top hypothesis is a bad deploy on this service, a credential rotation, or a
+     bad-input pattern (no downstream component implicated)
+   - The implicated dependency is outside the user's account (3rd-party API)
+   - The spike is purely 4xx with no downstream involvement
+
 ## Final artifact
 
 End with **Service Health Card** + **Top Suspected Cause**. Include deep links to:
 - Logs Insights query that surfaced the patterns
 - Application Signals operation view
 - The specific traces sampled
+
+For a full postmortem-style writeup (timeline + root cause + impact + remediation),
+use the artifact template at `artifacts/investigation-summary.html` and populate the
+`{{PLACEHOLDERS}}` with actual data — see that file for the full placeholder list.
 
 ## What this skill does NOT do
 
