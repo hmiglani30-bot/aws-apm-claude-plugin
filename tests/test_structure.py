@@ -29,12 +29,15 @@ EXPECTED_SKILLS = {
     "top-suspected-cause",
     "open-in-cloudwatch",
     "aws-apm-setup",
+    "investigation-validator",
+    "incident-memory",
 }
 
 EXPECTED_COMMANDS = {
     "cw-investigate-slo.md",
     "cw-investigate-latency.md",
     "cw-investigate-errors.md",
+    "cw-health-check.md",
 }
 
 EXPECTED_MCP_SERVERS = {
