@@ -23,6 +23,8 @@ EXPECTED_SKILLS = {
     "slo-breach-investigation",
     "latency-regression",
     "error-spike-triage",
+    "alarm-response",
+    "slo-compliance-report",
     "slo-breach-explainer",
     "trace-waterfall-summary",
     "service-health-card",
@@ -38,6 +40,8 @@ EXPECTED_COMMANDS = {
     "cw-investigate-latency.md",
     "cw-investigate-errors.md",
     "cw-health-check.md",
+    "cw-alarm-response.md",
+    "cw-slo-report.md",
 }
 
 EXPECTED_MCP_SERVERS = {
