@@ -117,8 +117,27 @@ Placeholder reference (non-exhaustive — open the file for the full list):
   or one `<tr><td colspan="3">No errors in this trace.</td></tr>`
 - Deep-link placeholders: `{{LINK_FULL_TRACE}}`, `{{LINK_SERVICE_MAP}}`,
   `{{LINK_LOGS_FOR_REQUEST}}` — generated via `open-in-cloudwatch`
-- `{{SAVE_ARTIFACT_BUTTON}}`, `{{SHARE_BUTTON}}` — short labels
-- Footer: `{{SOURCE_MCP_SERVERS}}`, `{{MCP_TOOLS_LIST}}`, `{{ATTRIBUTION_CONFIDENCE}}`
+- Hero placeholders: `{{SEVERITY_ICON}}`, `{{HERO_VERDICT_LINE}}`,
+  `{{HERO_TIME_HOG}}`, `{{HERO_CONFIDENCE}}`, `{{HERO_CONFIDENCE_CLASS}}`,
+  `{{HERO_NEXT_ACTION}}` — populate from "where the time went" + status.
+- `{{DATA_UNAVAILABLE_BANNER}}` — emit when only a subset of spans was
+  retrieved or X-Ray sampled out; otherwise empty string. Cap attribution
+  confidence at Medium when the banner is present.
+- `{{CMD_SUGGESTIONS}}` — verdict-driven follow-on commands: e.g.
+  `/cw-investigate-latency <entry-service>` for slow traces,
+  `/cw-investigate-errors <entry-service>` for status=error traces.
+- `{{SAVE_ARTIFACT_BUTTON}}`, `{{SHARE_BUTTON}}` — short labels. Same UX10
+  contract as the other artifacts (Cowork pin/share host APIs; Claude Code
+  inert because the file is on disk).
+- Deep-link placeholders are grouped into "Verify · Investigate" vs
+  "Act · Configure · Share" (UX5). The persistent footer at the bottom of
+  the page repeats the highest-value links (UX12).
+- Empty states (UX11): no errors → "No errors in this trace.";
+  single-service trace → "All time spent in `<entry-service>`."; partial
+  spans → set the data-unavailable banner.
+- Footer: `{{SOURCE_MCP_SERVERS}}`, `{{MCP_TOOLS_LIST}}`,
+  `{{ATTRIBUTION_CONFIDENCE}}`, `{{VALIDATION_RESULT}}` (Pass / Fail
+  summary from `investigation-validator`).
 
 In **Claude Code** (terminal), use the Markdown / Mermaid form above. The HTML template
 is for surfaces that can render it.

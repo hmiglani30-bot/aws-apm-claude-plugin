@@ -1,4 +1,34 @@
 <!DOCTYPE html>
+<!--
+  ARTIFACT SCHEMA — trace-waterfall
+  Surface: Cowork (HTML), Claude Code (Markdown / Mermaid twin in SKILL.md). Identical data.
+  Ownership: skills/trace-waterfall-summary/SKILL.md is the source of truth for population.
+
+  Required fields:
+    TRACE_ID_SHORT, ENTRY_SERVICE, ENTRY_OPERATION, TRACE_TIMESTAMP, AWS_REGION,
+    TOTAL_DURATION_MS, TRACE_STATUS (ok|error), STATUS_PILL_CLASS,
+    SEVERITY_ICON ("⏱️"|"🔴"|"🟠"|"🟢"),
+    HERO_VERDICT_LINE (one sentence — "Where did the time go?"),
+    HERO_TIME_HOG (one sentence — top contributor span/service),
+    HERO_CONFIDENCE + HERO_CONFIDENCE_CLASS,
+    HERO_NEXT_ACTION,
+    SPANS_CAPTURED, SPANS_TOTAL, SPANS_CAPTURED_PCT, CRITICAL_PATH_PCT,
+    SERVICE_LEGEND_1..4,
+    WATERFALL_SPAN_ROWS, TOP_SPANS_ROWS, DEPENDENCY_ROWS, ERROR_ROWS_OR_NONE,
+    LINK_FULL_TRACE, LINK_SERVICE_MAP, LINK_LOGS_FOR_REQUEST, LINK_SERVICE_DETAIL,
+    SOURCE_MCP_SERVERS, MCP_TOOLS_LIST, ATTRIBUTION_CONFIDENCE.
+
+  Optional fields:
+    DATA_UNAVAILABLE_BANNER — when only a subset of spans was retrieved or X-Ray sampled out.
+    CMD_SUGGESTIONS — follow-on slash commands.
+
+  Empty-state contract (UX11):
+    - No errors in trace: render "No errors in this trace." in the Errors table.
+    - No downstream dependencies: render "Single-service trace — all time spent in {{ENTRY_SERVICE}}."
+    - Subset of spans captured: surface SPANS_CAPTURED / SPANS_TOTAL with a banner if <80%.
+
+  Buttons (UX10): SAVE_ARTIFACT_BUTTON / SHARE_BUTTON. Same contract as other artifacts.
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -39,13 +69,13 @@
     font-size: 14px;
     line-height: 1.5;
   }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 24px 96px 24px; }
   .header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
   }
   .title-block h1 {
     font-size: 22px;
@@ -68,11 +98,73 @@
     gap: 6px;
   }
   .btn:hover { border-color: var(--link); color: var(--link); }
+  .btn-primary { background: var(--link); border-color: var(--link); color: #0f1b2a; font-weight: 600; }
+  .btn-primary:hover { background: var(--link-hover); color: #0f1b2a; }
+
+  /* Hero. */
+  .hero {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-left: 6px solid var(--status-info);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+  }
+  .hero.error { border-left-color: var(--status-error); }
+  .hero.slow { border-left-color: var(--status-warning); }
+  .hero.ok { border-left-color: var(--status-success); }
+  .hero-verdict { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+  .hero-icon { font-size: 30px; line-height: 1; flex-shrink: 0; }
+  .hero-verdict-text { font-size: 18px; font-weight: 600; line-height: 1.35; }
+  .hero-meta-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .hero-meta-item { display: inline-flex; align-items: baseline; gap: 6px; font-size: 13px; }
+  .hero-meta-item .lbl { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .hero-meta-item .val { color: var(--text-primary); font-weight: 600; }
+
+  .confidence-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .confidence-badge.high { background: rgba(255, 93, 100, 0.18); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.5); }
+  .confidence-badge.medium { background: rgba(255, 165, 82, 0.18); color: var(--status-warning); border: 1px solid rgba(255, 165, 82, 0.5); }
+  .confidence-badge.low { background: rgba(149, 165, 184, 0.15); color: var(--text-secondary); border: 1px solid rgba(149, 165, 184, 0.3); }
+
+  .hero-action {
+    background: rgba(83, 159, 229, 0.08);
+    border: 1px solid rgba(83, 159, 229, 0.25);
+    border-radius: 6px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .hero-action-text { font-size: 14px; font-weight: 500; }
+  .hero-action-text .lbl { color: var(--link); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 8px; font-weight: 700; }
+
+  .data-unavailable {
+    background: rgba(255, 165, 82, 0.08);
+    border: 1px solid rgba(255, 165, 82, 0.4);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+  .data-unavailable .lbl { color: var(--status-warning); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-right: 8px; }
+
   .grid-summary {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
   .card {
     background: var(--bg-surface);
@@ -110,9 +202,7 @@
     grid-template-columns: 280px 1fr;
     gap: 0;
   }
-  .span-row {
-    display: contents;
-  }
+  .span-row { display: contents; }
   .span-meta {
     padding: 8px 12px;
     border-bottom: 1px solid var(--border);
@@ -176,13 +266,19 @@
   td.numeric { text-align: right; font-variant-numeric: tabular-nums; }
   td.error-cell { color: var(--status-error); }
 
-  .deep-links { display: flex; flex-wrap: wrap; gap: 8px; }
+  .deep-link-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .deep-link-groups { grid-template-columns: 1fr; } }
+  .deep-link-group { background: var(--bg-surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+  .deep-link-group .group-label { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 700; }
+  .deep-link-group .group-label.investigate { color: var(--link); }
+  .deep-link-group .group-label.act { color: var(--status-warning); }
+  .deep-links { display: flex; flex-direction: column; gap: 6px; }
   .deep-link {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 12px;
-    background: var(--bg-surface-2);
+    padding: 6px 10px;
+    background: var(--bg-page);
     border: 1px solid var(--border);
     border-radius: 4px;
     color: var(--link);
@@ -191,6 +287,19 @@
   }
   .deep-link:hover { border-color: var(--link); }
   .deep-link::after { content: "→"; opacity: 0.7; }
+
+  .cmd-list { display: flex; flex-direction: column; gap: 8px; }
+  .cmd-suggestion {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .cmd-suggestion code { color: var(--link); font-size: 13px; font-weight: 600; background: var(--bg-page); padding: 4px 8px; border-radius: 4px; align-self: flex-start; }
+  .cmd-suggestion .why { color: var(--text-secondary); font-size: 12px; }
 
   .footer-meta {
     margin-top: 24px;
@@ -216,6 +325,23 @@
   }
   .status-pill.error { background: rgba(255, 93, 100, 0.15); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.4); }
   .status-pill.ok { background: rgba(106, 175, 63, 0.15); color: var(--status-success); border: 1px solid rgba(106, 175, 63, 0.4); }
+
+  .persistent-footer {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: rgba(15, 27, 42, 0.96);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(6px);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    z-index: 50;
+  }
+  .persistent-footer .pf-label { color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+  .persistent-footer .pf-links { display: flex; gap: 8px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
@@ -223,14 +349,35 @@
 
   <div class="header">
     <div class="title-block">
-      <h1>⏱️ Trace Waterfall — <code>{{TRACE_ID_SHORT}}</code></h1>
+      <h1>{{SEVERITY_ICON}} Trace Waterfall — <code>{{TRACE_ID_SHORT}}</code> <span class="status-pill {{STATUS_PILL_CLASS}}">{{TRACE_STATUS}}</span></h1>
       <div class="subtitle">
         Entry <code>{{ENTRY_SERVICE}}.{{ENTRY_OPERATION}}</code> · {{TRACE_TIMESTAMP}} · Region <code>{{AWS_REGION}}</code>
       </div>
     </div>
     <div class="actions">
+      <!-- SAVE_ARTIFACT_BUTTON: future Cowork pin action; inert in Claude Code. -->
       <button class="btn">{{SAVE_ARTIFACT_BUTTON}}</button>
+      <!-- SHARE_BUTTON: future Cowork share-link action; inert in Claude Code. -->
       <button class="btn">{{SHARE_BUTTON}}</button>
+    </div>
+  </div>
+
+  {{DATA_UNAVAILABLE_BANNER}}
+
+  <div class="hero {{TRACE_STATUS}}">
+    <div class="hero-verdict">
+      <div class="hero-icon">{{SEVERITY_ICON}}</div>
+      <div class="hero-verdict-text">{{HERO_VERDICT_LINE}}</div>
+    </div>
+    <div class="hero-meta-row">
+      <div class="hero-meta-item"><span class="lbl">Time hog</span><span class="val">{{HERO_TIME_HOG}}</span></div>
+      <div class="hero-meta-item"><span class="lbl">Total</span><span class="val">{{TOTAL_DURATION_MS}} ms</span></div>
+      <div class="hero-meta-item"><span class="lbl">Critical path</span><span class="val">{{CRITICAL_PATH_PCT}}%</span></div>
+      <span class="confidence-badge {{HERO_CONFIDENCE_CLASS}}">{{HERO_CONFIDENCE}} confidence</span>
+    </div>
+    <div class="hero-action">
+      <div class="hero-action-text"><span class="lbl">Recommended next action</span>{{HERO_NEXT_ACTION}}</div>
+      <a class="btn btn-primary" href="{{LINK_FULL_TRACE}}">Open full trace in CloudWatch Console →</a>
     </div>
   </div>
 
@@ -317,6 +464,7 @@
         </thead>
         <tbody>
           {{DEPENDENCY_ROWS}}
+          <!-- Empty state: <tr><td colspan="4">Single-service trace — all time spent in {{ENTRY_SERVICE}}.</td></tr> -->
         </tbody>
       </table>
     </div>
@@ -335,6 +483,7 @@
         </thead>
         <tbody>
           {{ERROR_ROWS_OR_NONE}}
+          <!-- Empty state: <tr><td colspan="3">No errors in this trace.</td></tr> -->
         </tbody>
       </table>
     </div>
@@ -343,10 +492,36 @@
   <div class="section">
     <div class="section-header">Open in CloudWatch</div>
     <div class="section-body">
-      <div class="deep-links">
-        <a class="deep-link" href="{{LINK_FULL_TRACE}}">Jump to full trace in CloudWatch Console</a>
-        <a class="deep-link" href="{{LINK_SERVICE_MAP}}">Service map at trace time</a>
-        <a class="deep-link" href="{{LINK_LOGS_FOR_REQUEST}}">Logs for this requestId</a>
+      <div class="deep-link-groups">
+        <div class="deep-link-group">
+          <div class="group-label investigate">Verify · Investigate</div>
+          <div class="deep-links">
+            <a class="deep-link" href="{{LINK_FULL_TRACE}}">Full trace in CloudWatch Console</a>
+            <a class="deep-link" href="{{LINK_SERVICE_MAP}}">Service map at trace time</a>
+            <a class="deep-link" href="{{LINK_LOGS_FOR_REQUEST}}">Logs for this requestId</a>
+          </div>
+        </div>
+        <div class="deep-link-group">
+          <div class="group-label act">Act · Configure · Share</div>
+          <div class="deep-links">
+            <a class="deep-link" href="{{LINK_SERVICE_DETAIL}}">Service detail in Application Signals</a>
+            <a class="deep-link" href="{{LINK_OPERATION_DETAIL}}">Operation detail</a>
+            <a class="deep-link" href="{{LINK_ALARMS}}">Alarms on this service</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Suggested next commands</div>
+    <div class="section-body">
+      <div class="cmd-list">
+        {{CMD_SUGGESTIONS}}
+        <!-- Examples:
+        /cw-investigate-latency {{ENTRY_SERVICE}} — drill into the regression behind this slow trace.
+        /cw-investigate-errors {{ENTRY_SERVICE}} — if status=error, triage the exception cluster.
+        -->
       </div>
     </div>
   </div>
@@ -358,9 +533,20 @@
       <dt>MCP tools called</dt><dd>{{MCP_TOOLS_LIST}}</dd>
       <dt>Spans captured</dt><dd>{{SPANS_CAPTURED}}/{{SPANS_TOTAL}} ({{SPANS_CAPTURED_PCT}}%)</dd>
       <dt>Confidence in attribution</dt><dd>{{ATTRIBUTION_CONFIDENCE}}</dd>
+      <dt>Self-validation</dt><dd>{{VALIDATION_RESULT}}</dd>
     </dl>
   </div>
 
 </div>
+
+<div class="persistent-footer">
+  <span class="pf-label">Open in CloudWatch</span>
+  <div class="pf-links">
+    <a class="deep-link" href="{{LINK_FULL_TRACE}}">Full trace</a>
+    <a class="deep-link" href="{{LINK_SERVICE_MAP}}">Service map</a>
+    <a class="deep-link" href="{{LINK_LOGS_FOR_REQUEST}}">Logs</a>
+  </div>
+</div>
+
 </body>
 </html>

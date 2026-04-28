@@ -165,6 +165,41 @@ For a full postmortem-style writeup (timeline + root cause + impact + remediatio
 use the artifact template at `artifacts/investigation-summary.html` and populate the
 `{{PLACEHOLDERS}}` with actual data — see that file for the full placeholder list.
 
+## Empty states and data unavailability
+
+Surface missing data; do not hide it.
+
+**Empty states (UX11)** — render a short, helpful message with a suggested
+next action:
+
+- **No services found / wrong region** → "No Application Signals services
+  in `<region>`. Confirm region or run `aws-apm-setup`."
+- **No errors in the window** → "Error rate is at baseline; no spike
+  detected. If user pasted an alarm name, confirm the alarm fired in this
+  region/account. Otherwise widen the window or pivot to
+  `latency-regression`."
+- **No log group resolvable for the service** → "No log group found for
+  `<service>`. Logs Insights pattern detection skipped; continue with
+  trace + metric evidence."
+- **No traces with status=error** → "No failed traces in window — errors
+  may be returning at the edge before instrumented spans, or X-Ray
+  sampled them out. Surface this gap in the artifact."
+- **Multiple ambiguous services match** → "Multiple matches for `<name>`:
+  <list>. Ask the user which one."
+
+**Data unavailability (UX8)** — surface failures in the artifact's
+data-unavailable banner. Examples:
+
+> **Data unavailable** — Logs Insights query timed out after 30s. Pattern
+> detection skipped for the worst operation; falling back to top-level
+> error counts only. Confidence capped at Medium.
+
+> **Data unavailable** — CloudTrail Lake unreachable: AccessDenied.
+> Change correlation skipped. Confidence capped at Medium.
+
+The rule: a missing source caps confidence at Medium. State the cap in
+the confidence justification per `investigation-validator`.
+
 ## What this skill does NOT do
 
 - Does not handle latency-only regressions — use `latency-regression`.

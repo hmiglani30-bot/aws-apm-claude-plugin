@@ -132,6 +132,36 @@ For every confidence claim in the artifact:
 Fail if any High-confidence hypothesis is backed by a single source. Either
 downgrade to Medium or surface the second source explicitly.
 
+#### Plain-English confidence explanation
+
+Every confidence claim must be expressed in a way the on-call can audit in one
+read. The pattern is:
+
+> **Confidence: <Low | Medium | High>** because <what we have> + but / and
+> <what we are missing or what reinforces it>.
+
+Worked examples — copy the shape, not the words:
+
+- **High confidence** because we have a metric anomaly (5XXError 4.2% vs 0.3%
+  baseline) **and** a matching trace exception (`NullPointerException` in
+  `CheckoutService.processOrder`) **and** a correlated CloudTrail deploy at
+  14:18 UTC, three minutes before the spike.
+- **Medium confidence** because we have a metric + trace alignment, **but** no
+  CloudTrail event in the window — could be a non-deploy-driven cause we have
+  not yet ruled out.
+- **Medium confidence** because we have a metric anomaly + log pattern, **but**
+  the log pattern was not previously baselined for this service, so we cannot
+  rule out that it is endemic.
+- **Low confidence** because we have only a metric anomaly. No trace, no log
+  pattern, no deploy correlated. Ranked as a hypothesis only because no other
+  signal explains the data.
+- **Medium (capped)** because CloudTrail Lake was unavailable (AccessDenied),
+  so change correlation could not run. Confidence cannot exceed Medium without
+  the missing source. State this in the data-unavailable banner.
+
+If a confidence cannot be justified in this shape, it is not a confidence —
+it is a guess. Downgrade and re-write.
+
 ## How to apply the checklist
 
 Render the checklist results inline as a self-audit block (collapsed by

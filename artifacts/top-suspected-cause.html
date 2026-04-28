@@ -1,4 +1,39 @@
 <!DOCTYPE html>
+<!--
+  ARTIFACT SCHEMA — top-suspected-cause
+  Surface: Cowork (HTML), Claude Code (Markdown twin in SKILL.md). Identical data.
+  Ownership: skills/top-suspected-cause/SKILL.md is the source of truth for population.
+
+  Required fields:
+    INVESTIGATION_TITLE, INVESTIGATION_WINDOW, AWS_REGION,
+    SEVERITY (sev1|sev2|sev3) + SEVERITY_ICON,
+    HERO_VERDICT_LINE (one-line summary),
+    HERO_TOP_CLAIM (the #1 hypothesis claim),
+    HERO_CONFIDENCE (Low|Medium|High) + HERO_CONFIDENCE_CLASS,
+    HERO_NEXT_ACTION,
+    HYP{1..4}_CLAIM, _ELABORATION, _CONFIDENCE, _CONFIDENCE_CLASS,
+    HYP{1..4}_EVIDENCE_CARDS (rendered as evidence-card divs — see schema below),
+    HYP{1..4}_WHY_CONFIDENCE, HYP{1..4}_NEXT_STEP_TEXT, _QUERY, _LINK,
+    HYP3_BLOCK_OPTIONAL, HYP4_BLOCK_OPTIONAL,
+    RULED_OUT_ITEMS (always present; "None — all retained" if empty),
+    SOURCE_MCP_SERVERS, TIME_RANGE_START, TIME_RANGE_END, MCP_TOOLS_LIST,
+    HYP_TOTAL_CONSIDERED, HYP_RANKED_COUNT, HYP_RULED_OUT_COUNT.
+
+  Evidence card schema (one of: metric | trace | log | deploy | dependency):
+    Each card has:
+      - kind icon (📈 Metric | 🧵 Trace | 📜 Log | 🛠️ Deploy/CloudTrail | 🔗 Dependency)
+      - kind label
+      - source (which MCP server / dashboard provided this)
+      - timestamp (ISO UTC)
+      - value (the actual observation: metric+number, trace ID + span, log pattern + count, event name + principal)
+      - link (deep link to the evidence in CloudWatch / X-Ray / CloudTrail)
+
+  Optional fields: DATA_UNAVAILABLE_BANNER, CMD_SUGGESTIONS.
+
+  Buttons (UX10): SAVE_ARTIFACT_BUTTON / SHARE_BUTTON. Cowork wires to host pin/share APIs;
+    Claude Code renders as inert labels (file is on disk; user copies path manually).
+    Both surfaces: render visually, no client-side JS handler required.
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -28,13 +63,13 @@
     font-size: 14px;
     line-height: 1.5;
   }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 24px 96px 24px; }
   .header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
   }
   .title-block h1 {
     font-size: 22px;
@@ -57,6 +92,83 @@
     gap: 6px;
   }
   .btn:hover { border-color: var(--link); color: var(--link); }
+  .btn-primary { background: var(--link); border-color: var(--link); color: #0f1b2a; font-weight: 600; }
+  .btn-primary:hover { background: var(--link-hover); color: #0f1b2a; }
+
+  .severity-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .severity-pill.sev1 { background: rgba(255, 93, 100, 0.18); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.5); }
+  .severity-pill.sev2 { background: rgba(255, 165, 82, 0.18); color: var(--status-warning); border: 1px solid rgba(255, 165, 82, 0.5); }
+  .severity-pill.sev3 { background: rgba(83, 159, 229, 0.18); color: var(--link); border: 1px solid rgba(83, 159, 229, 0.5); }
+
+  /* Hero — verdict, top claim, confidence, next action. */
+  .hero {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-left: 6px solid var(--status-error);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+  }
+  .hero.sev1 { border-left-color: var(--status-error); }
+  .hero.sev2 { border-left-color: var(--status-warning); }
+  .hero.sev3 { border-left-color: var(--link); }
+  .hero-verdict { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+  .hero-icon { font-size: 30px; line-height: 1; flex-shrink: 0; }
+  .hero-verdict-text { font-size: 18px; font-weight: 600; line-height: 1.35; }
+  .hero-meta-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .hero-meta-item { display: inline-flex; align-items: baseline; gap: 6px; font-size: 13px; }
+  .hero-meta-item .lbl { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .hero-meta-item .val { color: var(--text-primary); font-weight: 600; }
+
+  .confidence-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .confidence-badge.high { background: rgba(255, 93, 100, 0.18); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.5); }
+  .confidence-badge.medium { background: rgba(255, 165, 82, 0.18); color: var(--status-warning); border: 1px solid rgba(255, 165, 82, 0.5); }
+  .confidence-badge.low { background: rgba(149, 165, 184, 0.15); color: var(--text-secondary); border: 1px solid rgba(149, 165, 184, 0.3); }
+
+  .hero-action {
+    background: rgba(83, 159, 229, 0.08);
+    border: 1px solid rgba(83, 159, 229, 0.25);
+    border-radius: 6px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .hero-action-text { font-size: 14px; font-weight: 500; }
+  .hero-action-text .lbl { color: var(--link); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 8px; font-weight: 700; }
+
+  .data-unavailable {
+    background: rgba(255, 165, 82, 0.08);
+    border: 1px solid rgba(255, 165, 82, 0.4);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+  .data-unavailable .lbl { color: var(--status-warning); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-right: 8px; }
 
   .hypothesis {
     background: var(--bg-surface);
@@ -78,84 +190,73 @@
     padding: 14px 18px;
     border-bottom: 1px solid var(--border);
   }
-  .hyp-header .rank-claim {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .rank {
-    color: var(--text-secondary);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-  }
-  .claim {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-  .elaboration {
-    color: var(--text-secondary);
-    font-size: 13px;
-    margin-top: 4px;
-    font-style: italic;
-  }
-  .confidence-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    border-radius: 14px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    white-space: nowrap;
-  }
-  .confidence-badge.high { background: rgba(255, 93, 100, 0.18); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.5); }
-  .confidence-badge.medium { background: rgba(255, 165, 82, 0.18); color: var(--status-warning); border: 1px solid rgba(255, 165, 82, 0.5); }
-  .confidence-badge.low { background: rgba(149, 165, 184, 0.15); color: var(--text-secondary); border: 1px solid rgba(149, 165, 184, 0.3); }
-
+  .hyp-header .rank-claim { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .rank { color: var(--text-secondary); font-size: 12px; font-weight: 600; letter-spacing: 0.05em; }
+  .claim { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+  .elaboration { color: var(--text-secondary); font-size: 13px; margin-top: 4px; font-style: italic; }
   .hyp-body { padding: 14px 18px; }
 
+  /* Evidence cards (UX3) — one card per evidence kind, with source + ts + value + link. */
+  .evidence-section-label {
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
   .evidence-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     margin-bottom: 14px;
   }
+  @media (max-width: 720px) { .evidence-grid { grid-template-columns: 1fr; } }
   .evidence-card {
     display: flex;
-    gap: 10px;
-    padding: 10px 12px;
+    gap: 12px;
+    padding: 12px 14px;
     background: var(--bg-surface-2);
     border: 1px solid var(--border);
     border-radius: 6px;
     font-size: 13px;
   }
-  .evidence-icon {
-    flex-shrink: 0;
-    font-size: 18px;
-    line-height: 1;
-  }
-  .evidence-content { flex: 1; }
+  .evidence-card.metric { border-left: 3px solid var(--status-info); }
+  .evidence-card.trace { border-left: 3px solid #8b6cef; }
+  .evidence-card.log { border-left: 3px solid var(--status-warning); }
+  .evidence-card.deploy { border-left: 3px solid var(--status-error); }
+  .evidence-card.dependency { border-left: 3px solid #2dbeb1; }
+  .evidence-icon { flex-shrink: 0; font-size: 22px; line-height: 1; }
+  .evidence-content { flex: 1; min-width: 0; }
   .evidence-kind {
     color: var(--text-secondary);
     font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 2px;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+    font-weight: 700;
   }
-  .evidence-text { color: var(--text-primary); }
-  .evidence-text a { color: var(--link); text-decoration: none; }
-  .evidence-text a:hover { text-decoration: underline; }
-  .evidence-citation {
+  .evidence-value { color: var(--text-primary); margin-bottom: 6px; word-wrap: break-word; }
+  .evidence-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
     color: var(--text-secondary);
     font-size: 11px;
-    margin-top: 4px;
     font-family: "SF Mono", "Monaco", monospace;
+    margin-bottom: 6px;
   }
+  .evidence-meta .field-lbl { color: var(--text-secondary); opacity: 0.7; }
+  .evidence-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--link);
+    text-decoration: none;
+    font-size: 12px;
+  }
+  .evidence-link:hover { text-decoration: underline; }
+  .evidence-link::after { content: "→"; opacity: 0.7; }
 
   .why-confidence {
     padding: 10px 14px;
@@ -165,13 +266,7 @@
     font-size: 13px;
     margin-bottom: 12px;
   }
-  .why-confidence .label {
-    color: var(--text-secondary);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 4px;
-  }
+  .why-confidence .label { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
 
   .next-step {
     padding: 10px 14px;
@@ -180,14 +275,7 @@
     border-radius: 4px;
     font-size: 13px;
   }
-  .next-step .label {
-    color: var(--link);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 4px;
-    font-weight: 600;
-  }
+  .next-step .label { color: var(--link); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; font-weight: 600; }
   .next-step code {
     display: block;
     margin-top: 6px;
@@ -198,30 +286,82 @@
     word-break: break-all;
   }
 
+  /* "Considered and ruled out" — first-class section, not a footnote. */
   .ruled-out-section {
     background: var(--bg-surface);
     border: 1px solid var(--border);
     border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .ruled-out-section .section-header {
     padding: 14px 18px;
-    margin-top: 12px;
-  }
-  .ruled-out-section h3 {
-    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
     font-weight: 600;
-    color: var(--text-secondary);
-    margin: 0 0 10px 0;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
+  .ruled-out-section .section-body { padding: 16px 18px; }
   .ruled-out-list { list-style: none; margin: 0; padding: 0; }
   .ruled-out-list li {
-    padding: 6px 0;
-    border-bottom: 1px dashed var(--border);
+    padding: 10px 12px;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
     font-size: 13px;
-    color: var(--text-secondary);
+    color: var(--text-primary);
   }
-  .ruled-out-list li:last-child { border-bottom: none; }
-  .ruled-out-list li::before { content: "✗ "; color: var(--text-secondary); margin-right: 4px; }
+  .ruled-out-list li:last-child { margin-bottom: 0; }
+  .ruled-out-list li::before { content: "✗ "; color: var(--status-error); margin-right: 4px; font-weight: 700; }
+  .ruled-out-list li .ro-because { display: block; color: var(--text-secondary); font-size: 12px; margin-top: 4px; }
+
+  .section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .section-header { padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 600; }
+  .section-body { padding: 16px 18px; }
+
+  .deep-link-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .deep-link-groups { grid-template-columns: 1fr; } }
+  .deep-link-group { background: var(--bg-surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+  .deep-link-group .group-label { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 700; }
+  .deep-link-group .group-label.investigate { color: var(--link); }
+  .deep-link-group .group-label.act { color: var(--status-warning); }
+  .deep-links { display: flex; flex-direction: column; gap: 6px; }
+  .deep-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: var(--bg-page);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--link);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .deep-link:hover { border-color: var(--link); }
+  .deep-link::after { content: "→"; opacity: 0.7; }
+
+  .cmd-list { display: flex; flex-direction: column; gap: 8px; }
+  .cmd-suggestion {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .cmd-suggestion code { color: var(--link); font-size: 13px; font-weight: 600; background: var(--bg-page); padding: 4px 8px; border-radius: 4px; align-self: flex-start; }
+  .cmd-suggestion .why { color: var(--text-secondary); font-size: 12px; }
 
   .footer-meta {
     margin-top: 24px;
@@ -237,21 +377,22 @@
   .footer-meta dd { margin: 0; color: var(--text-primary); font-family: "SF Mono", "Monaco", monospace; font-size: 11px; }
   code { font-family: "SF Mono", "Monaco", monospace; background: var(--bg-surface-2); padding: 1px 6px; border-radius: 3px; font-size: 12px; }
 
-  .deep-link {
-    display: inline-flex;
+  .persistent-footer {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: rgba(15, 27, 42, 0.96);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(6px);
+    padding: 10px 24px;
+    display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    background: var(--bg-surface-2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--link);
-    font-size: 13px;
-    text-decoration: none;
-    margin-top: 6px;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    z-index: 50;
   }
-  .deep-link:hover { border-color: var(--link); }
-  .deep-link::after { content: "→"; opacity: 0.7; }
+  .persistent-footer .pf-label { color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+  .persistent-footer .pf-links { display: flex; gap: 8px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
@@ -259,14 +400,34 @@
 
   <div class="header">
     <div class="title-block">
-      <h1>🔍 Top Suspected Cause</h1>
+      <h1>{{SEVERITY_ICON}} Top Suspected Cause <span class="severity-pill {{SEVERITY}}">{{INVESTIGATION_TYPE}}</span></h1>
       <div class="subtitle">
         Investigation: <code>{{INVESTIGATION_TITLE}}</code> · Window {{INVESTIGATION_WINDOW}} · Region <code>{{AWS_REGION}}</code>
       </div>
     </div>
     <div class="actions">
+      <!-- SAVE_ARTIFACT_BUTTON: future host action — pin in Cowork; no-op in Claude Code (file is on disk). -->
       <button class="btn">{{SAVE_ARTIFACT_BUTTON}}</button>
+      <!-- SHARE_BUTTON: future host action — copy share-link in Cowork; no-op in Claude Code. -->
       <button class="btn">{{SHARE_BUTTON}}</button>
+    </div>
+  </div>
+
+  {{DATA_UNAVAILABLE_BANNER}}
+
+  <!-- HERO — top claim, confidence, recommended action. -->
+  <div class="hero {{SEVERITY}}">
+    <div class="hero-verdict">
+      <div class="hero-icon">{{SEVERITY_ICON}}</div>
+      <div class="hero-verdict-text">{{HERO_VERDICT_LINE}}</div>
+    </div>
+    <div class="hero-meta-row">
+      <div class="hero-meta-item"><span class="lbl">Top hypothesis</span><span class="val">{{HERO_TOP_CLAIM}}</span></div>
+      <span class="confidence-badge {{HERO_CONFIDENCE_CLASS}}">{{HERO_CONFIDENCE}} confidence</span>
+    </div>
+    <div class="hero-action">
+      <div class="hero-action-text"><span class="lbl">Recommended next action</span>{{HERO_NEXT_ACTION}}</div>
+      <a class="btn btn-primary" href="{{HERO_NEXT_ACTION_LINK}}">Open in CloudWatch Console →</a>
     </div>
   </div>
 
@@ -281,15 +442,79 @@
       <span class="confidence-badge {{HYP1_CONFIDENCE_CLASS}}">{{HYP1_CONFIDENCE}} confidence</span>
     </div>
     <div class="hyp-body">
+      <div class="evidence-section-label">Why I think this — evidence</div>
       <div class="evidence-grid">
         {{HYP1_EVIDENCE_CARDS}}
-        <!-- Each card:
-        <div class="evidence-card">
+        <!-- Each evidence card is one of: metric | trace | log | deploy | dependency.
+             All five fields are required: kind icon, source, timestamp, value, link.
+             Schema example:
+        <div class="evidence-card metric">
           <div class="evidence-icon">📈</div>
           <div class="evidence-content">
             <div class="evidence-kind">Metric</div>
-            <div class="evidence-text">{{METRIC_OBSERVATION}}</div>
-            <div class="evidence-citation">{{METRIC_REF}}</div>
+            <div class="evidence-value">{{METRIC_OBSERVATION_TEXT}} — e.g. "5XXError rate 4.2% (baseline 0.3%)"</div>
+            <div class="evidence-meta">
+              <span><span class="field-lbl">source:</span> {{SOURCE}}</span>
+              <span><span class="field-lbl">at:</span> {{TIMESTAMP_ISO}}</span>
+              <span><span class="field-lbl">value:</span> {{METRIC_VALUE}}</span>
+            </div>
+            <a class="evidence-link" href="{{METRIC_LINK}}">Open metric in CloudWatch</a>
+          </div>
+        </div>
+
+        <div class="evidence-card trace">
+          <div class="evidence-icon">🧵</div>
+          <div class="evidence-content">
+            <div class="evidence-kind">Trace</div>
+            <div class="evidence-value">{{TRACE_OBSERVATION_TEXT}}</div>
+            <div class="evidence-meta">
+              <span><span class="field-lbl">source:</span> X-Ray (applicationsignals MCP)</span>
+              <span><span class="field-lbl">at:</span> {{TIMESTAMP_ISO}}</span>
+              <span><span class="field-lbl">trace:</span> {{TRACE_ID_SHORT}}</span>
+            </div>
+            <a class="evidence-link" href="{{TRACE_LINK}}">Open trace in X-Ray</a>
+          </div>
+        </div>
+
+        <div class="evidence-card log">
+          <div class="evidence-icon">📜</div>
+          <div class="evidence-content">
+            <div class="evidence-kind">Log pattern</div>
+            <div class="evidence-value">{{LOG_PATTERN}} — {{COUNT}} matches in window</div>
+            <div class="evidence-meta">
+              <span><span class="field-lbl">source:</span> Logs Insights</span>
+              <span><span class="field-lbl">window:</span> {{ISO_START}}–{{ISO_END}}</span>
+              <span><span class="field-lbl">log group:</span> {{LOG_GROUP}}</span>
+            </div>
+            <a class="evidence-link" href="{{LOGS_INSIGHTS_LINK}}">Re-run query in Logs Insights</a>
+          </div>
+        </div>
+
+        <div class="evidence-card deploy">
+          <div class="evidence-icon">🛠️</div>
+          <div class="evidence-content">
+            <div class="evidence-kind">Deploy / CloudTrail</div>
+            <div class="evidence-value">{{EVENT_NAME}} on {{RESOURCE}} by {{PRINCIPAL}}</div>
+            <div class="evidence-meta">
+              <span><span class="field-lbl">source:</span> CloudTrail</span>
+              <span><span class="field-lbl">at:</span> {{EVENT_TIME_ISO}}</span>
+              <span><span class="field-lbl">eventId:</span> {{EVENT_ID}}</span>
+            </div>
+            <a class="evidence-link" href="{{CLOUDTRAIL_LINK}}">Open event in CloudTrail</a>
+          </div>
+        </div>
+
+        <div class="evidence-card dependency">
+          <div class="evidence-icon">🔗</div>
+          <div class="evidence-content">
+            <div class="evidence-kind">Downstream dependency</div>
+            <div class="evidence-value">{{DEP_NAME}} — {{DEP_OBSERVATION}}</div>
+            <div class="evidence-meta">
+              <span><span class="field-lbl">source:</span> Application Signals service map</span>
+              <span><span class="field-lbl">at:</span> {{TIMESTAMP_ISO}}</span>
+              <span><span class="field-lbl">verdict:</span> {{DEP_VERDICT}}</span>
+            </div>
+            <a class="evidence-link" href="{{DEP_LINK}}">Open dependency in service map</a>
           </div>
         </div>
         -->
@@ -306,7 +531,6 @@
       </div>
     </div>
   </div>
-  <!-- /HYPOTHESIS -->
 
   <div class="hypothesis {{HYP2_CONFIDENCE_CLASS}}">
     <div class="hyp-header">
@@ -318,6 +542,7 @@
       <span class="confidence-badge {{HYP2_CONFIDENCE_CLASS}}">{{HYP2_CONFIDENCE}} confidence</span>
     </div>
     <div class="hyp-body">
+      <div class="evidence-section-label">Why I think this — evidence</div>
       <div class="evidence-grid">
         {{HYP2_EVIDENCE_CARDS}}
       </div>
@@ -337,12 +562,56 @@
   {{HYP3_BLOCK_OPTIONAL}}
   {{HYP4_BLOCK_OPTIONAL}}
 
+  <!-- Considered and ruled out — first-class section (UX4). Always present. -->
   <div class="ruled-out-section">
-    <h3>Considered and ruled out</h3>
-    <ul class="ruled-out-list">
-      {{RULED_OUT_ITEMS}}
-      <!-- Each: <li>{{CLAIM}} — ruled out because {{EVIDENCE}}</li> -->
-    </ul>
+    <div class="section-header">What I ruled out — and why</div>
+    <div class="section-body">
+      <ul class="ruled-out-list">
+        {{RULED_OUT_ITEMS}}
+        <!-- Each: <li>{{CLAIM}}<span class="ro-because">Ruled out because: {{EVIDENCE}}</span></li>
+             If empty: <li>None — every considered hypothesis is retained in the ranked list above.</li> -->
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Open in CloudWatch</div>
+    <div class="section-body">
+      <div class="deep-link-groups">
+        <div class="deep-link-group">
+          <div class="group-label investigate">Verify · Investigate</div>
+          <div class="deep-links">
+            <a class="deep-link" href="{{LINK_SERVICE_MAP}}">Service map in CloudWatch Console</a>
+            <a class="deep-link" href="{{LINK_TRACES}}">X-Ray traces from this window</a>
+            <a class="deep-link" href="{{LINK_LOGS_INSIGHTS}}">Logs Insights for this window</a>
+            <a class="deep-link" href="{{LINK_CLOUDTRAIL}}">CloudTrail event search</a>
+          </div>
+        </div>
+        <div class="deep-link-group">
+          <div class="group-label act">Act · Configure · Share</div>
+          <div class="deep-links">
+            <a class="deep-link" href="{{LINK_SERVICE_DETAIL}}">Service detail in Application Signals</a>
+            <a class="deep-link" href="{{LINK_ALARMS}}">Alarms on this service</a>
+            <a class="deep-link" href="{{LINK_SLO_LIST}}">SLO list</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Suggested next commands</div>
+    <div class="section-body">
+      <div class="cmd-list">
+        {{CMD_SUGGESTIONS}}
+        <!-- Each:
+        <div class="cmd-suggestion">
+          <code>/cw-investigate-slo {{SERVICE_NAME}}</code>
+          <div class="why">Drill into the SLO behind this regression to see burn rate.</div>
+        </div>
+        -->
+      </div>
+    </div>
   </div>
 
   <div class="footer-meta">
@@ -351,9 +620,21 @@
       <dt>Time range</dt><dd>{{TIME_RANGE_START}} → {{TIME_RANGE_END}} (UTC)</dd>
       <dt>MCP tools called</dt><dd>{{MCP_TOOLS_LIST}}</dd>
       <dt>Hypotheses considered</dt><dd>{{HYP_TOTAL_CONSIDERED}} ({{HYP_RANKED_COUNT}} ranked, {{HYP_RULED_OUT_COUNT}} ruled out)</dd>
+      <dt>Self-validation</dt><dd>{{VALIDATION_RESULT}}</dd>
     </dl>
   </div>
 
 </div>
+
+<div class="persistent-footer">
+  <span class="pf-label">Open in CloudWatch</span>
+  <div class="pf-links">
+    <a class="deep-link" href="{{LINK_SERVICE_MAP}}">Service map</a>
+    <a class="deep-link" href="{{LINK_TRACES}}">X-Ray traces</a>
+    <a class="deep-link" href="{{LINK_LOGS_INSIGHTS}}">Logs Insights</a>
+    <a class="deep-link" href="{{LINK_CLOUDTRAIL}}">CloudTrail</a>
+  </div>
+</div>
+
 </body>
 </html>

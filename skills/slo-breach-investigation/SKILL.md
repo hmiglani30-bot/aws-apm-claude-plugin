@@ -196,6 +196,52 @@ For destructive or billing-impacting actions (delete log group, change retention
 IAM), prefer **deep linking** the user to the AWS console via `open-in-cloudwatch` rather
 than executing through MCP.
 
+## Empty states and data unavailability
+
+Every investigation must explicitly handle the case where data is missing
+rather than silently skipping a phase. Surface the gap; do not hide it.
+
+**Empty states (UX11)** — render a short, helpful message with a suggested
+next action:
+
+- **No SLOs configured** on the service → "No SLOs configured for
+  `<service>`. Hand off to `service-health-card` for a RED snapshot, or
+  recommend defining an availability + latency SLO via Application Signals."
+- **No services found in region** → "No Application Signals services in
+  `<region>`. Confirm the region is correct (current: `<region>`) or run
+  `aws-apm-setup` to verify Application Signals is enabled."
+- **No traces in the breach window** → "No traces sampled in window. X-Ray
+  may have sampled them out, or the service may not be instrumented.
+  Continue with metric + log evidence; flag attribution confidence as
+  Medium (capped)."
+- **No log group resolvable for the service** → "No log group found for
+  `<service>`. Skip Logs Insights phase; surface that pattern detection
+  was not run."
+- **Multiple ambiguous services match** the user's name → "Multiple matches
+  for `<name>`: <list>. Ask the user which one to investigate."
+- **No CloudTrail events in window** → "No CloudTrail changes in breach
+  window ± 30m." (This is meaningful evidence, not a gap — render it as a
+  finding, not a missing-data state.)
+- **Wrong region / no permissions** → surface the AWS error verbatim. Do
+  not retry silently.
+
+**Data unavailability (UX8)** — when a data source returns an error rather
+than empty, surface it explicitly in the artifact's data-unavailable
+banner. Examples:
+
+> **Data unavailable** — CloudTrail Lake unreachable: AccessDenied. Change
+> correlation skipped. Confidence capped at Medium.
+
+> **Data unavailable** — Logs Insights query timed out after 30s. Pattern
+> detection skipped for this phase. Continue with metric + trace evidence.
+
+> **Data unavailable** — X-Ray returned `ThrottlingException`. Retried 2×
+> with backoff and gave up. Trace sampling may be incomplete.
+
+The rule: a missing source caps confidence at Medium for any hypothesis
+that would have benefited from it. State this in the confidence
+justification (see `investigation-validator` for the plain-English shape).
+
 ## What this skill does NOT do
 
 - Does not diagnose latency regressions in services *without* SLOs configured — use
