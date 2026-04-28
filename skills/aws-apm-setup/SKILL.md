@@ -76,7 +76,18 @@ If any probe fails, surface the error verbatim — do not retry silently.
 - **`Unable to locate credentials`** → no AWS creds (Step 2)
 - **`AccessDenied`** → IAM perms (Step 4) — surface the exact action denied
 - **`No services found`** → Application Signals not enabled (Step 5), or wrong region
+- **`ThrottlingException`** → AWS API rate limit. Surface the exact API + operation
+  rather than retrying silently; the user may need to lower investigation cadence or
+  request a quota increase
 - **`Connection refused` to MCP** → MCP server failed to launch; check `FASTMCP_LOG_LEVEL=DEBUG`
+
+### Service-name resolution
+
+If the user names a service that returns **multiple matching services** from
+`list_services` (e.g. "checkout" matches `checkout-api` and `checkout-worker`), do not
+guess. Show the candidates with their environments / ARNs and ask the user to pick one
+before continuing. If the name is ambiguous and `list_services` returns zero matches,
+treat it as the "wrong region" case above.
 
 ## What this skill does NOT do
 

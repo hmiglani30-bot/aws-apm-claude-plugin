@@ -9,16 +9,32 @@ on:
 jobs:
   structural-tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
 
       - name: Run structural tests
         run: python -m unittest tests.test_structure -v
+
+      - name: Run behavioral tests
+        run: python -m unittest tests.test_behavioral -v
+
+      - name: Run golden-output tests
+        run: python -m unittest tests.test_golden_outputs -v
+
+      - name: Run artifact rendering tests
+        run: python -m unittest tests.test_artifact_rendering -v
+
+      - name: Run error taxonomy tests
+        run: python -m unittest tests.test_error_taxonomy -v
 
       - name: Validate JSON manifests
         run: |
@@ -27,7 +43,75 @@ jobs:
           python -m json.tool .mcp.json > /dev/null
           python -m json.tool hooks/hooks.json > /dev/null
 
+      - name: Validate artifact placeholders
+        # Hard-check: every {{PLACEHOLDER}} that appears in any artifact has a
+        # known shape — uppercase + digits + underscores only — and is closed
+        # by `}}`. Catches accidentally-malformed templates (e.g. {{ NAME }}
+        # with stray spaces, or `{{NAME}` truncated).
+        run: |
+          python - <<'EOF'
+          import re, sys
+          from pathlib import Path
+          ok = True
+          good = re.compile(r"\{\{[A-Z0-9_]+\}\}")
+          for path in Path("artifacts").glob("*.html"):
+              text = path.read_text()
+              # Find any sequence starting with {{ and assert it matches the canonical shape.
+              for m in re.finditer(r"\{\{[^}]*\}\}", text):
+                  if not good.fullmatch(m.group(0)):
+                      print(f"::error file={path}::malformed placeholder: {m.group(0)!r}")
+                      ok = False
+              # Also: every `{{` must be paired with a `}}` (no truncation).
+              if text.count("{{") != text.count("}}"):
+                  print(f"::error file={path}::unbalanced {{{{ vs }}}} count")
+                  ok = False
+          sys.exit(0 if ok else 1)
+          EOF
+
       - name: Lint hook script
         run: |
           sudo apt-get update && sudo apt-get install -y shellcheck
           shellcheck hooks/scripts/confirm-write.sh
+
+  markdown-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint Markdown
+        # Pin a recent version so behavior is stable across CI runs. Disabled
+        # rules: line-length (skill descriptions wrap naturally), and
+        # multiple-headers-with-same-content (some skills repeat "What this
+        # skill does NOT do").
+        uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          globs: |
+            README.md
+            skills/**/*.md
+            commands/**/*.md
+          config: |
+            {
+              "default": true,
+              "MD013": false,
+              "MD024": { "siblings_only": true },
+              "MD033": false,
+              "MD041": false
+            }
+
+  link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Markdown links
+        # Verifies that hyperlinks in skill / command / README markdown are
+        # valid. External links are network-checked; internal links resolve
+        # against the repo. Skips localhost-style examples and intentional
+        # placeholder URLs in skill examples.
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          use-verbose-mode: 'yes'
+          config-file: '.github/markdown-link-check.json'
+          folder-path: 'skills,commands'
+          file-path: './README.md'
