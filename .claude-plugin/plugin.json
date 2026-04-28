@@ -1,10 +1,10 @@
 {
   "name": "aws-apm",
   "version": "0.2.1",
-  "description": "AWS APM workflows for Claude Code and Cowork — SLO breach investigation, latency regression, error spike triage, CloudWatch alarm response, SLO compliance reporting, fleet health check, post-investigation self-validation, and persistent incident memory, with curated artifact components on top of AWS CloudWatch, Application Signals, and CloudTrail MCP servers.",
+  "description": "Personal-prototype AWS APM investigation plugin for Claude Code and Cowork — SLO breach investigation, latency regression, error spike triage, CloudWatch alarm response, SLO compliance reporting, fleet health check, post-investigation self-validation, and persistent incident memory, with curated artifact components on top of AWS CloudWatch, Application Signals, and CloudTrail MCP servers. Not an official AWS or Anthropic product.",
   "author": {
-    "name": "AWS APM",
-    "url": "https://aws.amazon.com/cloudwatch/"
+    "name": "hmiglani30",
+    "url": "https://github.com/hmiglani30"
   },
   "homepage": "https://github.com/hmiglani30/aws-apm-claude-plugin",
   "repository": "https://github.com/hmiglani30/aws-apm-claude-plugin",
@@ -20,6 +20,7 @@
     "tracing",
     "latency",
     "incident-response",
-    "mcp"
+    "mcp",
+    "personal-prototype"
   ]
 }

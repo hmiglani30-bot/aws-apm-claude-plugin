@@ -1,6 +1,10 @@
 MIT License
 
-Copyright (c) 2026 AWS APM Plugin contributors
+Copyright (c) 2026 hmiglani30 and contributors
+
+This is a personal prototype plugin. It is not an official AWS, Amazon, AWS
+Labs, or Anthropic product. It uses AWS Labs MCP servers but does not modify
+or redistribute them.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

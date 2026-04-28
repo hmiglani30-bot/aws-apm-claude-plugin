@@ -2,18 +2,18 @@
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "aws-apm-plugins",
   "version": "0.2.1",
-  "description": "AWS APM plugins for Claude Code and Cowork",
+  "description": "Personal-prototype AWS APM plugins for Claude Code and Cowork (not an official AWS or Anthropic product)",
   "owner": {
-    "name": "AWS APM",
-    "url": "https://aws.amazon.com/cloudwatch/"
+    "name": "hmiglani30",
+    "url": "https://github.com/hmiglani30"
   },
   "plugins": [
     {
       "name": "aws-apm",
       "source": "./",
-      "description": "AWS APM workflows + curated artifact components on the AWS CloudWatch / Application Signals / CloudTrail MCP servers",
+      "description": "AWS APM investigation workflows + curated artifact components on the AWS CloudWatch / Application Signals / CloudTrail MCP servers",
       "version": "0.2.1",
-      "author": { "name": "AWS APM" }
+      "author": { "name": "hmiglani30" }
     }
   ]
 }
