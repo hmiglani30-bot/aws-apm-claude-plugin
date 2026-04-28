@@ -219,6 +219,45 @@ artifact:
 Cite **patterns and exception classes**, not raw lines. If you cannot tell whether a
 field is sensitive, redact it.
 
+## Empty states and data unavailability
+
+Surface missing data; do not hide it.
+
+**Empty states (UX11)** — render a short, helpful message with a suggested
+next action:
+
+- **Alarm name not found** → "No alarm `<name>` in `<region>`. Confirm
+  the alarm name spelling and region. List candidates if a substring
+  matches: <list>."
+- **Alarm has no underlying metric** (composite-only with all children
+  unresolved) → "Composite alarm `<name>` has unresolved children.
+  Surface child names and ask the user which to investigate."
+- **Alarm dimensions don't map to an Application Signals service** → "No
+  Application Signals service derives from this alarm's dimensions. Pull
+  the raw metric and continue without service-map data; flag this in the
+  artifact."
+- **No state transitions in window** (alarm is in `OK`) → "Alarm is in
+  `OK` state right now. Investigation runs on the most recent `ALARM`
+  transition; if none exists, ask the user whether they intended to
+  triage a different alarm."
+- **Insufficient Data history** (alarm is flapping) → "Alarm has `<N>`
+  transitions in the last 30 min — likely a tuning issue. Render the
+  flapping verdict in the hero (`⚠️ Flapping alarm`) and recommend alarm
+  config review rather than service remediation."
+
+**Data unavailability (UX8)** — surface failures in the artifact's
+data-unavailable banner. Examples:
+
+> **Data unavailable** — CloudTrail Lake unreachable: AccessDenied.
+> Change correlation skipped. Confidence capped at Medium.
+
+> **Data unavailable** — Application Signals returned no service for the
+> alarm's dimensions. Service-map evidence skipped; relying on raw
+> metric + log evidence only.
+
+The rule: a missing source caps confidence at Medium. State the cap in
+the confidence justification per `investigation-validator`.
+
 ## What this skill does NOT do
 
 - Does not diagnose SLO breaches when an SLO is the source of the page — use

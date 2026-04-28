@@ -94,12 +94,44 @@ The verdict is derived deterministically from the data — do not stylize it.
   and add a deep link to "see all dependencies."
 - **Changes table is omitted** if no events; replace with one-liner.
 
+## Empty states and data unavailability
+
+The card must surface missing data, not hide it.
+
+**Empty states (UX11)** — each section has a defined empty state; use them:
+
+- **No SLOs configured** → render the "No SLOs configured for this service.
+  Recommend defining availability + latency SLOs via Application Signals."
+  empty-line block in the SLO pill row.
+- **No dependencies** in the trace window → render `<tr><td colspan="5">No
+  downstream dependencies in the trace window.</td></tr>` in the
+  dependencies table.
+- **No CloudTrail events** in the last 24h → render `<tr><td colspan="4">No
+  CloudTrail events in last 24h on this service.</td></tr>` in the recent
+  changes table.
+- **No baseline available** (service too new) → set the delta classes to
+  `neutral` and replace the baseline text with "No 24h baseline — service
+  has only `<N>` minutes of history."
+- **Wrong region / no permissions** → do not silently render an empty card.
+  Surface the AWS error via the `DATA_UNAVAILABLE_BANNER` placeholder and
+  abort the card. Recommend running `aws-apm-setup`.
+
+**Data unavailability (UX8)** — populate `DATA_UNAVAILABLE_BANNER` with the
+specific error and the impact on confidence. Example:
+
+> Data unavailable — CloudTrail unreachable: AccessDenied. Recent-changes
+> table empty for this reason (not because no changes occurred). Confidence
+> capped at Medium.
+
 ## HTML artifact template
 
 For Cowork (or any surface that renders HTML artifacts), use the artifact template at
 `artifacts/service-health-card.html` and populate the `{{PLACEHOLDERS}}` with actual
-data. The template encodes the verdict badge, RED metric tiles (with sparkline / gauge),
-SLO status pills, dependency table, and recent-changes table — do not redesign it.
+data. The template encodes the hero verdict + recommended action, RED metric tiles
+(with sparkline / gauge), SLO status pills, dependency table, recent-changes table,
+action-grouped deep links, suggested commands, and a persistent "Open in CloudWatch"
+footer — do not redesign it. The template's leading HTML comment documents the full
+typed schema (required + optional fields, empty-state contract, button contract).
 
 Placeholder reference (non-exhaustive):
 
@@ -122,8 +154,28 @@ Placeholder reference (non-exhaustive):
   in last 24h.</td></tr>`
 - Deep-link placeholders: `{{LINK_SERVICE_DETAIL}}`, `{{LINK_SERVICE_MAP}}`,
   `{{LINK_SLO_LIST}}` — generated via `open-in-cloudwatch`
-- `{{SAVE_ARTIFACT_BUTTON}}`, `{{SHARE_BUTTON}}` — short labels
-- Footer: `{{SOURCE_MCP_SERVERS}}`, `{{MCP_TOOLS_LIST}}`, `{{CONFIDENCE}}`
+- Hero placeholders: `{{SEVERITY_ICON}}`, `{{HERO_VERDICT_LINE}}`,
+  `{{HERO_TOP_OBSERVATION}}`, `{{HERO_CONFIDENCE}}`, `{{HERO_CONFIDENCE_CLASS}}`,
+  `{{HERO_NEXT_ACTION}}` — populate from the verdict rules above. The hero is
+  the 2-second read; the rest of the card is progressive disclosure.
+- `{{DATA_UNAVAILABLE_BANNER}}` — emit a `<div class="data-unavailable">…</div>`
+  block when one or more sources failed; otherwise emit the empty string.
+- `{{CMD_SUGGESTIONS}}` — emit verdict-driven `<div class="cmd-suggestion">`
+  blocks. Healthy → `/cw-verify-recovery <service>`; Degraded →
+  `/cw-investigate-latency <service>`; Unhealthy → `/cw-investigate-slo
+  <service>` and/or `/cw-investigate-errors <service>`.
+- `{{SAVE_ARTIFACT_BUTTON}}`, `{{SHARE_BUTTON}}` — short labels. The buttons
+  render visually but the click handler is host-provided. In Cowork, future
+  hooks pin / share. In Claude Code, they are inert (the file is on disk;
+  user copies the path manually). See the template's leading comment for
+  the full UX10 contract.
+- `{{LINK_*}}` deep-link placeholders — generated via `open-in-cloudwatch`
+  and grouped into "Verify · Investigate" vs "Act · Configure · Share"
+  blocks (UX5). The persistent footer at the bottom of the page repeats
+  the highest-value links so they are always within reach (UX12).
+- Footer: `{{SOURCE_MCP_SERVERS}}`, `{{MCP_TOOLS_LIST}}`, `{{CONFIDENCE}}`,
+  `{{VALIDATION_RESULT}}` (Pass / Fail summary from
+  `investigation-validator`).
 
 In **Claude Code** (terminal), use the Markdown form above. Both must contain identical
 data — only the rendering differs.

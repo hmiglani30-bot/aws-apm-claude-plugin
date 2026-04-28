@@ -98,9 +98,16 @@ this case.
 
 For Cowork (or any surface that renders HTML artifacts), use the artifact template at
 `artifacts/slo-breach-explainer.html` and populate the `{{PLACEHOLDERS}}` with actual
-data collected during the investigation. The template encodes the visual grammar
-(burn-rate bars, error-budget gauge, impacted-operation table, ranked hypotheses,
-deep-link block, metadata footer) — do not redesign it per investigation.
+data collected during the investigation. The template encodes the visual grammar:
+hero verdict at the top (severity icon, one-line summary, top hypothesis,
+confidence, recommended next action), then burn-rate bars, error-budget gauge,
+impacted-operation table, ranked hypotheses, first-class "Considered and ruled out"
+section, action-grouped deep links (Verify · Investigate vs Act · Configure · Share),
+suggested next commands, metadata footer, and a persistent "Open in CloudWatch"
+footer bar. Do not redesign it per investigation.
+
+The template's leading HTML comment documents the full typed schema — required +
+optional fields, button contract (UX10), empty-state expectations.
 
 Placeholder reference (non-exhaustive — open the file for the full list):
 
@@ -116,10 +123,35 @@ Placeholder reference (non-exhaustive — open the file for the full list):
 - `{{RANKED_HYPOTHESES_BLOCK}}` — inline the `top-suspected-cause` artifact body here
 - Deep-link placeholders: `{{LINK_SLO_DETAIL}}`, `{{LINK_SERVICE_MAP}}`,
   `{{LINK_LOGS_INSIGHTS}}`, `{{LINK_CLOUDTRAIL}}` — generated via `open-in-cloudwatch`
-- `{{SAVE_ARTIFACT_BUTTON}}`, `{{SHARE_BUTTON}}` — keep the labels short ("Save
-  artifact", "Share")
+- Hero placeholders: `{{SEVERITY_ICON}}`, `{{SEVERITY}}` (sev1|sev2|sev3|recovered),
+  `{{HERO_VERDICT_LINE}}`, `{{HERO_TOP_HYPOTHESIS}}`, `{{HERO_CONFIDENCE}}`,
+  `{{HERO_CONFIDENCE_CLASS}}`, `{{HERO_NEXT_ACTION}}`, `{{TIME_TO_EXHAUST}}`,
+  `{{TOP_CONTRIBUTOR_NAME}}`, `{{TOP_CONTRIBUTOR_PCT}}` — populate from
+  Phase 1 (frame the breach) and Phase 5 (ranked hypotheses).
+- `{{DATA_UNAVAILABLE_BANNER}}` — emit a `<div class="data-unavailable">…</div>`
+  block when CloudTrail / Logs Insights / X-Ray returned errors; otherwise
+  emit the empty string. The banner names the failed source and the impact
+  on confidence.
+- `{{RULED_OUT_ITEMS}}` — first-class "Considered and ruled out" section.
+  Emit `<li>` items each with `<span class="ro-because">Ruled out because:
+  …</span>`. If empty, emit a single placeholder line.
+- `{{CMD_SUGGESTIONS}}` — emit verdict-driven `<div class="cmd-suggestion">`
+  blocks. For fast burn → `/cw-investigate-errors <service>` and
+  `/cw-investigate-latency <service>`. For recovered → `/cw-verify-recovery
+  <service>`. Each suggestion includes a one-line "why".
+- `{{SAVE_ARTIFACT_BUTTON}}`, `{{SHARE_BUTTON}}` — short labels ("Save
+  artifact", "Share"). The buttons render visually; click handlers are
+  host-provided (Cowork: future pin / share APIs; Claude Code: inert,
+  file is on disk). See the template's leading comment for the UX10
+  contract.
+- `{{LINK_*}}` placeholders — generated via `open-in-cloudwatch` and
+  grouped into "Verify · Investigate" vs "Act · Configure · Share"
+  (UX5). The persistent footer at the bottom of the page repeats the
+  highest-value links so they are always within reach (UX12).
 - Footer: `{{SOURCE_MCP_SERVERS}}`, `{{TIME_RANGE_START}}`, `{{TIME_RANGE_END}}`,
-  `{{MCP_TOOLS_LIST}}`, `{{QUERIES_USED}}`, `{{CAUSAL_CONFIDENCE}}`
+  `{{MCP_TOOLS_LIST}}`, `{{QUERIES_USED}}`, `{{CAUSAL_CONFIDENCE}}`,
+  `{{VALIDATION_RESULT}}` (Pass / Fail summary from
+  `investigation-validator`).
 
 In **Claude Code** (terminal), the Markdown form above is the default. Both surfaces
 must contain identical data — only the rendering differs. Never fabricate values to fill

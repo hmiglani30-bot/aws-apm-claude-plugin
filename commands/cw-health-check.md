@@ -160,6 +160,67 @@ for any write action.
 /cw-health-check payment-
 ```
 
+## Empty states and data unavailability
+
+Surface gaps; do not silently render an incomplete dashboard.
+
+**Empty states (UX11)**:
+
+- **No services in region** → "No Application Signals services in
+  `<region>`. Confirm region or run `aws-apm-setup`. Dashboard aborted."
+- **Filter matches nothing** → "No services match `<filter>` in
+  `<region>`. Check spelling or drop the filter."
+- **Service has no SLOs** → render the verdict per RED metrics, show `—`
+  in the SLO column, and footnote "No SLOs configured" once at the bottom
+  of the section rather than per-row.
+- **No baseline available** (service is too new) → set the delta cells to
+  `—` and note "no 24h baseline" in the verdict reasoning.
+- **Wrong region / no permissions** → surface the AWS error verbatim. Do
+  not retry silently.
+
+**Data unavailability (UX8)** — render a banner above the dashboard. Per-
+row failures appear in a "Status unknown" tier between Degraded and
+Healthy with the specific error inline (e.g. `payment-service —
+get_service returned AccessDenied`).
+
+## Caching, pagination, and rate limits (Arch7)
+
+Fleet polls fan out reads across many services. Without bounded
+concurrency and result caching, the dashboard hits Application Signals
+throttle limits and renders a misleading partial picture.
+
+**Bounds and defaults:**
+
+- **Max services in a single render** — 50. If the filtered fleet has
+  more, render the top 50 by severity and note "<N> more services not
+  shown — refine filter or use the AWS console" at the bottom.
+- **Concurrency** — fan out `get_service` / `list_slos` / `get_slo` reads
+  at concurrency 10. Bursting 50+ in parallel hits
+  `ThrottlingException`.
+- **Per-call timeout** — 10s per MCP read.
+- **Total command timeout** — 60s. If the dashboard cannot complete in
+  60s, render whatever has completed plus a banner.
+
+**Caching:**
+
+- Cache `list_services` for the duration of the run so the per-service
+  fan-out reads from a single canonical inventory.
+- Cache per-service results so the verdict computation does not re-fetch.
+- Do NOT cache across runs.
+
+**Retry and backoff:**
+
+- On `ThrottlingException`, retry once with 2s backoff. After the second
+  failure, surface the service in the "Status unknown" tier.
+- On `AccessDenied` or `ResourceNotFound`, do NOT retry — propagate to the
+  data-unavailable banner immediately.
+
+**Partial results:**
+
+- The dashboard is rendered even if some service fetches failed. Verdict
+  counts include only successful reads; a separate "Status unknown" tile
+  surfaces failures so completeness is auditable.
+
 ## Performance notes
 
 - Cap `get_service` / `get_slo` calls at 10 concurrent. Application Signals

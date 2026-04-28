@@ -1,4 +1,39 @@
 <!DOCTYPE html>
+<!--
+  ARTIFACT SCHEMA — service-health-card
+  Surface: Cowork (HTML), Claude Code (Markdown twin in SKILL.md). Identical data.
+  Ownership: skills/service-health-card/SKILL.md is the source of truth for population.
+
+  Required fields:
+    SERVICE_NAME, AWS_REGION, ENVIRONMENT, GENERATED_AT,
+    VERDICT (Healthy|Degraded|Unhealthy) + VERDICT_CLASS (healthy|degraded|unhealthy),
+    SEVERITY_ICON ("🟢"|"🟡"|"🔴"),
+    HERO_VERDICT_LINE (one sentence),
+    HERO_TOP_OBSERVATION (one sentence — biggest signal),
+    HERO_CONFIDENCE + HERO_CONFIDENCE_CLASS,
+    HERO_NEXT_ACTION,
+    REQUEST_RATE_NOW/_BASELINE/_DELTA/_DELTA_CLASS/_SPARKLINE,
+    ERROR_RATE_NOW/_BASELINE/_DELTA/_DELTA_CLASS, ERROR_GAUGE_PCT/_CLASS,
+    P99_NOW/_BASELINE/_DELTA/_DELTA_CLASS/_SPARKLINE, P50_NOW, P90_NOW,
+    SLO_PILLS_OR_EMPTY, DEPENDENCY_ROWS, RECENT_CHANGES_ROWS_OR_NONE,
+    LINK_SERVICE_DETAIL, LINK_SERVICE_MAP, LINK_SLO_LIST, LINK_LOGS_INSIGHTS, LINK_CLOUDTRAIL,
+    SOURCE_MCP_SERVERS, MCP_TOOLS_LIST, CONFIDENCE.
+
+  Optional fields:
+    DATA_UNAVAILABLE_BANNER — when one or more sources failed (e.g. CloudTrail AccessDenied).
+    EMPTY_STATE — when the service has no data, no SLOs, no dependencies, etc.
+    CMD_SUGGESTIONS — array of follow-on /cw-* slash commands.
+
+  Empty-state contract (UX11):
+    - No services: caller never invokes this artifact; surface in the calling skill instead.
+    - No SLOs: render the SLO pill row's "No SLOs configured" empty-line block; do not omit.
+    - No dependencies: render single-row "No downstream dependencies in the trace window."
+    - No changes: render single-row "No CloudTrail events in last 24h on this service."
+    - Wrong region / no permissions: surface via DATA_UNAVAILABLE_BANNER, do not silently degrade.
+
+  Buttons (UX10): SAVE_ARTIFACT_BUTTON / SHARE_BUTTON. Cowork wires to host pin/share APIs;
+    Claude Code renders inert (file is on disk; user copies path).
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -28,13 +63,13 @@
     font-size: 14px;
     line-height: 1.5;
   }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 24px 96px 24px; }
   .header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
   }
   .title-block h1 {
     font-size: 22px;
@@ -60,6 +95,8 @@
     gap: 6px;
   }
   .btn:hover { border-color: var(--link); color: var(--link); }
+  .btn-primary { background: var(--link); border-color: var(--link); color: #0f1b2a; font-weight: 600; }
+  .btn-primary:hover { background: var(--link-hover); color: #0f1b2a; }
 
   .verdict-badge {
     display: inline-flex;
@@ -83,6 +120,65 @@
     background: currentColor;
     box-shadow: 0 0 8px currentColor;
   }
+
+  /* Hero verdict — RED snapshot in 2 seconds. */
+  .hero {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-left: 6px solid var(--status-success);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+  }
+  .hero.healthy { border-left-color: var(--status-success); }
+  .hero.degraded { border-left-color: var(--status-warning); }
+  .hero.unhealthy { border-left-color: var(--status-error); }
+  .hero-verdict { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+  .hero-icon { font-size: 30px; line-height: 1; flex-shrink: 0; }
+  .hero-verdict-text { font-size: 18px; font-weight: 600; line-height: 1.35; }
+  .hero-meta-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .hero-meta-item { display: inline-flex; align-items: baseline; gap: 6px; font-size: 13px; }
+  .hero-meta-item .lbl { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .hero-meta-item .val { color: var(--text-primary); font-weight: 600; }
+
+  .confidence-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .confidence-badge.high { background: rgba(255, 93, 100, 0.18); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.5); }
+  .confidence-badge.medium { background: rgba(255, 165, 82, 0.18); color: var(--status-warning); border: 1px solid rgba(255, 165, 82, 0.5); }
+  .confidence-badge.low { background: rgba(149, 165, 184, 0.15); color: var(--text-secondary); border: 1px solid rgba(149, 165, 184, 0.3); }
+
+  .hero-action {
+    background: rgba(83, 159, 229, 0.08);
+    border: 1px solid rgba(83, 159, 229, 0.25);
+    border-radius: 6px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .hero-action-text { font-size: 14px; font-weight: 500; }
+  .hero-action-text .lbl { color: var(--link); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 8px; font-weight: 700; }
+
+  .data-unavailable {
+    background: rgba(255, 165, 82, 0.08);
+    border: 1px solid rgba(255, 165, 82, 0.4);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+  .data-unavailable .lbl { color: var(--status-warning); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-right: 8px; }
 
   .section {
     background: var(--bg-surface);
@@ -161,13 +257,19 @@
   .dep-status.warning .dot { background: var(--status-warning); }
   .dep-status.breach .dot { background: var(--status-error); }
 
-  .deep-links { display: flex; flex-wrap: wrap; gap: 8px; }
+  .deep-link-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .deep-link-groups { grid-template-columns: 1fr; } }
+  .deep-link-group { background: var(--bg-surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+  .deep-link-group .group-label { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 700; }
+  .deep-link-group .group-label.investigate { color: var(--link); }
+  .deep-link-group .group-label.act { color: var(--status-warning); }
+  .deep-links { display: flex; flex-direction: column; gap: 6px; }
   .deep-link {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 12px;
-    background: var(--bg-surface-2);
+    padding: 6px 10px;
+    background: var(--bg-page);
     border: 1px solid var(--border);
     border-radius: 4px;
     color: var(--link);
@@ -176,6 +278,19 @@
   }
   .deep-link:hover { border-color: var(--link); }
   .deep-link::after { content: "→"; opacity: 0.7; }
+
+  .cmd-list { display: flex; flex-direction: column; gap: 8px; }
+  .cmd-suggestion {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .cmd-suggestion code { color: var(--link); font-size: 13px; font-weight: 600; background: var(--bg-page); padding: 4px 8px; border-radius: 4px; align-self: flex-start; }
+  .cmd-suggestion .why { color: var(--text-secondary); font-size: 12px; }
 
   .footer-meta {
     margin-top: 24px;
@@ -191,6 +306,23 @@
   .footer-meta dd { margin: 0; color: var(--text-primary); font-family: "SF Mono", "Monaco", monospace; font-size: 11px; }
   code { font-family: "SF Mono", "Monaco", monospace; background: var(--bg-surface-2); padding: 1px 6px; border-radius: 3px; font-size: 12px; }
   .empty-line { color: var(--text-secondary); font-style: italic; font-size: 13px; padding: 6px 0; }
+
+  .persistent-footer {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: rgba(15, 27, 42, 0.96);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(6px);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    z-index: 50;
+  }
+  .persistent-footer .pf-label { color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+  .persistent-footer .pf-links { display: flex; gap: 8px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
@@ -199,7 +331,7 @@
   <div class="header">
     <div class="title-block">
       <h1>
-        🟢 Service Health — <code>{{SERVICE_NAME}}</code>
+        {{SEVERITY_ICON}} Service Health — <code>{{SERVICE_NAME}}</code>
         <span class="verdict-badge {{VERDICT_CLASS}}">{{VERDICT}}</span>
       </h1>
       <div class="subtitle">
@@ -207,8 +339,27 @@
       </div>
     </div>
     <div class="actions">
+      <!-- SAVE_ARTIFACT_BUTTON: future Cowork pin action; inert in Claude Code (file on disk). -->
       <button class="btn">{{SAVE_ARTIFACT_BUTTON}}</button>
+      <!-- SHARE_BUTTON: future Cowork share-link action; inert in Claude Code. -->
       <button class="btn">{{SHARE_BUTTON}}</button>
+    </div>
+  </div>
+
+  {{DATA_UNAVAILABLE_BANNER}}
+
+  <div class="hero {{VERDICT_CLASS}}">
+    <div class="hero-verdict">
+      <div class="hero-icon">{{SEVERITY_ICON}}</div>
+      <div class="hero-verdict-text">{{HERO_VERDICT_LINE}}</div>
+    </div>
+    <div class="hero-meta-row">
+      <div class="hero-meta-item"><span class="lbl">Top observation</span><span class="val">{{HERO_TOP_OBSERVATION}}</span></div>
+      <span class="confidence-badge {{HERO_CONFIDENCE_CLASS}}">{{HERO_CONFIDENCE}} confidence</span>
+    </div>
+    <div class="hero-action">
+      <div class="hero-action-text"><span class="lbl">Recommended next action</span>{{HERO_NEXT_ACTION}}</div>
+      <a class="btn btn-primary" href="{{LINK_SERVICE_DETAIL}}">Open service in CloudWatch Console →</a>
     </div>
   </div>
 
@@ -258,7 +409,8 @@
         {{SLO_PILLS_OR_EMPTY}}
         <!-- Either:
         <div class="slo-pill healthy"><span class="dot"></span><span class="slo-name">{{SLO_NAME}}</span><span class="slo-meta">{{TARGET}}% / {{CURRENT}}% · {{BUDGET}}% budget</span></div>
-        ...or, if no SLOs: <div class="empty-line">No SLOs configured for this service. Recommend defining availability + latency SLOs via Application Signals.</div>
+        ...or, no SLOs (empty state):
+        <div class="empty-line">No SLOs configured for this service. Recommend defining availability + latency SLOs via Application Signals.</div>
         -->
       </div>
     </div>
@@ -279,6 +431,7 @@
         </thead>
         <tbody>
           {{DEPENDENCY_ROWS}}
+          <!-- Empty state: <tr><td colspan="5">No downstream dependencies in the trace window.</td></tr> -->
         </tbody>
       </table>
     </div>
@@ -298,6 +451,7 @@
         </thead>
         <tbody>
           {{RECENT_CHANGES_ROWS_OR_NONE}}
+          <!-- Empty state: <tr><td colspan="4">No CloudTrail events in last 24h. (If CloudTrail unavailable, see banner above.)</td></tr> -->
         </tbody>
       </table>
     </div>
@@ -306,10 +460,42 @@
   <div class="section">
     <div class="section-header">Open in CloudWatch</div>
     <div class="section-body">
-      <div class="deep-links">
-        <a class="deep-link" href="{{LINK_SERVICE_DETAIL}}">Jump to service detail in CloudWatch Console</a>
-        <a class="deep-link" href="{{LINK_SERVICE_MAP}}">Service map</a>
-        <a class="deep-link" href="{{LINK_SLO_LIST}}">SLO list</a>
+      <div class="deep-link-groups">
+        <div class="deep-link-group">
+          <div class="group-label investigate">Verify · Investigate</div>
+          <div class="deep-links">
+            <a class="deep-link" href="{{LINK_SERVICE_DETAIL}}">Service detail in CloudWatch Console</a>
+            <a class="deep-link" href="{{LINK_SERVICE_MAP}}">Service map</a>
+            <a class="deep-link" href="{{LINK_LOGS_INSIGHTS}}">Logs Insights</a>
+            <a class="deep-link" href="{{LINK_TRACES}}">X-Ray traces</a>
+          </div>
+        </div>
+        <div class="deep-link-group">
+          <div class="group-label act">Act · Configure · Share</div>
+          <div class="deep-links">
+            <a class="deep-link" href="{{LINK_SLO_LIST}}">SLO list</a>
+            <a class="deep-link" href="{{LINK_ALARMS}}">Alarms on this service</a>
+            <a class="deep-link" href="{{LINK_CLOUDTRAIL}}">CloudTrail event search</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Suggested next commands</div>
+    <div class="section-body">
+      <div class="cmd-list">
+        {{CMD_SUGGESTIONS}}
+        <!-- Examples (verdict-driven):
+        Healthy:
+          /cw-verify-recovery {{SERVICE_NAME}} — re-check in 5 min to confirm stable.
+        Degraded:
+          /cw-investigate-latency {{SERVICE_NAME}} — drill into p99 deviation.
+        Unhealthy:
+          /cw-investigate-slo {{SERVICE_NAME}} — investigate the breaching SLO.
+          /cw-investigate-errors {{SERVICE_NAME}} — triage the 5xx cluster.
+        -->
       </div>
     </div>
   </div>
@@ -320,9 +506,20 @@
       <dt>Time range</dt><dd>last 5 min (current) vs same window 24h ago</dd>
       <dt>MCP tools called</dt><dd>{{MCP_TOOLS_LIST}}</dd>
       <dt>Confidence</dt><dd>{{CONFIDENCE}}</dd>
+      <dt>Self-validation</dt><dd>{{VALIDATION_RESULT}}</dd>
     </dl>
   </div>
 
 </div>
+
+<div class="persistent-footer">
+  <span class="pf-label">Open in CloudWatch</span>
+  <div class="pf-links">
+    <a class="deep-link" href="{{LINK_SERVICE_DETAIL}}">Service detail</a>
+    <a class="deep-link" href="{{LINK_SERVICE_MAP}}">Service map</a>
+    <a class="deep-link" href="{{LINK_SLO_LIST}}">SLO list</a>
+  </div>
+</div>
+
 </body>
 </html>

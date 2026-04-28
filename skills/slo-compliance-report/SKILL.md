@@ -200,6 +200,84 @@ If a single SLO in the report is *Breaching* with fast burn, the verdict above m
 use the 🚨 marker and explicitly recommend running `/cw-investigate-slo <slo-name>`
 first.
 
+## Empty states and data unavailability
+
+A portfolio report covers many services and is the most common place where
+some sources will be missing. Surface gaps; do not hide them.
+
+**Empty states (UX11)**:
+
+- **No services in region** → "No Application Signals services in
+  `<region>`. Confirm region or run `aws-apm-setup`. Report aborted."
+- **No SLOs configured anywhere** → headline becomes "No SLOs configured
+  across `<N>` services". Recommendations phase pivots to "define
+  availability + latency SLOs for the top `<N>` services by traffic." Do
+  not fabricate compliance data.
+- **No at-risk SLOs** → headline becomes "🟢 All SLOs healthy — `<N>`
+  services scanned, all above target with >50% budget remaining." The
+  "Top at-risk services" table is replaced with a one-line "None."
+- **No recently-recovered SLOs** → omit the "Recently recovered" table or
+  render `(none)` rather than an empty table with no rows.
+- **Single-region scope on a multi-region account** → tag the report with
+  the region in the headline so it is not mistaken for an account-wide view.
+
+**Data unavailability (UX8)** — render a banner above the dashboard when
+sources fail. Examples:
+
+> Data unavailable — Application Signals returned `ThrottlingException` for
+> `<N>` of `<M>` SLOs after retry. Those SLOs are listed under "Status
+> unknown" in the dashboard rather than omitted.
+
+> Data unavailable — `list_services` paged out at the configured cap
+> (`MAX_SERVICES=200`); `<extra>` services scanned but not enumerated. Use
+> a region or name filter to narrow the next run.
+
+The rule: a missing SLO is shown explicitly as "unknown", not silently
+dropped. The dashboard's value depends on every row being accounted for.
+
+## Caching, pagination, and rate limits
+
+Portfolio reports fan out reads across many SLOs. Without bounded
+concurrency and result caching, this hits Application Signals throttle
+limits and produces a misleading partial report.
+
+**Bounds and defaults:**
+
+- **Max services** — cap at 200 per run. If `list_services` returns more,
+  stop, surface "exceeded MAX_SERVICES, refine filter", and abort. A
+  report on every service in a 1000-service account is not a useful
+  artifact.
+- **Concurrency** — fan out `get_slo` / `list_slos` reads at concurrency
+  10. Bursting 200 in parallel will throttle.
+- **Per-call timeout** — 10s per MCP read. If the server hangs, stop
+  waiting and mark the SLO as "Status unknown" in the dashboard.
+- **Total report timeout** — 90s. If the report cannot complete in 90s,
+  render whatever has completed plus a "report incomplete: `<N>` of `<M>`
+  SLOs scanned" banner.
+
+**Caching:**
+
+- Cache `list_services` results for the duration of the run so Phase 2
+  fanout can read from a single canonical inventory.
+- Cache per-SLO compliance results (Phase 2 output) so Phase 3 ranking
+  does not re-fetch.
+- Do NOT cache across runs — SLO state changes faster than a typical cache
+  TTL would tolerate, and a stale headline is worse than a slow one.
+
+**Retry and backoff:**
+
+- On `ThrottlingException`, retry once with 2s backoff per call. After
+  the second failure, mark the SLO as "Status unknown" and continue.
+- On `AccessDenied` or `ResourceNotFound`, do NOT retry — propagate the
+  error to the data-unavailable banner immediately.
+
+**Partial results:**
+
+- The dashboard is rendered even if some SLO fetches failed. The Headline
+  counts (Healthy / Warning / At risk / Breaching) include only SLOs with
+  successful reads; a separate "Status unknown" count surfaces failures
+  so the reader can audit completeness.
+
 ## Action safety
 
 **Read-only.** This workflow only reads SLO state. There are no write actions in scope.

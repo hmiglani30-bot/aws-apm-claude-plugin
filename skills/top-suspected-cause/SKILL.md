@@ -82,6 +82,24 @@ confidence requires ≥2 independent sources (metric + trace, deploy + log patte
 - **"Considered and ruled out" is mandatory** — it builds trust by showing the model
   considered alternatives.
 
+## Empty states (UX11)
+
+- **Zero hypotheses with evidence** — render the hero with a "🟡 No
+  high-confidence cause identified" verdict, an "Investigate further" next
+  action, and a single "Considered and ruled out" section listing every
+  hypothesis that lacked evidence. Never invent hypotheses to fill the
+  card.
+- **Single hypothesis** — render with confidence capped at Medium even if
+  the evidence is strong. A single hypothesis with no alternatives is a
+  weaker conclusion than a ranked list with explicit ruled-outs.
+- **All hypotheses ruled out** — render the "Considered and ruled out"
+  section as primary content with a "🟡 No surviving hypothesis" verdict
+  and a recommendation to widen the time window or pull more sources.
+- **No CloudTrail signals at all** — note "no change correlation
+  available" once in the artifact rather than omitting silently. If
+  CloudTrail is the missing source rather than the empty result, surface
+  the data-unavailable banner.
+
 ## Anti-patterns
 
 - ❌ "It's probably a deploy" with no CloudTrail evidence cited.
@@ -94,9 +112,45 @@ confidence requires ≥2 independent sources (metric + trace, deploy + log patte
 
 For Cowork (or any surface that renders HTML artifacts), use the artifact template at
 `artifacts/top-suspected-cause.html` and populate the `{{PLACEHOLDERS}}` with actual
-data. The template encodes the ranked-hypothesis cards (with confidence badges,
-iconized evidence, why-this-confidence callout, falsifiable next step) and the
-"Considered and ruled out" section — do not redesign it.
+data. The template encodes a hero verdict at the top (severity icon, top-claim
+summary, confidence, recommended next action), then ranked-hypothesis cards (each
+with detailed evidence cards — see "Evidence card schema" below — confidence
+badges, why-this-confidence callout, falsifiable next step), a first-class "What I
+ruled out" section, action-grouped deep links, suggested commands, and a persistent
+"Open in CloudWatch" footer. Do not redesign it.
+
+The template's leading HTML comment documents the full typed schema — required +
+optional fields, evidence card structure, button contract (UX10).
+
+### Evidence card schema (UX3)
+
+Each evidence card has five required fields and is one of five kinds. The kinds
+get a colored left border + icon so the reader can scan for "what kind of
+evidence" before reading content:
+
+| Kind | Icon | Border | Source examples |
+|---|---|---|---|
+| **Metric** | 📈 | info-blue | CloudWatch metric, Application Signals RED tile |
+| **Trace** | 🧵 | purple | X-Ray trace + failed/slow span |
+| **Log** | 📜 | warning-orange | Logs Insights pattern + count |
+| **Deploy / CloudTrail** | 🛠️ | error-red | UpdateService, RegisterTaskDefinition, IAM change |
+| **Dependency** | 🔗 | teal | Application Signals service map node + verdict |
+
+Each card MUST populate:
+
+1. **kind icon + label** — the visual category
+2. **source** — which MCP server / dashboard provided the data (e.g.
+   `awslabs.cloudwatch-applicationsignals-mcp-server`, `Logs Insights`,
+   `CloudTrail Lake`)
+3. **timestamp** — ISO UTC of the observation (or window for log patterns)
+4. **value** — the actual observation: metric+number, trace ID + span name,
+   log pattern + count, event name + principal, dependency name + verdict
+5. **link** — deep link to view the evidence directly in CloudWatch / X-Ray
+   / CloudTrail
+
+Cards without all five fields do not count toward confidence — generic
+"metrics show errors" without a specific value, source, time, and link is
+not evidence.
 
 Placeholder reference (non-exhaustive):
 
@@ -119,10 +173,27 @@ Placeholder reference (non-exhaustive):
 - `{{RULED_OUT_ITEMS}}` — `<li>{{CLAIM}} — ruled out because {{EVIDENCE}}</li>` rows;
   always include this section even when empty (one `<li>None — all hypotheses
   retained.</li>`)
-- `{{SAVE_ARTIFACT_BUTTON}}`, `{{SHARE_BUTTON}}` — short labels
+- Hero placeholders: `{{SEVERITY_ICON}}`, `{{SEVERITY}}` (sev1|sev2|sev3),
+  `{{HERO_VERDICT_LINE}}`, `{{HERO_TOP_CLAIM}}`, `{{HERO_CONFIDENCE}}`,
+  `{{HERO_CONFIDENCE_CLASS}}`, `{{HERO_NEXT_ACTION}}`, `{{HERO_NEXT_ACTION_LINK}}`,
+  `{{INVESTIGATION_TYPE}}` (e.g. "SLO breach", "Latency regression",
+  "Error spike"). The hero is the 2-second read.
+- `{{DATA_UNAVAILABLE_BANNER}}` — emit a `<div class="data-unavailable">…</div>`
+  block when one or more sources failed; otherwise emit the empty string.
+- `{{CMD_SUGGESTIONS}}` — emit verdict-driven `<div class="cmd-suggestion">`
+  blocks: e.g. `/cw-investigate-slo <service>`, `/cw-verify-recovery
+  <service>`. Each suggestion includes a one-line "why".
+- `{{SAVE_ARTIFACT_BUTTON}}`, `{{SHARE_BUTTON}}` — short labels. Buttons
+  render visually; click handlers are host-provided (Cowork: future pin /
+  share APIs; Claude Code: inert, file is on disk).
+- `{{LINK_*}}` placeholders — generated via `open-in-cloudwatch` and grouped
+  into "Verify · Investigate" vs "Act · Configure · Share" (UX5). The
+  persistent footer at the bottom of the page repeats the highest-value
+  links (UX12).
 - Footer: `{{SOURCE_MCP_SERVERS}}`, `{{TIME_RANGE_START}}`, `{{TIME_RANGE_END}}`,
   `{{MCP_TOOLS_LIST}}`, `{{HYP_TOTAL_CONSIDERED}}`, `{{HYP_RANKED_COUNT}}`,
-  `{{HYP_RULED_OUT_COUNT}}`
+  `{{HYP_RULED_OUT_COUNT}}`, `{{VALIDATION_RESULT}}` (Pass / Fail summary
+  from `investigation-validator`).
 
 In **Claude Code** (terminal), use the Markdown form above. Both must contain identical
 data — only the rendering differs.

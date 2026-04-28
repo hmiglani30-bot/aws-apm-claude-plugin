@@ -269,6 +269,41 @@ strip them before they reach the artifact:
 Cite **structural fields** (span name, `class.method`, self-time, exception class), not
 raw payloads. If you cannot tell whether a field is sensitive, redact it.
 
+## Empty states and data unavailability
+
+Surface missing data; do not hide it.
+
+**Empty states (UX11)** — render a short, helpful message with a suggested
+next action:
+
+- **No services found / wrong region** → "No Application Signals services
+  in `<region>`. Confirm region or run `aws-apm-setup`."
+- **No traces in the regression window** → "No traces sampled. X-Ray may
+  have sampled them out. Continue with p50/p90/p99 metric evidence and
+  flag attribution confidence as Medium (capped)."
+- **No baseline available** (service is too new) → "No baseline for
+  comparison — service has only `<N>` minutes of history. Compare against
+  the last `<N>` minutes within the current window instead, and surface
+  this caveat in the artifact."
+- **No span-to-code annotations** (manual instrumentation, unsupported
+  runtime) → "Span-to-code unavailable for `<service>`. Code column will
+  be empty in the artifact."
+- **Multiple ambiguous services match** → "Multiple matches for `<name>`:
+  <list>. Ask the user which one."
+
+**Data unavailability (UX8)** — surface failures in the artifact's
+data-unavailable banner rather than silently skipping. Examples:
+
+> **Data unavailable** — CloudTrail unreachable: AccessDenied. Change
+> correlation skipped. Confidence capped at Medium.
+
+> **Data unavailable** — X-Ray returned `ThrottlingException`. Trace
+> sampling may be incomplete; only `<N>` of `<M>` requested traces
+> retrieved.
+
+The rule: a missing source caps confidence at Medium. State the cap in
+the confidence justification per `investigation-validator`.
+
 ## What this skill does NOT do
 
 - Does not investigate error spikes that aren't latency-related — use `error-spike-triage`.

@@ -1,4 +1,37 @@
 <!DOCTYPE html>
+<!--
+  ARTIFACT SCHEMA — slo-breach-explainer
+  Surface: Cowork (HTML), Claude Code (Markdown twin in SKILL.md). Identical data, different rendering.
+  Ownership: skills/slo-breach-explainer/SKILL.md is the source of truth for what to populate.
+
+  Required fields:
+    SLO_NAME, AWS_REGION, BREACH_START_ISO, BREACH_DURATION,
+    SEVERITY (sev1|sev2|sev3|recovered) and SEVERITY_ICON ("🚨"|"🔴"|"🟠"|"🟡"|"🟢"),
+    BURN_CLASSIFICATION (Fast burn | Slow burn | Recovered, budget depleted),
+    SLO_TARGET_PCT, CURRENT_ATTAINMENT_PCT, ATTAINMENT_DELTA, SLO_WINDOW,
+    BUDGET_REMAINING_PCT, BUDGET_REMAINING_RAW, BUDGET_INTERPRETATION,
+    BURN_1H/6H/24H_RATE, _MULTIPLIER, _PCT, BURN_INTERPRETATION_SHORT, BURN_INTERPRETATION_LONG,
+    HERO_VERDICT_LINE (one sentence — what + how bad + when),
+    HERO_TOP_HYPOTHESIS (one sentence — best guess root cause),
+    HERO_CONFIDENCE (Low|Medium|High) + HERO_CONFIDENCE_CLASS (low|medium|high),
+    HERO_NEXT_ACTION (one sentence — what the on-call should do next),
+    IMPACTED_OPERATIONS_ROWS, CORRELATED_EVENTS_ROWS,
+    RANKED_HYPOTHESES_BLOCK, RULED_OUT_ITEMS,
+    LINK_SLO_DETAIL, LINK_SERVICE_MAP, LINK_LOGS_INSIGHTS, LINK_CLOUDTRAIL,
+    SOURCE_MCP_SERVERS, TIME_RANGE_START, TIME_RANGE_END, MCP_TOOLS_LIST, QUERIES_USED, CAUSAL_CONFIDENCE.
+
+  Optional fields:
+    DATA_UNAVAILABLE_BANNER — render only when one or more data sources failed.
+    CMD_SUGGESTIONS — array of /cw-* slash commands relevant to this verdict.
+
+  Buttons:
+    SAVE_ARTIFACT_BUTTON / SHARE_BUTTON — placeholder labels.
+    In Claude Code: render as inert text labels — saving = the file already exists on disk;
+      sharing = user copies the file path. The buttons render but do not wire to handlers.
+    In Cowork: SAVE wires to the host's artifact-pin action; SHARE wires to the host's
+      share-link action. Until those host APIs land, both are FUTURE — render visually,
+      no-op on click. Do not invent client-side behavior.
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -29,13 +62,14 @@
     font-size: 14px;
     line-height: 1.5;
   }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 24px 96px 24px; }
+
   .header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
   }
   .title-block h1 {
     font-size: 22px;
@@ -45,24 +79,7 @@
     align-items: center;
     gap: 10px;
   }
-  .title-block .subtitle {
-    color: var(--text-secondary);
-    font-size: 13px;
-  }
-  .status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-    background: rgba(255, 93, 100, 0.15);
-    color: var(--status-error);
-    border: 1px solid rgba(255, 93, 100, 0.4);
-  }
-  .status-pill.warning { background: rgba(255, 165, 82, 0.15); color: var(--status-warning); border-color: rgba(255, 165, 82, 0.4); }
-  .status-pill.success { background: rgba(106, 175, 63, 0.15); color: var(--status-success); border-color: rgba(106, 175, 63, 0.4); }
+  .title-block .subtitle { color: var(--text-secondary); font-size: 13px; }
   .actions { display: flex; gap: 8px; }
   .btn {
     background: var(--bg-surface-2);
@@ -80,11 +97,112 @@
   .btn:hover { border-color: var(--link); color: var(--link); }
   .btn-primary { background: var(--link); border-color: var(--link); color: #0f1b2a; font-weight: 600; }
   .btn-primary:hover { background: var(--link-hover); color: #0f1b2a; }
+
+  .severity-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .severity-pill.sev1 { background: rgba(255, 93, 100, 0.18); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.5); }
+  .severity-pill.sev2 { background: rgba(255, 165, 82, 0.18); color: var(--status-warning); border: 1px solid rgba(255, 165, 82, 0.5); }
+  .severity-pill.sev3 { background: rgba(83, 159, 229, 0.18); color: var(--link); border: 1px solid rgba(83, 159, 229, 0.5); }
+  .severity-pill.recovered { background: rgba(106, 175, 63, 0.18); color: var(--status-success); border: 1px solid rgba(106, 175, 63, 0.5); }
+
+  /* Hero verdict — the 2-second read. */
+  .hero {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-left: 6px solid var(--status-error);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+  }
+  .hero.sev1 { border-left-color: var(--status-error); }
+  .hero.sev2 { border-left-color: var(--status-warning); }
+  .hero.sev3 { border-left-color: var(--link); }
+  .hero.recovered { border-left-color: var(--status-success); }
+
+  .hero-verdict {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .hero-icon { font-size: 30px; line-height: 1; flex-shrink: 0; }
+  .hero-verdict-text { font-size: 18px; font-weight: 600; line-height: 1.35; }
+  .hero-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-meta-item {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 13px;
+  }
+  .hero-meta-item .lbl { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .hero-meta-item .val { color: var(--text-primary); font-weight: 600; }
+
+  .confidence-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .confidence-badge.high { background: rgba(255, 93, 100, 0.18); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.5); }
+  .confidence-badge.medium { background: rgba(255, 165, 82, 0.18); color: var(--status-warning); border: 1px solid rgba(255, 165, 82, 0.5); }
+  .confidence-badge.low { background: rgba(149, 165, 184, 0.15); color: var(--text-secondary); border: 1px solid rgba(149, 165, 184, 0.3); }
+
+  .hero-hyp { font-size: 14px; margin-bottom: 12px; }
+  .hero-hyp .lbl { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 8px; }
+
+  .hero-action {
+    background: rgba(83, 159, 229, 0.08);
+    border: 1px solid rgba(83, 159, 229, 0.25);
+    border-radius: 6px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .hero-action-text { font-size: 14px; font-weight: 500; }
+  .hero-action-text .lbl { color: var(--link); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 8px; font-weight: 700; }
+
+  /* Data-unavailable banner. */
+  .data-unavailable {
+    background: rgba(255, 165, 82, 0.08);
+    border: 1px solid rgba(255, 165, 82, 0.4);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+  .data-unavailable .lbl { color: var(--status-warning); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-right: 8px; }
+
   .grid-summary {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
   .card {
     background: var(--bg-surface);
@@ -95,6 +213,7 @@
   .card .label { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
   .card .value { font-size: 20px; font-weight: 600; }
   .card .delta { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
   .section {
     background: var(--bg-surface);
     border: 1px solid var(--border);
@@ -112,35 +231,22 @@
     justify-content: space-between;
   }
   .section-body { padding: 16px 18px; }
+
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th { text-align: left; color: var(--text-secondary); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
   td { padding: 10px; border-bottom: 1px solid var(--border); }
   tr:last-child td { border-bottom: none; }
   td.numeric { text-align: right; font-variant-numeric: tabular-nums; }
+
   .burn-row { display: grid; grid-template-columns: 80px 1fr 100px 80px; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
   .burn-row:last-child { border-bottom: none; }
   .burn-window { color: var(--text-secondary); font-size: 12px; }
   .burn-bar { background: var(--burn-bar-bg); height: 8px; border-radius: 4px; overflow: hidden; }
   .burn-fill { height: 100%; background: linear-gradient(90deg, var(--status-warning), var(--status-error)); }
   .multiplier { font-weight: 600; color: var(--status-error); }
-  .gauge {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .gauge-bar {
-    flex: 1;
-    height: 14px;
-    background: var(--burn-bar-bg);
-    border-radius: 7px;
-    overflow: hidden;
-    position: relative;
-  }
-  .gauge-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--status-error), var(--status-warning), var(--status-success));
-    transition: width 0.3s;
-  }
+  .gauge { display: flex; align-items: center; gap: 16px; }
+  .gauge-bar { flex: 1; height: 14px; background: var(--burn-bar-bg); border-radius: 7px; overflow: hidden; position: relative; }
+  .gauge-fill { height: 100%; background: linear-gradient(90deg, var(--status-error), var(--status-warning), var(--status-success)); transition: width 0.3s; }
   .interpretation {
     margin-top: 12px;
     padding: 10px 14px;
@@ -150,13 +256,44 @@
     font-size: 13px;
     color: var(--text-primary);
   }
-  .deep-links { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .ruled-out-list { list-style: none; margin: 0; padding: 0; }
+  .ruled-out-list li {
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .ruled-out-list li:last-child { border-bottom: none; }
+  .ruled-out-list li::before { content: "✗ "; color: var(--text-secondary); margin-right: 4px; }
+
+  /* Action-grouped deep links. */
+  .deep-link-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .deep-link-groups { grid-template-columns: 1fr; } }
+  .deep-link-group {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .deep-link-group .group-label {
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .deep-link-group .group-label.act { color: var(--status-warning); }
+  .deep-link-group .group-label.investigate { color: var(--link); }
+  .deep-links { display: flex; flex-direction: column; gap: 6px; }
+  .deep-links.inline { flex-direction: row; flex-wrap: wrap; }
   .deep-link {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 12px;
-    background: var(--bg-surface-2);
+    padding: 6px 10px;
+    background: var(--bg-page);
     border: 1px solid var(--border);
     border-radius: 4px;
     color: var(--link);
@@ -165,6 +302,28 @@
   }
   .deep-link:hover { border-color: var(--link); }
   .deep-link::after { content: "→"; opacity: 0.7; }
+
+  .cmd-list { display: flex; flex-direction: column; gap: 8px; }
+  .cmd-suggestion {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .cmd-suggestion code {
+    color: var(--link);
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--bg-page);
+    padding: 4px 8px;
+    border-radius: 4px;
+    align-self: flex-start;
+  }
+  .cmd-suggestion .why { color: var(--text-secondary); font-size: 12px; }
+
   .footer-meta {
     margin-top: 24px;
     padding: 14px 18px;
@@ -178,6 +337,26 @@
   .footer-meta dt { color: var(--text-secondary); }
   .footer-meta dd { margin: 0; color: var(--text-primary); font-family: "SF Mono", "Monaco", monospace; font-size: 11px; }
   code { font-family: "SF Mono", "Monaco", monospace; background: var(--bg-surface-2); padding: 1px 6px; border-radius: 3px; font-size: 12px; }
+
+  /* Persistent footer — Open in CloudWatch always within reach. */
+  .persistent-footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 27, 42, 0.96);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(6px);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    z-index: 50;
+  }
+  .persistent-footer .pf-label { color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+  .persistent-footer .pf-links { display: flex; gap: 8px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
@@ -185,37 +364,65 @@
 
   <div class="header">
     <div class="title-block">
-      <h1>🚨 SLO Breach Explainer — <code>{{SLO_NAME}}</code></h1>
+      <h1>{{SEVERITY_ICON}} SLO Breach Explainer — <code>{{SLO_NAME}}</code> <span class="severity-pill {{SEVERITY}}">{{BURN_CLASSIFICATION}}</span></h1>
       <div class="subtitle">
         Breach started <strong>{{BREACH_START_ISO}}</strong> · {{BREACH_DURATION}} ago · Region <code>{{AWS_REGION}}</code>
       </div>
     </div>
     <div class="actions">
+      <!-- SAVE_ARTIFACT_BUTTON: future host action — pin the artifact in Cowork's session, no-op in Claude Code (file already on disk). -->
       <button class="btn">{{SAVE_ARTIFACT_BUTTON}}</button>
+      <!-- SHARE_BUTTON: future host action — copy a Cowork share-link. In Claude Code, the user copies the file path manually. -->
       <button class="btn">{{SHARE_BUTTON}}</button>
+    </div>
+  </div>
+
+  <!-- Optional data-unavailable banner. Remove block when all sources returned. -->
+  {{DATA_UNAVAILABLE_BANNER}}
+  <!--
+  Render as:
+  <div class="data-unavailable"><span class="lbl">Data unavailable</span> CloudTrail Lake unreachable: AccessDenied. Change correlation skipped. Confidence capped at Medium.</div>
+  -->
+
+  <!-- HERO — verdict, hypothesis, confidence, recommended action. The 2-second read. -->
+  <div class="hero {{SEVERITY}}">
+    <div class="hero-verdict">
+      <div class="hero-icon">{{SEVERITY_ICON}}</div>
+      <div class="hero-verdict-text">{{HERO_VERDICT_LINE}}</div>
+    </div>
+    <div class="hero-meta-row">
+      <div class="hero-meta-item"><span class="lbl">Burn</span><span class="val">{{BURN_CLASSIFICATION}}</span></div>
+      <div class="hero-meta-item"><span class="lbl">Budget left</span><span class="val">{{BUDGET_REMAINING_PCT}}%</span></div>
+      <div class="hero-meta-item"><span class="lbl">Time-to-exhaust</span><span class="val">{{TIME_TO_EXHAUST}}</span></div>
+      <span class="confidence-badge {{HERO_CONFIDENCE_CLASS}}">{{HERO_CONFIDENCE}} confidence</span>
+    </div>
+    <div class="hero-hyp"><span class="lbl">Top hypothesis</span>{{HERO_TOP_HYPOTHESIS}}</div>
+    <div class="hero-action">
+      <div class="hero-action-text"><span class="lbl">Recommended next action</span>{{HERO_NEXT_ACTION}}</div>
+      <a class="btn btn-primary" href="{{LINK_SLO_DETAIL}}">Open SLO in CloudWatch Console →</a>
     </div>
   </div>
 
   <div class="grid-summary">
     <div class="card">
-      <div class="label">Status</div>
-      <div class="value"><span class="status-pill">{{BURN_CLASSIFICATION}}</span></div>
-      <div class="delta">{{BURN_INTERPRETATION_SHORT}}</div>
-    </div>
-    <div class="card">
-      <div class="label">SLO Target</div>
+      <div class="label">SLO target</div>
       <div class="value">{{SLO_TARGET_PCT}}%</div>
       <div class="delta">over {{SLO_WINDOW}}</div>
     </div>
     <div class="card">
-      <div class="label">Current Attainment</div>
+      <div class="label">Current attainment</div>
       <div class="value">{{CURRENT_ATTAINMENT_PCT}}%</div>
       <div class="delta">{{ATTAINMENT_DELTA}} vs target</div>
     </div>
     <div class="card">
-      <div class="label">Error Budget Remaining</div>
+      <div class="label">Error budget remaining</div>
       <div class="value">{{BUDGET_REMAINING_PCT}}%</div>
       <div class="delta">{{BUDGET_REMAINING_RAW}}</div>
+    </div>
+    <div class="card">
+      <div class="label">Top contributor</div>
+      <div class="value">{{TOP_CONTRIBUTOR_NAME}}</div>
+      <div class="delta">{{TOP_CONTRIBUTOR_PCT}}% of breach</div>
     </div>
   </div>
 
@@ -289,6 +496,7 @@
         </thead>
         <tbody>
           {{CORRELATED_EVENTS_ROWS}}
+          <!-- If empty: <tr><td colspan="4">No CloudTrail changes in window. (If CloudTrail itself unavailable, see banner above.)</td></tr> -->
         </tbody>
       </table>
     </div>
@@ -302,13 +510,53 @@
   </div>
 
   <div class="section">
+    <div class="section-header">Considered and ruled out</div>
+    <div class="section-body">
+      <ul class="ruled-out-list">
+        {{RULED_OUT_ITEMS}}
+        <!-- Each: <li>{{CLAIM}} — ruled out because {{EVIDENCE}}</li>
+             If empty: <li>None — all considered hypotheses retained in the ranked list.</li> -->
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
     <div class="section-header">Open in CloudWatch</div>
     <div class="section-body">
-      <div class="deep-links">
-        <a class="deep-link" href="{{LINK_SLO_DETAIL}}">Jump to SLO detail in CloudWatch Console</a>
-        <a class="deep-link" href="{{LINK_SERVICE_MAP}}">Service map at breach start</a>
-        <a class="deep-link" href="{{LINK_LOGS_INSIGHTS}}">Logs Insights for breach window</a>
-        <a class="deep-link" href="{{LINK_CLOUDTRAIL}}">CloudTrail event search</a>
+      <div class="deep-link-groups">
+        <div class="deep-link-group">
+          <div class="group-label investigate">Verify · Investigate</div>
+          <div class="deep-links">
+            <a class="deep-link" href="{{LINK_SLO_DETAIL}}">SLO detail in CloudWatch Console</a>
+            <a class="deep-link" href="{{LINK_SERVICE_MAP}}">Service map at breach start</a>
+            <a class="deep-link" href="{{LINK_LOGS_INSIGHTS}}">Logs Insights for breach window</a>
+            <a class="deep-link" href="{{LINK_TRACES}}">X-Ray traces from this window</a>
+            <a class="deep-link" href="{{LINK_CLOUDTRAIL}}">CloudTrail event search</a>
+          </div>
+        </div>
+        <div class="deep-link-group">
+          <div class="group-label act">Act · Configure · Share</div>
+          <div class="deep-links">
+            <a class="deep-link" href="{{LINK_SERVICE_DETAIL}}">Service detail in Application Signals</a>
+            <a class="deep-link" href="{{LINK_ALARM_LIST}}">Alarms on this service</a>
+            <a class="deep-link" href="{{LINK_SLO_CONFIG}}">SLO configuration</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Suggested next commands</div>
+    <div class="section-body">
+      <div class="cmd-list">
+        {{CMD_SUGGESTIONS}}
+        <!-- Each:
+        <div class="cmd-suggestion">
+          <code>/cw-investigate-errors {{SERVICE_NAME}}</code>
+          <div class="why">Triage the 5xx cluster currently driving the breach.</div>
+        </div>
+        -->
       </div>
     </div>
   </div>
@@ -320,9 +568,22 @@
       <dt>MCP tools called</dt><dd>{{MCP_TOOLS_LIST}}</dd>
       <dt>Queries used</dt><dd>{{QUERIES_USED}}</dd>
       <dt>Confidence</dt><dd>{{CAUSAL_CONFIDENCE}}</dd>
+      <dt>Self-validation</dt><dd>{{VALIDATION_RESULT}}</dd>
     </dl>
   </div>
 
 </div>
+
+<!-- Persistent footer — always-on Open in CloudWatch bar. -->
+<div class="persistent-footer">
+  <span class="pf-label">Open in CloudWatch</span>
+  <div class="pf-links">
+    <a class="deep-link" href="{{LINK_SLO_DETAIL}}">SLO detail</a>
+    <a class="deep-link" href="{{LINK_SERVICE_MAP}}">Service map</a>
+    <a class="deep-link" href="{{LINK_LOGS_INSIGHTS}}">Logs Insights</a>
+    <a class="deep-link" href="{{LINK_CLOUDTRAIL}}">CloudTrail</a>
+  </div>
+</div>
+
 </body>
 </html>
