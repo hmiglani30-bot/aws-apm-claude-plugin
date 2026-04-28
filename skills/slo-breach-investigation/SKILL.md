@@ -40,6 +40,25 @@ committing to this workflow. If no SLOs exist, hand off to `service-health-card`
 
 If any required MCP is not connected, run the `aws-apm-setup` skill before continuing.
 
+## Presentation
+
+How to surface progress to the on-call engineer while the investigation runs:
+
+1. **Show reasoning before each phase.** Before kicking off a phase, write a one-line
+   thought explaining what you are about to do and why — e.g. "Pulling burn rate over
+   1h / 6h / 24h to classify this as fast vs slow burn." This makes the investigation
+   inspectable in real time, not a black box.
+2. **Label tool calls in human-readable terms.** When invoking MCP tools, prefix each
+   call with a plain-English label ("Checking SLO status…", "Fetching correlated
+   CloudTrail events…", "Sampling failed traces…") rather than dumping raw API or
+   tool names. Raw names go in the metadata footer, not the running narrative.
+3. **Track phases with `TodoWrite`.** At the start of the workflow, create a todo per
+   phase (Frame the breach, Localize impact, Pull traces, Correlate changes,
+   Hypothesize, Follow dependencies). Mark each `in_progress` when you start it and
+   `completed` when its data is in hand. Exactly one phase is `in_progress` at a
+   time. The on-call engineer should be able to read the todo list and know where
+   the investigation is.
+
 ## Investigation workflow
 
 ### Phase 1 — Frame the breach
@@ -137,7 +156,19 @@ follow the chain one hop:
 
 ## Final artifact
 
-Always end with the **SLO Breach Explainer** artifact (see `slo-breach-explainer` skill).
+**Lead with a one-line verdict** before presenting the artifact. The verdict goes
+ABOVE the artifact, in plain text, so it's the first thing the user reads. Shape:
+
+> 🔴 **Fast burn at 28× normal** — `checkout-availability` will exhaust its remaining
+> 12% budget in ~6h. Top hypothesis: bad deploy at 14:18 UTC (High confidence).
+
+The verdict must name (1) burn-rate state, (2) the SLO, (3) time-to-exhaustion if
+applicable, and (4) the top-ranked hypothesis with its confidence. If the breach has
+recovered, lead with "🟢 Recovered, but budget exhausted — …" instead. Never hide the
+verdict inside the artifact; the on-call engineer should be able to read just the
+verdict line and decide whether to page someone.
+
+Then present the **SLO Breach Explainer** artifact (see `slo-breach-explainer` skill).
 That artifact is the canonical output — it must include:
 
 - Burn rate (1h / 6h / 24h)

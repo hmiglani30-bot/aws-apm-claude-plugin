@@ -45,6 +45,24 @@ recommendations phase if a specific at-risk SLO needs deeper context.
 If the Application Signals MCP is not connected, run the `aws-apm-setup` skill before
 continuing.
 
+## Presentation
+
+How to surface progress while the report runs:
+
+1. **Show reasoning before each phase.** Before each phase, write a one-line thought
+   explaining what you are about to do and why — e.g. "Enumerating SLOs across all
+   services first so the per-SLO compliance fetches in Phase 2 can fan out in
+   parallel." Make the report inspectable, not a black box.
+2. **Label tool calls in human-readable terms.** When invoking MCP tools, prefix each
+   call with a plain-English label ("Listing services in `us-east-1`…", "Fetching
+   SLO attainment and burn rate…", "Computing time-to-exhaustion…") rather than
+   dumping raw API or tool names. Raw names go in the metadata footer.
+3. **Track phases with `TodoWrite`.** At the start of the workflow, create a todo
+   per phase (List SLOs, Compute compliance, Rank by risk, Render dashboard,
+   Generate recommendations). Mark each `in_progress` when you start it and
+   `completed` when its data is in hand. Exactly one phase is `in_progress` at a
+   time.
+
 ## Reporting workflow
 
 ### Phase 1 — List all SLOs across all services
@@ -161,13 +179,26 @@ anchored to a specific row in the dashboard.
 
 ## Final artifact
 
+**Lead with a one-line verdict** before presenting the dashboard. The verdict goes
+ABOVE the dashboard, in plain text, so it's the first thing the reliability lead
+reads. Shape:
+
+> 🟠 **3 SLOs at risk this week** — `checkout-availability` has 15% budget remaining
+> and is the top concern; recommend running `/cw-investigate-slo checkout-availability`
+> first.
+
+The verdict must name (1) overall portfolio state (counts of Breaching / At risk /
+Warning), (2) the single most-at-risk SLO, and (3) the recommended next action. If
+everything is healthy, lead with "🟢 All SLOs healthy — N services scanned, all above
+target with >50% budget remaining." Never hide the verdict inside the dashboard.
+
 The **SLO Compliance Report** dashboard from Phase 4 is the canonical output. The
 recommendations from Phase 5 render as a follow-on section directly under the dashboard,
 not as a separate artifact.
 
-If a single SLO in the report is *Breaching* with fast burn, surface a one-line callout
-above the dashboard headline: "🚨 1 SLO breaching with fast burn — consider running
-`/cw-investigate-slo <slo-name>` first."
+If a single SLO in the report is *Breaching* with fast burn, the verdict above must
+use the 🚨 marker and explicitly recommend running `/cw-investigate-slo <slo-name>`
+first.
 
 ## Action safety
 
