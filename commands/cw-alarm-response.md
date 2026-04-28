@@ -1,7 +1,14 @@
 ---
 description: Triage a fired CloudWatch alarm end-to-end and produce a Service Health Card + Top Suspected Cause artifact
 argument-hint: <alarm-name-or-arn>
-allowed-tools: [Read, Bash, Grep]
+allowed-tools:
+  - Read
+  - Bash
+  - Grep
+  - "mcp__awslabs.cloudwatch-mcp-server__*"
+  - "mcp__awslabs.cloudwatch-applicationsignals-mcp-server__*"
+  - "mcp__awslabs.cloudtrail-mcp-server__*"
+  - "mcp__awslabs.aws-documentation-mcp-server__*"
 ---
 
 # /cw-alarm-response

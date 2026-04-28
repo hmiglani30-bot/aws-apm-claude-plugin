@@ -203,11 +203,50 @@ first.
 ## Action safety
 
 **Read-only.** This workflow only reads SLO state. There are no write actions in scope.
-The plugin's PreToolUse hook still applies if a recommendation is acted on later.
+The plugin's PreToolUse hook still applies if a recommendation is acted on later — it
+fails closed on state-changing MCP calls (Put / Update / Delete / Modify / Create /
+Remove / Disable / Enable / Attach / Detach / Tag / Untag / Set / Batch / Send /
+Publish / Invoke / Execute / Run / Associate / Disassociate / Register / Deregister /
+Restore / Reboot / Terminate / Start / Stop).
 
-For "tune the SLO target" or "decommission stale SLO" recommendations, **never** execute
-the change automatically — the recommendation surfaces as advice with a deep link to the
-Application Signals console for the user to apply manually.
+If a follow-up action *does* need to run as part of this workflow (for example, the
+user accepts a "tune the SLO target" recommendation in-session), the model must first
+render this **structured approval block** and wait for the exact confirmation phrase
+before re-issuing the call:
+
+```
+🛑 Write action proposed
+- API action: mcp__awslabs.<server>__<ToolName>
+- Target ARN: <fully-qualified ARN or resource ID>
+- Region / account: <region> · <account>
+- Arguments: <full JSON the tool will receive>
+- Blast radius: <single resource | service-wide | account-wide | cross-account>
+- Reversible? <yes — how | no — why>
+- Rollback plan: <exact reverse action and how to verify it took effect>
+- Side-effect detection: <metric / log / event the user should watch post-write>
+
+Type CONFIRM <ToolName> to proceed. Any other reply cancels.
+```
+
+For "tune the SLO target" or "decommission stale SLO" recommendations, the **default**
+remains: never execute the change automatically — surface advice with a deep link to
+the Application Signals console for the user to apply manually. The approval block is
+the escape hatch when in-session execution is explicitly requested by the user, not
+the default path.
+
+## Redaction
+
+This is a reporting workflow over SLO state — it should not surface raw logs or trace
+payloads. If a recommendation cites supporting evidence pulled from logs, redact PII,
+tokens, and customer identifiers before including it:
+
+- Email addresses, user IDs, customer IDs, account numbers — replace with `<redacted-user>`
+- Auth tokens, API keys, session IDs, JWTs, bearer tokens — replace with `<redacted-token>`
+- IP addresses in user contexts (not service-internal IPs) — replace with `<redacted-ip>`
+
+Cite SLO metadata (name, target, attainment, burn rate) verbatim — those are not PII.
+Service names and ARNs are also fine. If you cannot tell whether a free-text field is
+sensitive, redact it.
 
 ## What this skill does NOT do
 

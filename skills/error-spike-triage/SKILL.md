@@ -165,6 +165,55 @@ For a full postmortem-style writeup (timeline + root cause + impact + remediatio
 use the artifact template at `artifacts/investigation-summary.html` and populate the
 `{{PLACEHOLDERS}}` with actual data — see that file for the full placeholder list.
 
+## Action safety
+
+**Read-only by default.** Never call write actions without an explicit confirmation
+gate. The plugin's PreToolUse hook fails closed on state-changing MCP calls (Put /
+Update / Delete / Modify / Create / Remove / Disable / Enable / Attach / Detach / Tag
+/ Untag / Set / Batch / Send / Publish / Invoke / Execute / Run / Associate /
+Disassociate / Register / Deregister / Restore / Reboot / Terminate / Start / Stop),
+but rely on the rule, not the hook.
+
+Before proposing any write, render this **structured approval block** to the user and
+wait for the exact confirmation phrase before re-issuing the call:
+
+```
+🛑 Write action proposed
+- API action: mcp__awslabs.<server>__<ToolName>
+- Target ARN: <fully-qualified ARN or resource ID>
+- Region / account: <region> · <account>
+- Arguments: <full JSON the tool will receive>
+- Blast radius: <single resource | service-wide | account-wide | cross-account>
+- Reversible? <yes — how | no — why>
+- Rollback plan: <exact reverse action and how to verify it took effect>
+- Side-effect detection: <metric / log / event the user should watch post-write>
+
+Type CONFIRM <ToolName> to proceed. Any other reply cancels.
+```
+
+Do not paraphrase or shorten this block — the structure is the safety surface. If any
+field is unknown, say so explicitly ("blast radius unknown — refusing to propose").
+
+For destructive or billing-impacting actions, prefer deep-linking the user to the AWS
+console via `open-in-cloudwatch` rather than executing through MCP — the approval
+block is for idempotent reversible writes only.
+
+## Redaction
+
+**Redact PII, tokens, and customer identifiers from logs and traces before including
+them in any output.** Logs Insights queries in Phase 2 commonly surface raw user data
+in `@message` and request-body fields — sample lines must be redacted before they
+appear in the artifact:
+
+- Email addresses, user IDs, customer IDs, account numbers — replace with `<redacted-user>`
+- Auth tokens, API keys, session IDs, JWTs, bearer tokens — replace with `<redacted-token>`
+- IP addresses in user contexts (not service-internal IPs) — replace with `<redacted-ip>`
+- Request bodies that include any of the above
+
+Cite **patterns and exception classes**, not raw lines. The artifact's value is in the
+*shape* of the failure (errorType, count, operation), not in the specific user who hit
+it. If you cannot tell whether a field is sensitive, redact it.
+
 ## What this skill does NOT do
 
 - Does not handle latency-only regressions — use `latency-regression`.

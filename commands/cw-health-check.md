@@ -1,7 +1,14 @@
 ---
 description: Poll all Application Signals services and render a dashboard of service health cards (RED metrics, SLO status, verdict)
 argument-hint: [service-filter]
-allowed-tools: [Read, Bash, Grep]
+allowed-tools:
+  - Read
+  - Bash
+  - Grep
+  - "mcp__awslabs.cloudwatch-mcp-server__*"
+  - "mcp__awslabs.cloudwatch-applicationsignals-mcp-server__*"
+  - "mcp__awslabs.cloudtrail-mcp-server__*"
+  - "mcp__awslabs.aws-documentation-mcp-server__*"
 ---
 
 # /cw-health-check
