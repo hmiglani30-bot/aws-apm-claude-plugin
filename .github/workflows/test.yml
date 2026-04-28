@@ -1,0 +1,33 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  structural-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run structural tests
+        run: python -m unittest tests.test_structure -v
+
+      - name: Validate JSON manifests
+        run: |
+          python -m json.tool .claude-plugin/plugin.json > /dev/null
+          python -m json.tool .claude-plugin/marketplace.json > /dev/null
+          python -m json.tool .mcp.json > /dev/null
+          python -m json.tool hooks/hooks.json > /dev/null
+
+      - name: Lint hook script
+        run: |
+          sudo apt-get update && sudo apt-get install -y shellcheck
+          shellcheck hooks/scripts/confirm-write.sh

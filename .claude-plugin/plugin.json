@@ -1,0 +1,25 @@
+{
+  "name": "aws-apm",
+  "version": "0.1.0",
+  "description": "AWS APM workflows for Claude Code and Cowork — SLO breach investigation, latency regression, error spike triage, and curated artifact components on top of AWS CloudWatch, Application Signals, and CloudTrail MCP servers.",
+  "author": {
+    "name": "AWS APM",
+    "url": "https://aws.amazon.com/cloudwatch/"
+  },
+  "homepage": "https://github.com/hmiglani30/aws-apm-claude-plugin",
+  "repository": "https://github.com/hmiglani30/aws-apm-claude-plugin",
+  "license": "MIT",
+  "keywords": [
+    "aws",
+    "cloudwatch",
+    "application-signals",
+    "cloudtrail",
+    "apm",
+    "observability",
+    "slo",
+    "tracing",
+    "latency",
+    "incident-response",
+    "mcp"
+  ]
+}

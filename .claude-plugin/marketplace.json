@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "aws-apm-plugins",
+  "version": "0.1.0",
+  "description": "AWS APM plugins for Claude Code and Cowork",
+  "owner": {
+    "name": "AWS APM",
+    "url": "https://aws.amazon.com/cloudwatch/"
+  },
+  "plugins": [
+    {
+      "name": "aws-apm",
+      "source": "./",
+      "description": "AWS APM workflows + curated artifact components on the AWS CloudWatch / Application Signals / CloudTrail MCP servers",
+      "version": "0.1.0",
+      "author": { "name": "AWS APM" }
+    }
+  ]
+}

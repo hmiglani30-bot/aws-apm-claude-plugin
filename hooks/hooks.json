@@ -1,0 +1,17 @@
+{
+  "description": "Action-safety gate for AWS write operations. Intercepts Put*, Update*, Delete*, Modify*, Start*, and Stop* MCP calls before they execute and requires explicit user confirmation. Read operations pass through unmodified.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__awslabs__.*__(Put|Update|Delete|Modify|Start|Stop|Create|Remove|Disable|Enable|Attach|Detach|Tag|Untag).*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/confirm-write.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
