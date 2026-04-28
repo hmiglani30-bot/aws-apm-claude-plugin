@@ -141,6 +141,50 @@ Before any investigation workflow begins, run this lookup:
 After the investigation produces its final artifact and
 `investigation-validator` passes:
 
+### First-write opt-in (Sec5)
+
+Incident memory is **opt-in on first write**. Before creating
+`.aws-apm/incidents/` for the first time in this working directory,
+the model MUST surface this consent block and wait for explicit user
+approval:
+
+```
+📒 Incident memory — opt-in required (first write)
+
+This is the first time this plugin is about to persist an incident
+summary in this working directory. Before any file is written, please
+review:
+
+- Path: <absolute path>/.aws-apm/incidents/
+- Will be created if you approve
+- Stores: structured JSON per investigation (service name, region,
+  account, root-cause claim, key metrics, correlated CloudTrail events,
+  model-assigned tags). PII and raw log lines are redacted per the
+  redaction rules in the source skill.
+- Lifecycle: append-only, never modified by Claude after write. Pruning
+  is the user's responsibility.
+- Git: `.aws-apm/` is in `.gitignore` by default — incidents stay local
+  unless you explicitly opt in to committing them.
+
+Type ENABLE INCIDENT MEMORY to allow this and all future writes in
+this directory. Any other reply skips persistence for this incident
+and you'll be re-asked next time.
+```
+
+How to detect "first write": the directory `.aws-apm/incidents/` does
+not yet exist (or exists but is empty). Once the user approves, write
+a sentinel file `.aws-apm/incidents/.opted-in` containing the ISO
+timestamp of approval — its presence is the durable consent record;
+do not re-prompt on subsequent writes in the same directory.
+
+If the user declines (any reply other than the exact phrase), skip
+this write entirely. Do not silently buffer the data, do not write a
+"declined" marker that could leak intent — just move on. Mention in
+the investigation summary that incident memory is disabled, so the
+on-call sees the trade-off explicitly.
+
+### Write procedure (after consent)
+
 1. Resolve the filename per the layout rules above.
 2. Build the JSON object. Fields the model already has from the
    investigation:
@@ -174,6 +218,12 @@ After the investigation produces its final artifact and
 
 ## Rules
 
+- **Opt-in on first write is mandatory.** Never create
+  `.aws-apm/incidents/` (or write to it for the first time in a
+  directory) without explicit user consent via the opt-in block above.
+  The presence of `.aws-apm/incidents/.opted-in` is the durable consent
+  record — do not assume consent from the directory existing for any
+  other reason.
 - **Never overwrite an existing incident file silently.** If the target
   filename already exists, append `_<HHMM>` and try again.
 - **Never write incidents that lack a metadata footer in the source
@@ -185,12 +235,14 @@ After the investigation produces its final artifact and
   investigation produced a final artifact.
 - **Do not include PII or sensitive data** — log lines may contain user
   identifiers, request bodies, or secrets. The summary cites *patterns*
-  and *exception classes*, not raw log lines or trace payloads. If a log
-  pattern includes user data, redact before writing.
-- **`.aws-apm/` should be gitignored by default** unless the user
-  explicitly opts in to committing incident history. Surface this once on
-  first write: "Incident memory writes to `.aws-apm/incidents/`. Add to
-  `.gitignore` if you don't want incidents committed."
+  and *exception classes*, not raw log lines or trace payloads. Apply
+  the redaction rules from the source workflow skill (replace email /
+  user-id / customer-id / token / session / IP-in-user-context with
+  `<redacted-*>` placeholders) before writing.
+- **`.aws-apm/` is gitignored by default** in the plugin's `.gitignore`.
+  If the user wants to commit incident history (for shared on-call
+  context), they must explicitly remove the entry — surface this trade-off
+  once at opt-in time so it's a deliberate choice, not a default.
 
 ## Schema evolution
 

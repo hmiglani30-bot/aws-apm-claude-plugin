@@ -1,7 +1,14 @@
 ---
 description: Produce a portfolio-wide SLO compliance report — every SLO across every service, ranked by risk, with recommendations
 argument-hint: [time-window]
-allowed-tools: [Read, Bash, Grep]
+allowed-tools:
+  - Read
+  - Bash
+  - Grep
+  - "mcp__awslabs.cloudwatch-mcp-server__*"
+  - "mcp__awslabs.cloudwatch-applicationsignals-mcp-server__*"
+  - "mcp__awslabs.cloudtrail-mcp-server__*"
+  - "mcp__awslabs.aws-documentation-mcp-server__*"
 ---
 
 # /cw-slo-report

@@ -2,7 +2,7 @@
   "mcpServers": {
     "awslabs.cloudwatch-mcp-server": {
       "command": "uvx",
-      "args": ["awslabs.cloudwatch-mcp-server@latest"],
+      "args": ["awslabs.cloudwatch-mcp-server@0.0.25"],
       "env": {
         "AWS_PROFILE": "default",
         "AWS_REGION": "us-east-2",
@@ -11,7 +11,7 @@
     },
     "awslabs.cloudwatch-applicationsignals-mcp-server": {
       "command": "uvx",
-      "args": ["awslabs.cloudwatch-applicationsignals-mcp-server@latest"],
+      "args": ["awslabs.cloudwatch-applicationsignals-mcp-server@0.1.30"],
       "env": {
         "AWS_PROFILE": "default",
         "AWS_REGION": "us-east-2",
@@ -20,7 +20,7 @@
     },
     "awslabs.cloudtrail-mcp-server": {
       "command": "uvx",
-      "args": ["awslabs.cloudtrail-mcp-server@latest"],
+      "args": ["awslabs.cloudtrail-mcp-server@0.0.13"],
       "env": {
         "AWS_PROFILE": "default",
         "AWS_REGION": "us-east-2",
@@ -29,7 +29,7 @@
     },
     "awslabs.aws-documentation-mcp-server": {
       "command": "uvx",
-      "args": ["awslabs.aws-documentation-mcp-server@latest"],
+      "args": ["awslabs.aws-documentation-mcp-server@1.1.21"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
       }

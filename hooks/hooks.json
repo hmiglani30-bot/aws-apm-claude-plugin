@@ -1,9 +1,9 @@
 {
-  "description": "Action-safety gate for AWS write operations. Intercepts Put*, Update*, Delete*, Modify*, Start*, and Stop* MCP calls before they execute and requires explicit user confirmation. Read operations pass through unmodified.",
+  "description": "Action-safety gate for AWS write operations. Intercepts state-changing MCP calls (Put, Update, Delete, Modify, Create, Remove, Disable, Enable, Attach, Detach, Tag, Untag, Set, Batch, Send, Publish, Invoke, Execute, Run, Associate, Disassociate, Register, Deregister, Restore, Reboot, Terminate, Start, Stop) before they execute and requires explicit user confirmation. Read operations pass through unmodified. Fails closed on parse errors so an unparseable payload that matched the write pattern is blocked rather than waved through.",
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "mcp__awslabs__.*__(Put|Update|Delete|Modify|Start|Stop|Create|Remove|Disable|Enable|Attach|Detach|Tag|Untag).*",
+        "matcher": "mcp__awslabs__.*__(Put|Update|Delete|Modify|Create|Remove|Disable|Enable|Attach|Detach|Tag|Untag|Set|Batch|Send|Publish|Invoke|Execute|Run|Associate|Disassociate|Register|Deregister|Restore|Reboot|Terminate|Start|Stop).*",
         "hooks": [
           {
             "type": "command",

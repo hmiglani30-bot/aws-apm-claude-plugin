@@ -14,11 +14,23 @@
 # AWS console instead. This script enforces the gate; the model enforces the deep-link
 # rule via the open-in-cloudwatch skill.
 #
-# Fail open on parse errors (exit 0) — never block a read-only call by accident.
+# Fail CLOSED on parse / read errors (exit 2) — never let a write through silently
+# just because we could not parse the payload. The matcher only routes write-shaped
+# tool names to this script, so any payload reaching us is presumptively a write
+# and must require confirmation even if we can't extract the tool name to display.
 
 set -u
 
-payload="$(cat)" || exit 0
+if ! payload="$(cat)"; then
+  cat >&2 <<'EOF'
+🛑 AWS APM plugin — write-action confirmation gate
+
+Could not read the tool-call payload from stdin. Failing closed: the call is
+blocked. Re-issue it after explicit user approval, or set
+AWS_APM_AUTO_APPROVE_WRITES=1 for CI / scripted runs only.
+EOF
+  exit 2
+fi
 
 if [[ "${AWS_APM_AUTO_APPROVE_WRITES:-0}" == "1" ]]; then
   exit 0
@@ -29,7 +41,20 @@ fi
 tool_name="$(printf '%s' "$payload" | sed -n 's/.*"tool_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
 
 if [[ -z "$tool_name" ]]; then
-  exit 0
+  cat >&2 <<'EOF'
+🛑 AWS APM plugin — write-action confirmation gate
+
+Could not parse `tool_name` from the hook payload. Failing closed: the matcher
+routed this call to the write-confirmation gate, so it is presumptively a write
+action. The call is blocked.
+
+To proceed, the model must:
+  1. Show the user the exact action and arguments
+  2. Wait for "yes" / "confirmed" / explicit approval in chat
+  3. Re-issue the call in an approved context (or set AWS_APM_AUTO_APPROVE_WRITES=1
+     for CI / scripted runs only)
+EOF
+  exit 2
 fi
 
 cat >&2 <<EOF

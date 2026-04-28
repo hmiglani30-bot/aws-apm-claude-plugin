@@ -1,7 +1,14 @@
 ---
 description: Investigate a latency regression in an AWS Application Signals service and produce a Trace Waterfall Summary artifact
 argument-hint: <service-or-operation> [time-window]
-allowed-tools: [Read, Bash, Grep]
+allowed-tools:
+  - Read
+  - Bash
+  - Grep
+  - "mcp__awslabs.cloudwatch-mcp-server__*"
+  - "mcp__awslabs.cloudwatch-applicationsignals-mcp-server__*"
+  - "mcp__awslabs.cloudtrail-mcp-server__*"
+  - "mcp__awslabs.aws-documentation-mcp-server__*"
 ---
 
 # /cw-investigate-latency
@@ -16,12 +23,13 @@ The user invoked this with: `$ARGUMENTS`
    - First arg = service or operation name (required)
    - Second arg = time window (default: last 1 hour, accepts `30m`, `2h`, `6h`, `1d`)
 2. If the first arg is missing, ask the user which service or operation to investigate.
-3. Activate the `latency-regression` skill and follow its full workflow:
+3. Activate the `latency-regression` skill and follow its full 6-phase workflow:
    1. Confirm the regression is real (compare vs 1d / 7d baseline)
    2. Localize: which operation, which dependency contributes most?
    3. Sample 3–5 representative slow traces
    4. Correlate with CloudTrail changes
    5. Rank hypotheses (code change, dependency, capacity, DB, GC, cold start)
+   6. Follow dependencies (cascading health check, capped at depth 2)
 4. Produce the **Trace Waterfall Summary** artifact for the worst operation, plus a
    **Service Health Card** if multiple operations are affected, plus **Top Suspected
    Cause** for the ranked hypotheses.

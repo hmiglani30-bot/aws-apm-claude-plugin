@@ -12,3 +12,8 @@ venv/
 node_modules/
 dist/
 build/
+
+# AWS APM plugin local incident memory — may contain service names, ARNs, or
+# redacted-but-sensitive operational context. Opt in to committing only if
+# you've reviewed the policy in skills/incident-memory/SKILL.md.
+.aws-apm/
