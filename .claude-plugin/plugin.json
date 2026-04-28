@@ -1,7 +1,7 @@
 {
   "name": "aws-apm",
   "version": "0.1.0",
-  "description": "AWS APM workflows for Claude Code and Cowork — SLO breach investigation, latency regression, error spike triage, and curated artifact components on top of AWS CloudWatch, Application Signals, and CloudTrail MCP servers.",
+  "description": "AWS APM workflows for Claude Code and Cowork — SLO breach investigation, latency regression, error spike triage, CloudWatch alarm response, SLO compliance reporting, and curated artifact components on top of AWS CloudWatch, Application Signals, and CloudTrail MCP servers. 5 workflow skills, 5 slash commands, 5 Tier 3 artifact components.",
   "author": {
     "name": "AWS APM",
     "url": "https://aws.amazon.com/cloudwatch/"

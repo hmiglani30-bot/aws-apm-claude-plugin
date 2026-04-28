@@ -1,0 +1,164 @@
+---
+name: alarm-response
+description: >
+  Respond to a fired CloudWatch alarm end-to-end — parse alarm metadata, pull the
+  current metric values and trends, correlate with traces and logs for the affected
+  service, check CloudTrail for recent config / deploy changes, and rank remediation
+  hypotheses with evidence.
+  Trigger phrases: "alarm fired", "alarm went off", "CloudWatch alarm", "alarm triggered",
+  "alarm in ALARM state", "investigate alarm", "alarm response", "responding to alarm",
+  "PagerDuty alarm", "OpsGenie alarm", "alarm paging", "metric alarm fired",
+  "composite alarm", "alarm ARN", "got paged for alarm", "alarm notification",
+  or any request about diagnosing why a CloudWatch alarm transitioned to ALARM.
+metadata:
+  version: "0.1.0"
+---
+
+# CloudWatch Alarm Response
+
+End-to-end workflow for diagnosing a fired CloudWatch alarm using the CloudWatch,
+Application Signals, and CloudTrail MCP servers. The goal is to produce a structured
+**Service Health Card** + **Top Suspected Cause** the on-call engineer can act on
+without leaving Claude.
+
+## When this activates
+
+Triggers on any of:
+- A user pastes an alarm name, alarm ARN, or alarm notification
+- A user reports "we got paged" / "an alarm fired"
+- A composite or metric alarm transitioned to `ALARM` and the user wants to triage
+
+If the alarm is on a metric that maps to an SLO that is *also* breaching, prefer
+`slo-breach-investigation` — it is the strict superset for SLO-driven pages.
+
+## Required MCP servers
+
+- `awslabs.cloudwatch-mcp-server` — alarm metadata, metrics, logs
+- `awslabs.cloudwatch-applicationsignals-mcp-server` — service map, traces, operations
+- `awslabs.cloudtrail-mcp-server` — recent deploys / IAM / config changes
+
+If any required MCP is not connected, run the `aws-apm-setup` skill before continuing.
+
+## Investigation workflow
+
+### Phase 1 — Parse alarm details
+
+1. Resolve the alarm by name or ARN and pull its full configuration:
+   - **Metric**: namespace, metric name, dimensions
+   - **Threshold**: value, comparison operator, evaluation period
+   - **Service / resource**: which Application Signals service or AWS resource the alarm
+     watches (derive from dimensions if not explicit)
+   - **Duration**: how long it has been in `ALARM` (state transition timestamp)
+   - **Composite alarms**: if this is a composite, recursively resolve child alarms and
+     identify which one(s) actually fired
+2. Classify the alarm:
+   - **Latency alarm** — metric is `Latency`, `Duration`, `p99`, etc.
+   - **Error alarm** — metric is `Errors`, `5XXError`, `FaultRate`, `ThrottledRequests`
+   - **Resource alarm** — `CPUUtilization`, `MemoryUtilization`, queue depth, etc.
+   - **Custom / business metric** — any user-defined namespace
+3. Note the alarm's **Insufficient Data** history — flapping alarms vs. clean transitions
+   tell different stories.
+
+The classification drives Phase 3 routing — error alarms pull failed traces, latency
+alarms pull slow traces, resource alarms pull capacity-side signals.
+
+### Phase 2 — Pull current metric values and recent trends
+
+1. Fetch the underlying metric for:
+   - Last 15 min (current — should still be over threshold)
+   - Last 6h (to see when the breach started)
+   - Same window 24h ago (yesterday baseline)
+   - Same window 7 days ago (week-over-week baseline)
+2. Distinguish:
+   - **Step change** — clean transition at a specific minute → strong deploy / config signal
+   - **Gradual climb** — metric trending up over hours → capacity / load signal
+   - **Flapping** — repeatedly crossing threshold → noisy alarm, often a tuning issue
+3. If the metric is per-instance / per-task, fan out to per-dimension values to detect
+   **single-instance issues** (one bad host vs. fleet-wide).
+
+### Phase 3 — Correlate with traces and logs
+
+For the affected service (resolved in Phase 1):
+
+1. **For latency alarms**: search slow traces (duration > current p99) in the alarm
+   window. Pick 3–5 representative traces using the `trace-waterfall-summary` shape.
+2. **For error alarms**: search failed traces (status = error) in the alarm window, and
+   query Logs Insights for the same window grouping by `errorType` /
+   `exception.type` — patterns first, raw second.
+3. **For resource alarms**: pull supporting metrics (e.g. for CPU, also pull request
+   rate, task count, autoscaling events; for queue depth, also pull producer / consumer
+   rate).
+4. For each artifact, extract:
+   - Top contributor (operation, exception class, or instance)
+   - One-line observation tying the trace / log back to the alarm metric
+
+### Phase 4 — Check CloudTrail for recent config / deploy changes
+
+1. Query CloudTrail for the alarm window ± 30 minutes (centered on the state transition):
+   - Deploys (`UpdateService`, `UpdateFunctionCode`, `RegisterTaskDefinition`)
+   - Config changes (`PutScalingPolicy`, `ModifyDBInstance`, `UpdateAlias`,
+     `PutMetricAlarm` itself — sometimes a recent threshold change is the cause)
+   - IAM changes (`AttachRolePolicy`, `PutRolePolicy`)
+   - Networking (`AuthorizeSecurityGroupIngress`, `ModifyVpcAttribute`)
+2. Rank changes by proximity to the alarm transition time and by whether they touched
+   the affected service / resource.
+3. Highlight any change in a service that appears on the trace path from Phase 3.
+
+Follow the CloudTrail data source priority: Lake event data store → CloudWatch Logs
+integration → Lookup Events API. Do not rely solely on Lookup Events for windows >7 days.
+
+### Phase 5 — Rank hypotheses and recommend remediation
+
+Produce 2–4 ranked hypotheses (use `top-suspected-cause` skill for the artifact). Each
+hypothesis must include:
+- One-line claim
+- Evidence (specific metrics, logs, traces, deploys cited)
+- Confidence (Low / Medium / High) with stated reason
+- Suggested next action (read-only verification step, *not* a write action)
+
+Common alarm-response hypotheses ranked by base rate:
+1. **Bad deploy** — `Update*` event in CloudTrail within ±5 min of the alarm transition.
+2. **Downstream dependency degradation** — slow / failing span on the trace path points
+   to a service or DB that has its own active alarm or breach.
+3. **Capacity / autoscaling lag** — request rate up + tasks unchanged → CPU contention.
+4. **Threshold drift** — recent `PutMetricAlarm` lowered the threshold; the metric is
+   normal but the alarm is now tighter.
+5. **Noisy / flapping alarm** — repeated transitions with no underlying issue → recommend
+   alarm tuning, not service remediation.
+
+Bias toward hypotheses with multi-source evidence. A hypothesis backed only by metrics
+is weaker than one with a matching trace exception or a coincident deploy.
+
+## Final artifact
+
+Always end with **Service Health Card** (for the affected service) + **Top Suspected
+Cause** (for the ranked hypotheses). Both artifacts must include their metadata footer.
+
+The Service Health Card must include:
+- The alarm name + ARN as part of the header
+- A "Why this fired" one-liner translating the alarm config into plain English
+- RED metrics for the affected service
+- Deep links into CloudWatch console (alarm detail, metric graph) via `open-in-cloudwatch`
+
+## Action safety
+
+**Read-only by default.** Never call write actions (PutMetricAlarm, DisableAlarm,
+StartIncident, etc.) without an explicit `confirmation gate` — propose the action,
+show exact diff, wait for "yes" from the user. The plugin's PreToolUse hook enforces
+this for `Put*`, `Update*`, `Delete*`, `Modify*`, `Disable*`, and `Start*` actions, but
+rely on the rule, not the hook.
+
+For destructive or billing-impacting actions (delete log group, change alarm threshold,
+modify IAM), prefer **deep linking** the user to the AWS console via `open-in-cloudwatch`
+rather than executing through MCP.
+
+## What this skill does NOT do
+
+- Does not diagnose SLO breaches when an SLO is the source of the page — use
+  `slo-breach-investigation` instead.
+- Does not handle latency regressions on services without a fired alarm — use
+  `latency-regression`.
+- Does not handle error spikes on services without a fired alarm — use
+  `error-spike-triage`.
+- Does not handle synthetics canary failures unless a CloudWatch alarm fired on the
+  canary's `SuccessPercent` metric.
