@@ -66,6 +66,42 @@ How to surface progress while the investigation runs:
 3. If the regression is only at p99 with stable p50, suspect a single-instance issue
    (bad host, GC pause, noisy neighbor) — note this in hypotheses.
 
+### Phase 1b — Compute blast radius
+
+Before localizing, compute the **blast radius** — who and what is affected
+by the latency regression. This becomes a section of the final artifact
+and feeds the `copy-to-incident` skill's customer / exec summaries.
+Capture all of:
+
+- **Affected operations** — names + p99 delta vs baseline.
+- **Callers** — every Application Signals service calling these
+  operations during the regression window. Pull from the service map.
+- **AZ / region** — concentrated in one AZ (single-instance / AZ issue,
+  often shows up as p99-only with stable p50) or fleet-wide? Compute
+  per-AZ if the metric supports it; else note "AZ breakdown
+  unavailable."
+- **Customer segments** — group slow requests by `tenantId`,
+  `customerTier`, or whatever segmentation tag the service emits. If no
+  tag, note "customer-segment data unavailable."
+- **Upstream services** — for each caller, note whether their own
+  latency has also moved. A caller that's degrading because of this
+  service is different from one that has its own independent issue.
+- **Estimated impacted requests** — count of requests slower than the
+  pre-regression p99 over the window. Round and surface uncertainty
+  (e.g. "~3,400 requests >500ms during the window vs. baseline ~120,
+  ±25%").
+- **Severity label** — proposed SEV1 / SEV2 / SEV3 / SEV4:
+  - SEV1: customer-facing, p99 >5× baseline, broad caller fan-out,
+    sustained > 15 min
+  - SEV2: customer-facing, p99 >2× baseline, narrow scope OR sustained
+    short
+  - SEV3: internal-only callers OR p90 only with stable p99
+  - SEV4: tooling / synthetics, no customer impact
+  This is a **proposal** — the on-call engineer / IC makes the final call.
+
+Render this as a "Blast radius" subsection. If any field is unavailable,
+say so explicitly rather than omitting the line.
+
 ### Phase 2 — Localize: which operation, which dependency?
 
 1. List operations on the service ranked by p99 latency.
@@ -136,6 +172,26 @@ downstream call dominates the latency budget from Phase 2 — follow the chain o
    - Top hypothesis is a code change or capacity issue with no downstream component
    - The implicated dependency is outside the user's account
 
+## Degraded telemetry handling
+
+If the inputs you need are unavailable, the investigation must
+gracefully degrade rather than fabricate. Detect each gap and apply the
+matching rule. Cap final confidence based on the worst gap, and tell
+the user explicitly which signals were missing.
+
+| Gap | Detect | Behavior | Confidence cap |
+|---|---|---|---|
+| Traces missing | `search_traces` for slow traces returns 0 results when latency metrics show events | Skip Phases 3 + 6 trace-based steps; rely on metrics only. Latency-budget split is not possible | Medium |
+| Logs not correlated to traces | No `traceId` field on log lines for the affected operation | Surface log patterns without trace cross-reference | Medium |
+| Per-operation latency unavailable | `get_service_operations` returns no per-operation breakdown | Skip Phase 2 ranking; analyze service-level p50/p90/p99 only | Medium |
+| Service map empty | No callers / dependencies returned | Skip dependency contribution analysis (Phase 2.2/3) and blast radius "Callers" / "Upstream services" lines | Low for blast radius |
+| SLOs absent | `list_slos` returns empty | Continue — latency-regression doesn't require SLOs. Note "no latency SLO context" in artifact | None |
+| CloudTrail denied | `AccessDenied` on `LookupEvents` / Lake / Logs integration | Skip Phase 4 entirely; surface "Cannot correlate with CloudTrail" | Medium |
+| All telemetry unavailable | `list_services` errors or returns empty | Stop. Run `/cw-doctor` and `/cw-set-context` first | N/A — refuse to run |
+
+Always tell the user which signals degraded. A hedged artifact beats a
+confident-looking one built on missing data.
+
 ## Final artifact
 
 **Lead with a one-line verdict** before presenting the artifact. The verdict goes
@@ -149,9 +205,17 @@ The verdict must name (1) the magnitude of the regression, (2) the worst operati
 (3) where the time went (local vs which dependency), and (4) the top-ranked
 hypothesis with its confidence. Never hide the verdict inside the artifact.
 
-Then present **Trace Waterfall Summary** for the worst operation. If multiple
-operations are affected, also produce a **Service Health Card**. Always include
-**Top Suspected Cause** when you have ranked hypotheses.
+Then present **Trace Waterfall Summary** for the worst operation. If
+multiple operations are affected, also produce a **Service Health Card**.
+Always include **Top Suspected Cause** when you have ranked hypotheses.
+
+The artifacts must include:
+- **Blast radius** subsection (from Phase 1b): callers, AZ/region scope,
+  customer segments, upstream services, estimated impacted requests,
+  proposed severity label.
+- **Owner + suggested page** (from `service-ownership` skill).
+- **Degraded-telemetry note** (if any signal was missing) with the
+  capped confidence label.
 
 For a full postmortem-style writeup (timeline + root cause + impact + remediation),
 use the artifact template at `artifacts/investigation-summary.html` and populate the

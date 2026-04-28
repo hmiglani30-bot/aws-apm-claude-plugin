@@ -33,6 +33,9 @@ EXPECTED_SKILLS = {
     "aws-apm-setup",
     "investigation-validator",
     "incident-memory",
+    "trace-to-code",
+    "service-ownership",
+    "copy-to-incident",
 }
 
 EXPECTED_COMMANDS = {
@@ -42,6 +45,9 @@ EXPECTED_COMMANDS = {
     "cw-health-check.md",
     "cw-alarm-response.md",
     "cw-slo-report.md",
+    "cw-doctor.md",
+    "cw-set-context.md",
+    "cw-verify-recovery.md",
 }
 
 EXPECTED_MCP_SERVERS = {

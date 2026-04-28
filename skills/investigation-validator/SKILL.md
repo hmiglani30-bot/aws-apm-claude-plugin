@@ -132,6 +132,84 @@ For every confidence claim in the artifact:
 Fail if any High-confidence hypothesis is backed by a single source. Either
 downgrade to Medium or surface the second source explicitly.
 
+## Role modes
+
+The same investigation artifact serves multiple audiences, and each
+prioritizes different fields. Before validating, infer the **role mode**
+the user is operating in (or ask if ambiguous), then weight the checks
+accordingly. Role mode does not skip checks — it raises priority on the
+ones the audience most depends on, and softens the verdict on the ones
+they ignore.
+
+### SRE mode (default for live incidents)
+
+Audience: on-call engineer in the middle of a page.
+
+- Prioritize: verdict line (must be readable in <5 seconds), blast
+  radius, top hypothesis with confidence, owner / suggested page, deep
+  links to console.
+- Soften: postmortem-grade narrative. SREs don't need a polished story
+  during a live incident; they need actionable signals.
+- Hard-fail if: verdict line is missing, blast radius is empty, owner is
+  "unknown" without acknowledgment.
+
+### Developer mode
+
+Audience: developer on the team that owns the affected service.
+
+- Prioritize: span-to-code mapping, recent commits correlation, fix
+  plan, instrumentation gaps (delegated to `trace-to-code` skill).
+- Soften: customer impact framing, severity proposal — those are SRE
+  / IC concerns, not the developer's first lookup.
+- Hard-fail if: a code-level hypothesis is presented without a file:line
+  or commit reference, OR if `trace-to-code` was applicable but not run.
+
+### Manager mode
+
+Audience: engineering manager / TPM checking on the incident.
+
+- Prioritize: customer impact estimate, severity label, expected
+  recovery time, owner team, "what's blocking resolution" callout.
+- Soften: stack traces, exception classes, raw query strings — managers
+  don't read them.
+- Hard-fail if: no quantified impact (e.g. "~1,200 failed requests")
+  OR no owner team named.
+
+### Reliability review mode
+
+Audience: reliability / platform team doing a postmortem-quality review
+of the artifact (often days after the incident).
+
+- Prioritize: timeline accuracy with explicit timestamps, every
+  hypothesis cites independent sources (≥2 for High confidence),
+  considered-and-ruled-out section is non-empty, false-positive checks
+  ran and their results are recorded, degraded-telemetry gaps are
+  surfaced.
+- Soften: live-incident urgency framing.
+- Hard-fail if: confidence claims violate the single-source rule OR
+  considered-and-ruled-out is missing OR any check from the workflow
+  skills' false-positive / degraded-telemetry sections was skipped
+  silently.
+
+### How to detect the mode
+
+- Explicit user signal — "I'm on-call," "I'm the IC," "writing the
+  postmortem," "reviewing this for reliability week" — wins.
+- Default when invoked from `/cw-alarm-response`, `/cw-investigate-*`:
+  SRE mode.
+- Default when invoked from `trace-to-code` or `/cw-explain-span`:
+  Developer mode.
+- Default when invoked after `/cw-verify-recovery`: Reliability review
+  mode (we're past the live phase).
+- When uncertain, ask one question — "Are you on-call right now,
+  writing this up later, or reviewing for the postmortem?" — then
+  proceed.
+
+Render the chosen mode at the top of the self-validation block so the
+user knows which lens was applied. If the artifact passes for one mode
+but fails for another (e.g. SRE-grade complete but reliability-review
+incomplete), say so — don't pick the more lenient mode silently.
+
 ## How to apply the checklist
 
 Render the checklist results inline as a self-audit block (collapsed by
@@ -139,8 +217,9 @@ default in Cowork, expandable for verification). In Claude Code, render as:
 
 ```markdown
 <details>
-<summary>Self-validation: <Pass | Fail (N issues fixed)></summary>
+<summary>Self-validation: <Pass | Fail (N issues fixed)> · Mode: <SRE | Developer | Manager | Reliability review></summary>
 
+Mode applied: SRE (live incident — prioritized verdict, blast radius, owner)
 1. Metadata footer — ✅ all six fields present
 2. Hypothesis evidence — ✅ all 3 hypotheses have ≥1 specific source
 3. Deep links — ✅ 5 surfaces, 5 links, all with time ranges
@@ -148,6 +227,9 @@ default in Cowork, expandable for verification). In Claude Code, render as:
 5. Burn rate / error budget — ✅ 1h/6h/24h with multipliers
 6. Confidence rule — ✅ no single-source High; 1 downgraded from High → Medium
 
+If a different mode would change the result, note it: e.g.
+"Reliability-review mode would Fail this — false-positive checks not
+recorded explicitly."
 </details>
 ```
 

@@ -89,6 +89,42 @@ For the breaching SLO, identify *which operations are responsible*:
    - Compare to baseline (same window 7 days ago)
    - Note any operation that is *new* (didn't exist in baseline) — likely deploy
 
+### Phase 2b — Compute blast radius
+
+Before moving on, compute the **blast radius** — who and what is affected.
+This becomes a section of the final artifact and feeds the
+`copy-to-incident` skill's customer / exec summaries. Capture all of:
+
+- **Affected operations** — names + bad-event share (from Phase 2.2).
+- **Callers** — every Application Signals service that calls the
+  breaching operation in the breach window. Pull from the service map.
+- **AZ / region** — is the breach concentrated in one AZ (single-AZ
+  deploy issue) or fleet-wide? Group failed/slow events by AZ if the
+  metric supports it; otherwise note "AZ breakdown unavailable."
+- **Customer segments** — if requests carry a `tenantId`, `customerTier`,
+  or similar tag, group the bad events by that dimension. If no
+  segmentation tag exists, surface "customer-segment data unavailable"
+  rather than guessing.
+- **Upstream services** — for each caller, note whether *they* are also
+  breaching an SLO or alarming. A caller that's silently absorbing
+  errors is different from one that's also breaching.
+- **Estimated failed requests** — bad-event count over the breach window.
+  Compute as: `(error rate now − baseline error rate) × request rate ×
+  duration`. Round and surface uncertainty (e.g. "~1,200 failed
+  requests, ±20%").
+- **Severity label** — proposed SEV1 / SEV2 / SEV3 / SEV4 based on:
+  - SEV1: customer-facing, fast-burn SLO, broad caller fan-out
+  - SEV2: customer-facing, fast-burn SLO, narrow scope
+  - SEV3: slow-burn, internal-only callers OR fast-burn with low
+    request rate
+  - SEV4: internal tooling, no customer impact
+  This is a **proposal** — the on-call engineer / IC makes the final
+  call, not the skill.
+
+Render this in the final artifact as a "Blast radius" subsection. If any
+field is unavailable (e.g. no AZ breakdown, no tenant tag), say so
+explicitly rather than omitting the line.
+
 ### Phase 3 — Pull representative traces
 
 For the worst-contributing operation:
@@ -154,6 +190,69 @@ follow the chain one hop:
      in the summary and recommend the user contact the owning team
    - The dependency was already covered by an earlier phase's data with high confidence
 
+## False-positive / noisy-breach handling
+
+Before presenting a verdict, run these checks. If any apply, the breach
+may be a measurement artifact rather than a real customer-impacting
+problem. Surface the finding **above** the artifact and downgrade the
+verdict accordingly — never present a 🔴 verdict on a false positive.
+
+1. **Traffic too low** — request rate during the breach window is <1
+   request / minute, OR <1% of the SLO's typical evaluation traffic. A
+   single failed request can flip a 99.9% SLO into "breach" when volume
+   is tiny. Note: "Low traffic — single-event sensitivity, breach may
+   not represent customer impact."
+2. **Sample size too small** — fewer than 100 events in the SLO's
+   evaluation window. Burn rate math is unreliable. Note: "Sample size
+   <100 — confidence in burn rate is Low."
+3. **Deploy window expected** — CloudTrail shows a `RegisterTaskDefinition`
+   / `UpdateService` / `UpdateFunctionCode` exactly at breach start AND
+   the team has a documented "expected error budget consumption during
+   deploy" pattern. If the breach decays within the expected post-deploy
+   stabilization window, label "Expected deploy-window noise" — but do
+   NOT auto-suppress. The user decides.
+4. **Alarm / SLO recently edited** — `PutMetricAlarm` or SLO
+   configuration change in the last 24h tightened the threshold. The
+   metric may not have moved; the bar moved. Surface the edit and the
+   "before" threshold so the user can judge.
+5. **Missing data** — gaps in the SLO's input metric (e.g. publisher
+   lag, agent restart, region-wide CloudWatch incident). Detect via
+   timestamps with no datapoints in the breach window. Note: "Missing
+   data — breach computation includes treat-missing-data behavior; verify
+   in console."
+6. **Synthetic-only failure** — the SLO is fed by a synthetics canary
+   (CloudWatch Synthetics or similar) and only the canary is failing
+   while real-user traffic looks normal. This is often a canary
+   credential / network egress issue, not a customer-impacting service
+   problem. Note: "Synthetics-only — real traffic on the same operation
+   is healthy."
+
+If two or more of these conditions hold, downgrade the verdict to ⚠️
+and lead with "Possible false positive — <reasons>." Do not present
+🔴 Fast burn / Slow burn until at least one false-positive condition is
+ruled out OR the user confirms it's real.
+
+## Degraded telemetry handling
+
+If the inputs you need are unavailable, the investigation must
+gracefully degrade rather than fabricate. Detect each gap and apply the
+matching rule. Cap final confidence based on the worst gap, and tell
+the user explicitly which signals were missing.
+
+| Gap | Detect | Behavior | Confidence cap |
+|---|---|---|---|
+| Traces missing | `search_traces` returns 0 results when error/latency metrics show events | Skip Phases 3 + 6's trace-based steps; rely on metrics + logs only | Medium |
+| Logs not correlated to traces | No `traceId` field on log lines for the affected operation | Surface log patterns without trace cross-reference | Medium |
+| SLOs absent | `list_slos` returns empty for the service | Hand off to `latency-regression` or `error-spike-triage`; do NOT compute fictional burn rates | N/A — switch skill |
+| CloudTrail denied | `AccessDenied` on `LookupEvents` / Lake / Logs integration | Skip Phase 4 entirely; surface "Cannot correlate with CloudTrail — no access" in artifact | Medium |
+| Operation-level metrics flat / missing | `get_service_operations` returns no per-operation breakdown | Skip Phase 2 ranking; analyze service-level only | Medium |
+| Application Signals service map empty | No callers / dependencies returned | Skip blast radius "Callers" + "Upstream services" lines; note explicitly | Low for blast radius |
+| All telemetry unavailable | `list_services` errors or returns empty for the configured region | Stop. Run `/cw-doctor` and `/cw-set-context` first | N/A — refuse to run |
+
+Always tell the user which signals degraded and why. A confident-looking
+artifact built on missing data is worse than a hedged one — silent gaps
+erode trust faster than visible ones.
+
 ## Final artifact
 
 **Lead with a one-line verdict** before presenting the artifact. The verdict goes
@@ -175,11 +274,18 @@ That artifact is the canonical output — it must include:
 - Error budget remaining
 - Breach start time + duration
 - Top impacted operations (with % contribution)
+- **Blast radius** (from Phase 2b): callers, AZ/region scope, customer
+  segments, upstream services, estimated failed requests, proposed
+  severity label
 - Correlated deploys / config changes
 - Ranked hypotheses
 - Downstream dependency health (from Phase 6, when applicable)
+- Owner + suggested page (from `service-ownership` skill)
+- False-positive checks — list each condition checked + result
+- Degraded-telemetry note (if any signal was missing)
 - Deep links into CloudWatch console (use `open-in-cloudwatch` skill)
-- Metadata footer: source metric, time range, queries used, MCP tools called, confidence
+- Metadata footer: source metric, time range, queries used, MCP tools
+  called, confidence (capped per degraded-telemetry rules)
 
 For a full postmortem-style writeup (timeline + root cause + impact + remediation),
 use the artifact template at `artifacts/investigation-summary.html` and populate the
