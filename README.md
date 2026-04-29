@@ -1,4 +1,4 @@
-# AWS APM CloudWatch Plugin
+# AWS Observability Claude Plugin
 
 [![tests](https://github.com/hmiglani30/aws-apm-claude-plugin/actions/workflows/tests.yml/badge.svg)](https://github.com/hmiglani30/aws-apm-claude-plugin/actions/workflows/tests.yml)
 [![version](https://img.shields.io/badge/version-0.2.1-blue)](.claude-plugin/plugin.json)
