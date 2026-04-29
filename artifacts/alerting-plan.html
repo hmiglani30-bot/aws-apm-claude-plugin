@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<!--
+  ARTIFACT SCHEMA — alerting-plan
+  Surface: Cowork (HTML), Claude Code (Markdown twin in skills/alerting-design/SKILL.md). Identical data.
+  Ownership: skills/alerting-design/SKILL.md is the source of truth for population.
+
+  Required fields:
+    AWS_REGION, AWS_ACCOUNT, SCOPE (service or "all"), TIME_WINDOW, GENERATED_AT,
+    VERDICT (Healthy|Partial|Critical) + VERDICT_CLASS (healthy|degraded|unhealthy),
+    SEVERITY_ICON ("🟢"|"🟡"|"🔴"),
+    HERO_VERDICT_LINE, HERO_TOP_FIX_1, HERO_TOP_FIX_2, HERO_TOP_FIX_3,
+    SCORECARD_EXISTING, SCORECARD_NOISY, SCORECARD_GAPS, SCORECARD_COMPOSITE, SCORECARD_ANOMALY,
+    NOISE_ROWS, COVERAGE_ROWS, RECOMMENDED_ROWS, COMPOSITE_ROWS, ANOMALY_ROWS, ROUTING_ROWS,
+    AWS_DOC_CITATIONS,
+    LINK_ALARM_LIST, LINK_METRIC_BROWSER, LINK_SNS_TOPICS,
+    SOURCE_MCP_SERVERS, MCP_TOOLS_LIST, CONFIDENCE.
+
+  Optional fields:
+    DATA_UNAVAILABLE_BANNER — when alarm history limited or AWS docs MCP unreachable.
+    EMPTY_STATE — greenfield (no alarms) or already healthy.
+    CMD_SUGGESTIONS — array of follow-on /cw-* slash commands.
+
+  Empty-state contract:
+    - No alarms at all: lead "Greenfield" verdict, skip noise section, expand recommended.
+    - All healthy: render 🟢 verdict + "what good looks like" recap. Per-area sections render
+      single-row "No gaps detected in this area."
+    - No active services: caller refuses to render this artifact; surface in command instead.
+
+  Buttons (UX10): SAVE_ARTIFACT_BUTTON / SHARE_BUTTON. Cowork wires to host pin/share APIs;
+    Claude Code renders inert.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Alerting Plan — {{SCOPE}} ({{AWS_REGION}})</title>
+<style>
+  :root {
+    --bg-page: #0f1b2a;
+    --bg-surface: #192534;
+    --bg-surface-2: #1f2d3d;
+    --border: #2a3a4f;
+    --text-primary: #e9ebed;
+    --text-secondary: #95a5b8;
+    --link: #539fe5;
+    --link-hover: #89bdee;
+    --status-error: #ff5d64;
+    --status-warning: #ffa552;
+    --status-success: #6aaf3f;
+    --status-info: #539fe5;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: "Open Sans", "Segoe UI", -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 24px 96px 24px; }
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+  .title-block h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .subtitle { color: var(--text-secondary); font-size: 13px; }
+  .actions { display: flex; gap: 8px; }
+  .btn {
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { border-color: var(--link); color: var(--link); }
+  .btn-primary { background: var(--link); border-color: var(--link); color: #0f1b2a; font-weight: 600; }
+  .btn-primary:hover { background: var(--link-hover); color: #0f1b2a; }
+
+  .verdict-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .verdict-badge.healthy { background: rgba(106, 175, 63, 0.15); color: var(--status-success); border: 1px solid rgba(106, 175, 63, 0.4); }
+  .verdict-badge.degraded { background: rgba(255, 165, 82, 0.15); color: var(--status-warning); border: 1px solid rgba(255, 165, 82, 0.4); }
+  .verdict-badge.unhealthy { background: rgba(255, 93, 100, 0.15); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.4); }
+
+  .hero {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-left: 6px solid var(--status-success);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+  }
+  .hero.healthy { border-left-color: var(--status-success); }
+  .hero.degraded { border-left-color: var(--status-warning); }
+  .hero.unhealthy { border-left-color: var(--status-error); }
+  .hero-verdict { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+  .hero-icon { font-size: 30px; line-height: 1; flex-shrink: 0; }
+  .hero-verdict-text { font-size: 18px; font-weight: 600; line-height: 1.35; }
+
+  .top-fixes {
+    background: rgba(83, 159, 229, 0.08);
+    border: 1px solid rgba(83, 159, 229, 0.25);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .top-fixes .lbl { color: var(--link); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 8px; display: block; }
+  .top-fixes ol { margin: 0; padding-left: 22px; }
+  .top-fixes li { margin-bottom: 6px; font-size: 14px; }
+  .top-fixes li:last-child { margin-bottom: 0; }
+
+  .data-unavailable {
+    background: rgba(255, 165, 82, 0.08);
+    border: 1px solid rgba(255, 165, 82, 0.4);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+  .data-unavailable .lbl { color: var(--status-warning); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-right: 8px; }
+
+  .section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .section-body { padding: 16px 18px; }
+
+  .scorecard {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  @media (max-width: 720px) { .scorecard { grid-template-columns: repeat(2, 1fr); } }
+  .score-tile {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    text-align: left;
+  }
+  .score-tile .area { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .score-tile .value { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--text-secondary); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td.numeric { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .severity-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .severity-pill.critical { background: rgba(255, 93, 100, 0.18); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.5); }
+  .severity-pill.high { background: rgba(255, 165, 82, 0.18); color: var(--status-warning); border: 1px solid rgba(255, 165, 82, 0.5); }
+  .severity-pill.warning { background: rgba(83, 159, 229, 0.18); color: var(--link); border: 1px solid rgba(83, 159, 229, 0.5); }
+  .severity-pill.info { background: rgba(149, 165, 184, 0.15); color: var(--text-secondary); border: 1px solid rgba(149, 165, 184, 0.3); }
+
+  .coverage-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .coverage-pill.covered { color: var(--status-success); border: 1px solid rgba(106, 175, 63, 0.5); }
+  .coverage-pill.partial { color: var(--status-warning); border: 1px solid rgba(255, 165, 82, 0.5); }
+  .coverage-pill.missing { color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.5); }
+
+  pre.code-block {
+    background: var(--bg-page);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin: 8px 0 0 0;
+    overflow-x: auto;
+    font-family: "SF Mono", "Monaco", monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-primary);
+  }
+
+  .deep-link-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .deep-link-groups { grid-template-columns: 1fr; } }
+  .deep-link-group { background: var(--bg-surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+  .deep-link-group .group-label { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 700; }
+  .deep-links { display: flex; flex-direction: column; gap: 6px; }
+  .deep-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: var(--bg-page);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--link);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .deep-link:hover { border-color: var(--link); }
+  .deep-link::after { content: "→"; opacity: 0.7; }
+
+  .cite-list { display: flex; flex-direction: column; gap: 6px; }
+  .cite-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--link);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .cite-link:hover { border-color: var(--link); }
+  .cite-link::after { content: "↗"; opacity: 0.7; }
+
+  .cmd-list { display: flex; flex-direction: column; gap: 8px; }
+  .cmd-suggestion {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .cmd-suggestion code { color: var(--link); font-size: 13px; font-weight: 600; background: var(--bg-page); padding: 4px 8px; border-radius: 4px; align-self: flex-start; }
+  .cmd-suggestion .why { color: var(--text-secondary); font-size: 12px; }
+
+  .footer-meta {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .footer-meta dl { display: grid; grid-template-columns: 180px 1fr; gap: 4px 12px; margin: 0; }
+  .footer-meta dt { color: var(--text-secondary); }
+  .footer-meta dd { margin: 0; color: var(--text-primary); font-family: "SF Mono", "Monaco", monospace; font-size: 11px; }
+  code { font-family: "SF Mono", "Monaco", monospace; background: var(--bg-surface-2); padding: 1px 6px; border-radius: 3px; font-size: 12px; }
+  .empty-line { color: var(--text-secondary); font-style: italic; font-size: 13px; padding: 6px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="title-block">
+      <h1>
+        {{SEVERITY_ICON}} Alerting Plan — <code>{{SCOPE}}</code>
+        <span class="verdict-badge {{VERDICT_CLASS}}">{{VERDICT}}</span>
+      </h1>
+      <div class="subtitle">
+        Region <code>{{AWS_REGION}}</code> · Account <code>{{AWS_ACCOUNT}}</code> · Window {{TIME_WINDOW}} · Generated {{GENERATED_AT}}
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn">{{SAVE_ARTIFACT_BUTTON}}</button>
+      <button class="btn">{{SHARE_BUTTON}}</button>
+    </div>
+  </div>
+
+  {{DATA_UNAVAILABLE_BANNER}}
+
+  <div class="hero {{VERDICT_CLASS}}">
+    <div class="hero-verdict">
+      <div class="hero-icon">{{SEVERITY_ICON}}</div>
+      <div class="hero-verdict-text">{{HERO_VERDICT_LINE}}</div>
+    </div>
+    <div class="top-fixes">
+      <span class="lbl">Top 3 priorities — start here</span>
+      <ol>
+        <li>{{HERO_TOP_FIX_1}}</li>
+        <li>{{HERO_TOP_FIX_2}}</li>
+        <li>{{HERO_TOP_FIX_3}}</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Scorecard</div>
+    <div class="section-body">
+      <div class="scorecard">
+        <div class="score-tile">
+          <div class="area">Existing alarms</div>
+          <div class="value">{{SCORECARD_EXISTING}}</div>
+        </div>
+        <div class="score-tile">
+          <div class="area">Noisy</div>
+          <div class="value">{{SCORECARD_NOISY}}</div>
+        </div>
+        <div class="score-tile">
+          <div class="area">Coverage gaps</div>
+          <div class="value">{{SCORECARD_GAPS}}</div>
+        </div>
+        <div class="score-tile">
+          <div class="area">Composite candidates</div>
+          <div class="value">{{SCORECARD_COMPOSITE}}</div>
+        </div>
+        <div class="score-tile">
+          <div class="area">Anomaly candidates</div>
+          <div class="value">{{SCORECARD_ANOMALY}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Noise to fix first <span style="color: var(--text-secondary); font-weight: 400; font-size: 12px;">existing alarms eroding trust</span></div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Alarm</th>
+            <th>Symptom</th>
+            <th>Recommendation</th>
+            <th>Severity</th>
+            <th>Open</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{NOISE_ROWS}}
+          <!-- Per-row template:
+          <tr>
+            <td><code>{{ALARM_NAME}}</code><div style="color: var(--text-secondary); font-size: 11px;">{{ALARM_NAMESPACE}}</div></td>
+            <td>{{NOISE_SYMPTOM}}</td>
+            <td>{{NOISE_RECOMMENDATION}}</td>
+            <td><span class="severity-pill {{SEVERITY_CLASS}}">{{SEVERITY}}</span></td>
+            <td><a class="deep-link" href="{{LINK_ALARM_DETAIL}}">Open</a></td>
+          </tr>
+          Empty state: <tr><td colspan="5"><div class="empty-line">No noisy alarms detected — existing alarm portfolio is well-tuned.</div></td></tr>
+          -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Coverage matrix <span style="color: var(--text-secondary); font-weight: 400; font-size: 12px;">services in use × recommended alarm types</span></div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Service / Resource</th>
+            <th>Recommended alarm</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{COVERAGE_ROWS}}
+          <!-- Per-row template:
+          <tr>
+            <td><code>{{RESOURCE}}</code><div style="color: var(--text-secondary); font-size: 11px;">{{NAMESPACE}}</div></td>
+            <td>{{ALARM_TYPE}}</td>
+            <td><span class="coverage-pill {{COVERAGE_CLASS}}">{{COVERAGE_LABEL}}</span></td>
+            <td>{{COVERAGE_NOTES}}</td>
+          </tr>
+          -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Recommended new alarms</div>
+    <div class="section-body">
+      {{RECOMMENDED_ROWS}}
+      <!-- Per-row template:
+      <div style="background: var(--bg-surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; margin-bottom: 10px;">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+          <div style="font-weight: 600; font-size: 14px;"><code>{{ALARM_NAME}}</code></div>
+          <span class="severity-pill {{SEVERITY_CLASS}}">{{SEVERITY_TIER}}</span>
+        </div>
+        <div style="color: var(--text-secondary); font-size: 13px; margin-top: 6px;">{{JUSTIFICATION}}</div>
+        <div style="display: grid; grid-template-columns: 140px 1fr; gap: 4px 12px; margin-top: 10px; font-size: 12px;">
+          <div style="color: var(--text-secondary);">Metric</div><div><code>{{METRIC_FQN}}</code></div>
+          <div style="color: var(--text-secondary);">Statistic / period</div><div>{{STAT}} · {{PERIOD}}s</div>
+          <div style="color: var(--text-secondary);">Eval / datapoints</div><div>{{EVAL_PERIODS}} · {{DATAPOINTS_TO_ALARM}}</div>
+          <div style="color: var(--text-secondary);">Comparison / threshold</div><div>{{COMPARISON}} {{THRESHOLD}}</div>
+          <div style="color: var(--text-secondary);">Treat missing data</div><div>{{TREAT_MISSING}}</div>
+          <div style="color: var(--text-secondary);">Routing</div><div>{{ROUTING_TARGET}}</div>
+        </div>
+        <pre class="code-block">{{IAC_SNIPPET}}</pre>
+        <div style="margin-top: 8px;"><a class="deep-link" href="{{LINK_CREATE_ALARM}}">Open create-alarm in CloudWatch</a></div>
+      </div>
+      -->
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Composite alarm proposals</div>
+    <div class="section-body">
+      {{COMPOSITE_ROWS}}
+      <!-- Empty state: <div class="empty-line">No composite alarm candidates identified.</div> -->
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Anomaly detection proposals</div>
+    <div class="section-body">
+      {{ANOMALY_ROWS}}
+      <!-- Empty state: <div class="empty-line">No anomaly-detection candidates — metrics evaluated are not seasonal enough to justify the complexity.</div> -->
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Notification routing plan</div>
+    <div class="section-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Tier</th>
+            <th>SNS topic</th>
+            <th>Target</th>
+            <th>OK action?</th>
+            <th>Rules</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ROUTING_ROWS}}
+          <!-- Per-row template:
+          <tr>
+            <td><span class="severity-pill {{TIER_CLASS}}">{{TIER}}</span></td>
+            <td><code>{{TOPIC_ARN}}</code></td>
+            <td>{{TARGET}}</td>
+            <td>{{OK_ACTION}}</td>
+            <td>{{ROUTING_RULES}}</td>
+          </tr>
+          -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">AWS documentation cited</div>
+    <div class="section-body">
+      <div class="cite-list">
+        {{AWS_DOC_CITATIONS}}
+        <!-- Empty state: <div class="empty-line">No AWS docs cited.</div> -->
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Open in CloudWatch</div>
+    <div class="section-body">
+      <div class="deep-link-groups">
+        <div class="deep-link-group">
+          <div class="group-label">Inspect</div>
+          <div class="deep-links">
+            <a class="deep-link" href="{{LINK_ALARM_LIST}}">Alarms list</a>
+            <a class="deep-link" href="{{LINK_METRIC_BROWSER}}">Metric browser</a>
+          </div>
+        </div>
+        <div class="deep-link-group">
+          <div class="group-label">Configure</div>
+          <div class="deep-links">
+            <a class="deep-link" href="{{LINK_SNS_TOPICS}}">SNS topics</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Suggested next commands</div>
+    <div class="section-body">
+      <div class="cmd-list">
+        {{CMD_SUGGESTIONS}}
+        <!-- Examples:
+        /cw-doctor — verify the plugin still has read access after applying alarm changes.
+        /cw-health-check — confirm services are visible in Application Signals before relying on SLO alarms.
+        /cw-obs-gaps — close instrumentation gaps so the new alarms have signal to fire on.
+        -->
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-meta">
+    <dl>
+      <dt>Source</dt><dd>{{SOURCE_MCP_SERVERS}}</dd>
+      <dt>Region · Account</dt><dd>{{AWS_REGION}} · {{AWS_ACCOUNT}}</dd>
+      <dt>Time window</dt><dd>{{TIME_WINDOW}}</dd>
+      <dt>MCP tools called</dt><dd>{{MCP_TOOLS_LIST}}</dd>
+      <dt>Confidence</dt><dd>{{CONFIDENCE}}</dd>
+    </dl>
+  </div>
+
+</div>
+</body>
+</html>
