@@ -174,6 +174,8 @@ The model invokes these based on what the user describes — no command needed.
 | `error-spike-triage` | Error rate or fault rate jumps above baseline |
 | `alarm-response` | A CloudWatch alarm fires (PagerDuty / OpsGenie / direct page) |
 | `slo-compliance-report` | Non-incident reporting — "weekly SLO report", "audit SLOs", "which SLOs are at risk" |
+| `observability-gap-analysis` | "audit my code for logging", "missing instrumentation", "is my service observable" — scans a codebase for logging / metrics / tracing / error-handling / health-check gaps |
+| `alerting-design` | "what alarms should I have", "audit alarms", "alarm fatigue" — inventories existing alarms and recommends a per-service alerting plan |
 
 ### Slash commands (user-invoked)
 
@@ -185,6 +187,11 @@ The model invokes these based on what the user describes — no command needed.
 | `/cw-alarm-response <alarm-name-or-arn>` | Triage a fired CloudWatch alarm → Service Health Card + Top Suspected Cause |
 | `/cw-health-check [service-name-pattern]` | Fleet-level dashboard across all Application Signals services in the region |
 | `/cw-slo-report` | Portfolio-wide SLO compliance report ranked by risk, with recommendations |
+| `/cw-obs-gaps [path] [language]` | Codebase observability gap analysis → Observability Gap Report (logging / metrics / tracing / error-handling / health-check coverage; multi-language) |
+| `/cw-alert-design [service-or-namespace] [window]` | Alerting design → Alerting Plan (existing-alarm audit, coverage matrix, recommended thresholds, composite-alarm patterns, IaC snippets) |
+| `/cw-set-context` | Pick the AWS profile and region the plugin operates against |
+| `/cw-doctor` | End-to-end diagnostic: MCP servers, AWS identity, region, Application Signals, logs, traces, CloudTrail |
+| `/cw-verify-recovery <service>` | Verify a service has recovered after a mitigation (SLO burn stopped, p99 returned, errors normalized, alarms back to OK) |
 
 ### Tier 3 artifact components (consistent visual grammar)
 
@@ -197,6 +204,8 @@ verify the model's reasoning before acting.
 - 🟢 **Service Health Card** — RED metrics (5m + 24h baseline), SLO status, top dependencies, recent CloudTrail changes
 - 🔍 **Top Suspected Cause** — ranked hypotheses with evidence cards (metric / log / trace / deploy), confidence, falsifiable next step
 - 📋 **Investigation Summary** — wrapper report for `slo-breach-investigation`, `latency-regression`, `error-spike-triage`: verdict callout, ranked hypotheses, evidence cards
+- 🩺 **Observability Gap Report** — per-file findings on logging / metrics / tracing / error-handling / health-check coverage, ranked by severity, with language-specific fix snippets
+- 🔔 **Alerting Plan** — existing-alarm inventory, noise audit, per-service coverage matrix, recommended alarms with thresholds and IaC snippets, composite-alarm and anomaly-detection candidates
 - 🔗 **Open in CloudWatch** — deep links into the AWS console with service / operation / time range / filters preserved
 
 Tier 3 components render as rich **HTML artifacts** in Cowork (sparklines,
@@ -462,12 +471,14 @@ aws-apm-claude-plugin/
 │   ├── plugin.json           # Plugin metadata (v0.2.1)
 │   └── marketplace.json      # Marketplace manifest
 ├── .mcp.json                 # Wires the 4 awslabs/mcp servers via uvx
-├── skills/                   # 13 skills total
+├── skills/                   # 18 skills total
 │   ├── slo-breach-investigation/    # Workflow
 │   ├── latency-regression/          # Workflow
 │   ├── error-spike-triage/          # Workflow
 │   ├── alarm-response/              # Workflow
 │   ├── slo-compliance-report/       # Reporting workflow
+│   ├── observability-gap-analysis/  # Codebase audit workflow
+│   ├── alerting-design/             # Alerting plan workflow
 │   ├── slo-breach-explainer/        # Tier 3 artifact
 │   ├── trace-waterfall-summary/     # Tier 3 artifact
 │   ├── service-health-card/         # Tier 3 artifact
@@ -475,20 +486,30 @@ aws-apm-claude-plugin/
 │   ├── open-in-cloudwatch/          # Deep-link primitive
 │   ├── investigation-validator/     # 6-check self-audit
 │   ├── incident-memory/             # JSON persistence + recurrence check
+│   ├── service-ownership/           # Resolve owning team / on-call
+│   ├── trace-to-code/               # Map trace span to source code
+│   ├── copy-to-incident/            # Reformat artifact for Slack / postmortem / status page
 │   └── aws-apm-setup/               # Prerequisite walkthrough
-├── artifacts/                # 5 HTML artifact templates with {{PLACEHOLDERS}}
+├── artifacts/                # 7 HTML artifact templates with {{PLACEHOLDERS}}
 │   ├── slo-breach-explainer.html
 │   ├── trace-waterfall.html
 │   ├── service-health-card.html
 │   ├── top-suspected-cause.html
-│   └── investigation-summary.html
-├── commands/                 # 6 slash commands
+│   ├── investigation-summary.html
+│   ├── observability-gap-report.html
+│   └── alerting-plan.html
+├── commands/                 # 11 slash commands
 │   ├── cw-investigate-slo.md
 │   ├── cw-investigate-latency.md
 │   ├── cw-investigate-errors.md
 │   ├── cw-alarm-response.md
 │   ├── cw-health-check.md
-│   └── cw-slo-report.md
+│   ├── cw-slo-report.md
+│   ├── cw-obs-gaps.md
+│   ├── cw-alert-design.md
+│   ├── cw-set-context.md
+│   ├── cw-doctor.md
+│   └── cw-verify-recovery.md
 ├── hooks/
 │   ├── hooks.json            # PreToolUse confirmation gate on write actions
 │   └── scripts/confirm-write.sh
@@ -555,6 +576,13 @@ templates, not regenerated by the model on each run.
 - **Operational workflows** — `alarm-response` and `slo-compliance-report`
   extend the plugin beyond incident investigation to alarm triage and weekly
   portfolio review.
+- **Production-readiness workflows** — `/cw-obs-gaps` audits a service's
+  codebase (Python, Java, JS / TS, Go, Ruby, C# / .NET) for logging,
+  metrics, tracing, error-handling, and health-check coverage; `/cw-alert-design`
+  inventories existing alarms, surfaces noise / fatigue, builds a coverage
+  matrix per AWS service in use, and recommends alarm configurations with
+  IaC snippets. Both are read-only and non-incident — they prepare a service
+  to be observable and alertable before the next page.
 - **Quality bar primitives** — `investigation-validator` runs a 6-check
   self-audit on every artifact before it's shown; `incident-memory` persists
   summaries and surfaces recurrences.
