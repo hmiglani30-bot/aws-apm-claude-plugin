@@ -1,0 +1,12 @@
+{
+  "name": "aws-apm-claude-plugin",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "eval": "node evals/run-evals.mjs"
+  },
+  "devDependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
+  }
+}

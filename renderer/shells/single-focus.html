@@ -1,0 +1,13 @@
+<!--
+  SHELL: single-focus
+  Used when the manifest is dominated by ONE high-density widget (e.g. a trace waterfall).
+  Slots:
+    HEADER   — exactly 1 widget (typically a stat_card or sparkline summarizing the artifact)
+    PRIMARY  — exactly 1 widget (the high-density focus)
+    DRAWER   — 0..N widgets (collapsed by default, "Show more" toggles)
+-->
+<section class="hr-shell hr-shell-single-focus" data-shell="single-focus">
+  <header class="hr-shell-header" data-slot="header">{{HEADER}}</header>
+  <main class="hr-shell-primary" data-slot="primary">{{PRIMARY}}</main>
+  {{DRAWER}}
+</section>

@@ -1,0 +1,4124 @@
+{
+  "generated_at": "2026-04-29T04:22:05.841Z",
+  "renderer_branch": "feature/hybrid-renderer",
+  "total_prompts": 52,
+  "categories": {
+    "error-investigation": "Error investigation",
+    "latency-performance": "Latency / performance",
+    "slo-service-health": "SLO / service health",
+    "cloudtrail-security": "CloudTrail / security",
+    "mixed-complex": "Mixed / complex"
+  },
+  "summary": {
+    "overall": {
+      "total_cases": 52,
+      "all_dim_pass": 52,
+      "per_dim": {
+        "manifest_validity": {
+          "pass": 52,
+          "fail": 0
+        },
+        "shell_selection": {
+          "pass": 52,
+          "fail": 0
+        },
+        "widget_relevance": {
+          "pass": 52,
+          "fail": 0
+        },
+        "widget_count": {
+          "pass": 52,
+          "fail": 0
+        },
+        "density_budget": {
+          "pass": 52,
+          "fail": 0
+        },
+        "rendering": {
+          "pass": 52,
+          "fail": 0
+        }
+      }
+    },
+    "byCategory": {
+      "error-investigation": {
+        "total": 10,
+        "all_dim_pass": 10,
+        "per_dim": {
+          "manifest_validity": {
+            "pass": 10,
+            "fail": 0
+          },
+          "shell_selection": {
+            "pass": 10,
+            "fail": 0
+          },
+          "widget_relevance": {
+            "pass": 10,
+            "fail": 0
+          },
+          "widget_count": {
+            "pass": 10,
+            "fail": 0
+          },
+          "density_budget": {
+            "pass": 10,
+            "fail": 0
+          },
+          "rendering": {
+            "pass": 10,
+            "fail": 0
+          }
+        }
+      },
+      "latency-performance": {
+        "total": 10,
+        "all_dim_pass": 10,
+        "per_dim": {
+          "manifest_validity": {
+            "pass": 10,
+            "fail": 0
+          },
+          "shell_selection": {
+            "pass": 10,
+            "fail": 0
+          },
+          "widget_relevance": {
+            "pass": 10,
+            "fail": 0
+          },
+          "widget_count": {
+            "pass": 10,
+            "fail": 0
+          },
+          "density_budget": {
+            "pass": 10,
+            "fail": 0
+          },
+          "rendering": {
+            "pass": 10,
+            "fail": 0
+          }
+        }
+      },
+      "slo-service-health": {
+        "total": 10,
+        "all_dim_pass": 10,
+        "per_dim": {
+          "manifest_validity": {
+            "pass": 10,
+            "fail": 0
+          },
+          "shell_selection": {
+            "pass": 10,
+            "fail": 0
+          },
+          "widget_relevance": {
+            "pass": 10,
+            "fail": 0
+          },
+          "widget_count": {
+            "pass": 10,
+            "fail": 0
+          },
+          "density_budget": {
+            "pass": 10,
+            "fail": 0
+          },
+          "rendering": {
+            "pass": 10,
+            "fail": 0
+          }
+        }
+      },
+      "cloudtrail-security": {
+        "total": 10,
+        "all_dim_pass": 10,
+        "per_dim": {
+          "manifest_validity": {
+            "pass": 10,
+            "fail": 0
+          },
+          "shell_selection": {
+            "pass": 10,
+            "fail": 0
+          },
+          "widget_relevance": {
+            "pass": 10,
+            "fail": 0
+          },
+          "widget_count": {
+            "pass": 10,
+            "fail": 0
+          },
+          "density_budget": {
+            "pass": 10,
+            "fail": 0
+          },
+          "rendering": {
+            "pass": 10,
+            "fail": 0
+          }
+        }
+      },
+      "mixed-complex": {
+        "total": 12,
+        "all_dim_pass": 12,
+        "per_dim": {
+          "manifest_validity": {
+            "pass": 12,
+            "fail": 0
+          },
+          "shell_selection": {
+            "pass": 12,
+            "fail": 0
+          },
+          "widget_relevance": {
+            "pass": 12,
+            "fail": 0
+          },
+          "widget_count": {
+            "pass": 12,
+            "fail": 0
+          },
+          "density_budget": {
+            "pass": 12,
+            "fail": 0
+          },
+          "rendering": {
+            "pass": 12,
+            "fail": 0
+          }
+        }
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "err-01",
+      "category": "error-investigation",
+      "prompt": "Why is my API returning 500 errors?",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "log_viewer",
+          "table"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 7/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,log_viewer,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "5210 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 7,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "table"
+          ],
+          "context": [
+            "log_viewer",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 5210
+    },
+    {
+      "id": "err-02",
+      "category": "error-investigation",
+      "prompt": "Investigate high error rate on payment-service",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "log_viewer",
+          "table"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 8/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,log_viewer,timeline]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "5648 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 8,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "table"
+          ],
+          "context": [
+            "log_viewer",
+            "timeline"
+          ]
+        }
+      },
+      "html_length": 5648
+    },
+    {
+      "id": "err-03",
+      "category": "error-investigation",
+      "prompt": "What's causing the spike in 5xx errors since 2pm?",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "log_viewer",
+          "table",
+          "change_event_list"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/8, drawer 0/4"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,sparkline,change_event_list,table]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "4 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "4286 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 5,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "sparkline",
+            "change_event_list"
+          ],
+          "context": [
+            "table"
+          ]
+        }
+      },
+      "html_length": 4286
+    },
+    {
+      "id": "err-04",
+      "category": "error-investigation",
+      "prompt": "Debug: order-service throwing NullPointerException",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustInclude": [
+          "log_viewer"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 7/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,log_viewer,table,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "4561 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 7,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "log_viewer"
+          ],
+          "context": [
+            "table",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 4561
+    },
+    {
+      "id": "err-05",
+      "category": "error-investigation",
+      "prompt": "Error rate jumped from 0.1% to 5% in the last hour",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "log_viewer",
+          "table",
+          "change_event_list"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/8, drawer 0/4"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,sparkline,table,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "4 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "4405 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 5,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "sparkline",
+            "table"
+          ],
+          "context": [
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 4405
+    },
+    {
+      "id": "err-06",
+      "category": "error-investigation",
+      "prompt": "Multiple services showing increased error rates",
+      "expected": {
+        "shell": [
+          "investigation",
+          "dashboard"
+        ],
+        "mustIncludeAny": [
+          "stat_card"
+        ],
+        "mustIncludeAny2": [
+          "table"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          3,
+          10
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,10])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "4347 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 6,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "stat_card"
+          ],
+          "context": [
+            "table",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 4347
+    },
+    {
+      "id": "err-07",
+      "category": "error-investigation",
+      "prompt": "Lambda function timing out on cold starts",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "table",
+          "log_viewer"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 7/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,log_viewer]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3614 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 7,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "stat_card"
+          ],
+          "context": [
+            "table",
+            "log_viewer"
+          ]
+        }
+      },
+      "html_length": 3614
+    },
+    {
+      "id": "err-08",
+      "category": "error-investigation",
+      "prompt": "DynamoDB throttling errors in checkout flow",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "table",
+          "log_viewer"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 7/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,log_viewer]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3446 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 7,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "stat_card"
+          ],
+          "context": [
+            "table",
+            "log_viewer"
+          ]
+        }
+      },
+      "html_length": 3446
+    },
+    {
+      "id": "err-09",
+      "category": "error-investigation",
+      "prompt": "API Gateway returning 403 forbidden intermittently",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "table",
+          "log_viewer",
+          "change_event_list"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 7/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,log_viewer,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3694 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 7,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "table"
+          ],
+          "context": [
+            "log_viewer",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3694
+    },
+    {
+      "id": "err-10",
+      "category": "error-investigation",
+      "prompt": "ECS task keeps crashing with OOM killer",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "table",
+          "log_viewer",
+          "timeline"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,sparkline,timeline]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3718 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 6,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "stat_card"
+          ],
+          "context": [
+            "sparkline",
+            "timeline"
+          ]
+        }
+      },
+      "html_length": 3718
+    },
+    {
+      "id": "lat-01",
+      "category": "latency-performance",
+      "prompt": "Why is my API slow?",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "table",
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,sparkline,table,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "4680 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 6,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "sparkline"
+          ],
+          "context": [
+            "table",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 4680
+    },
+    {
+      "id": "lat-02",
+      "category": "latency-performance",
+      "prompt": "P99 latency increased from 200ms to 2s on user-service",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "table",
+          "trace_waterfall",
+          "change_event_list"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/8, drawer 0/4"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "4 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3824 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 5,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "table"
+          ],
+          "context": [
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3824
+    },
+    {
+      "id": "lat-03",
+      "category": "latency-performance",
+      "prompt": "Trace analysis: slow checkout flow",
+      "expected": {
+        "shell": "single-focus",
+        "mustInclude": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          1,
+          4
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred single-focus"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 4/6, drawer 0/2"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,trace_waterfall]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "2 widgets (in [1,4])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3954 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "single-focus",
+        "densityUsed": 4,
+        "budget": 6,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "trace_waterfall"
+          ]
+        }
+      },
+      "html_length": 3954
+    },
+    {
+      "id": "lat-04",
+      "category": "latency-performance",
+      "prompt": "Which downstream dependency is causing latency?",
+      "expected": {
+        "shell": "investigation",
+        "mustInclude": [
+          "table"
+        ],
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 4/8, drawer 0/3"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,sparkline]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "3 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "4208 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 4,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "table",
+            "sparkline"
+          ],
+          "context": []
+        }
+      },
+      "html_length": 4208
+    },
+    {
+      "id": "lat-05",
+      "category": "latency-performance",
+      "prompt": "Compare latency before and after deployment",
+      "expected": {
+        "shell": [
+          "investigation",
+          "dashboard"
+        ],
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "change_event_list",
+          "timeline",
+          "table"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred dashboard"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/10, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,sparkline,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3286 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "dashboard",
+        "densityUsed": 5,
+        "budget": 10,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "grid": [
+            "stat_card",
+            "stat_card",
+            "sparkline",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3286
+    },
+    {
+      "id": "lat-06",
+      "category": "latency-performance",
+      "prompt": "Database query taking 30 seconds",
+      "expected": {
+        "shell": [
+          "investigation",
+          "single-focus"
+        ],
+        "mustIncludeAny": [
+          "stat_card"
+        ],
+        "mustIncludeAny2": [
+          "log_viewer",
+          "table",
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          2,
+          6
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/8, drawer 0/4"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,log_viewer]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "4 widgets (in [2,6])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3247 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 6,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "table"
+          ],
+          "context": [
+            "log_viewer"
+          ]
+        }
+      },
+      "html_length": 3247
+    },
+    {
+      "id": "lat-07",
+      "category": "latency-performance",
+      "prompt": "Cold start latency on Lambda functions",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustInclude": [
+          "table"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,sparkline]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "4027 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 6,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "stat_card"
+          ],
+          "context": [
+            "table",
+            "sparkline"
+          ]
+        }
+      },
+      "html_length": 4027
+    },
+    {
+      "id": "lat-08",
+      "category": "latency-performance",
+      "prompt": "Cross-region latency between us-east-1 and eu-west-1",
+      "expected": {
+        "shell": "investigation",
+        "mustInclude": [
+          "table"
+        ],
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/8, drawer 0/4"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,sparkline]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "4 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3596 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 5,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "table"
+          ],
+          "context": [
+            "sparkline"
+          ]
+        }
+      },
+      "html_length": 3596
+    },
+    {
+      "id": "lat-09",
+      "category": "latency-performance",
+      "prompt": "API response time degraded after scaling event",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "change_event_list",
+          "timeline",
+          "table"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,change_event_list,timeline]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3762 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 6,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "stat_card"
+          ],
+          "context": [
+            "change_event_list",
+            "timeline"
+          ]
+        }
+      },
+      "html_length": 3762
+    },
+    {
+      "id": "lat-10",
+      "category": "latency-performance",
+      "prompt": "Identify bottleneck in microservice chain",
+      "expected": {
+        "shell": [
+          "single-focus",
+          "investigation"
+        ],
+        "mustInclude": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          1,
+          5
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred single-focus"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 4/6, drawer 0/2"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,trace_waterfall]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "2 widgets (in [1,5])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "4273 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "single-focus",
+        "densityUsed": 4,
+        "budget": 6,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "trace_waterfall"
+          ]
+        }
+      },
+      "html_length": 4273
+    },
+    {
+      "id": "slo-01",
+      "category": "slo-service-health",
+      "prompt": "Show me SLO compliance for all services",
+      "expected": {
+        "shell": "dashboard",
+        "mustInclude": [
+          "stat_card"
+        ],
+        "forbidden": [
+          "trace_waterfall",
+          "log_viewer"
+        ],
+        "widgetCount": [
+          3,
+          10
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred dashboard"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/10, drawer 0/6"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "6 widgets (in [3,10])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3787 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "dashboard",
+        "densityUsed": 6,
+        "budget": 10,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "grid": [
+            "stat_card",
+            "stat_card",
+            "stat_card",
+            "change_event_list",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3787
+    },
+    {
+      "id": "slo-02",
+      "category": "slo-service-health",
+      "prompt": "Which SLOs are at risk of breaching?",
+      "expected": {
+        "shell": [
+          "dashboard",
+          "investigation"
+        ],
+        "mustInclude": [
+          "table"
+        ],
+        "mustIncludeAny": [
+          "stat_card"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 4/8, drawer 0/3"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "3 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3200 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 4,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "table"
+          ],
+          "context": []
+        }
+      },
+      "html_length": 3200
+    },
+    {
+      "id": "slo-03",
+      "category": "slo-service-health",
+      "prompt": "Error budget status for payment-service",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,sparkline,timeline]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3439 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 6,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "stat_card"
+          ],
+          "context": [
+            "sparkline",
+            "timeline"
+          ]
+        }
+      },
+      "html_length": 3439
+    },
+    {
+      "id": "slo-04",
+      "category": "slo-service-health",
+      "prompt": "Service health overview for production",
+      "expected": {
+        "shell": "dashboard",
+        "mustInclude": [
+          "stat_card"
+        ],
+        "forbidden": [
+          "trace_waterfall",
+          "log_viewer"
+        ],
+        "widgetCount": [
+          4,
+          10
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred dashboard"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/10, drawer 0/6"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "6 widgets (in [4,10])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "2271 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "dashboard",
+        "densityUsed": 6,
+        "budget": 10,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "grid": [
+            "stat_card",
+            "stat_card",
+            "stat_card",
+            "stat_card",
+            "stat_card"
+          ]
+        }
+      },
+      "html_length": 2271
+    },
+    {
+      "id": "slo-05",
+      "category": "slo-service-health",
+      "prompt": "SLO breach on availability target for auth-service",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "timeline",
+          "change_event_list",
+          "table"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 8/8, drawer 0/6"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,timeline,table,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "6 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "4878 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 8,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "stat_card"
+          ],
+          "context": [
+            "timeline",
+            "table",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 4878
+    },
+    {
+      "id": "slo-06",
+      "category": "slo-service-health",
+      "prompt": "Monthly SLO compliance report",
+      "expected": {
+        "shell": "dashboard",
+        "mustInclude": [
+          "stat_card"
+        ],
+        "forbidden": [
+          "trace_waterfall",
+          "log_viewer"
+        ],
+        "widgetCount": [
+          4,
+          10
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred dashboard"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/10, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [4,10])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3396 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "dashboard",
+        "densityUsed": 5,
+        "budget": 10,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "grid": [
+            "stat_card",
+            "stat_card",
+            "stat_card",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3396
+    },
+    {
+      "id": "slo-07",
+      "category": "slo-service-health",
+      "prompt": "Which services have the worst error rates?",
+      "expected": {
+        "shell": [
+          "dashboard",
+          "investigation"
+        ],
+        "mustInclude": [
+          "table"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 4/8, drawer 0/3"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "3 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3547 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 4,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "table"
+          ],
+          "context": []
+        }
+      },
+      "html_length": 3547
+    },
+    {
+      "id": "slo-08",
+      "category": "slo-service-health",
+      "prompt": "Dashboard: current state of all production services",
+      "expected": {
+        "shell": "dashboard",
+        "mustInclude": [
+          "stat_card"
+        ],
+        "forbidden": [
+          "trace_waterfall",
+          "log_viewer"
+        ],
+        "widgetCount": [
+          4,
+          10
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred dashboard"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/10, drawer 0/6"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "6 widgets (in [4,10])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "2391 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "dashboard",
+        "densityUsed": 6,
+        "budget": 10,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "grid": [
+            "stat_card",
+            "stat_card",
+            "stat_card",
+            "stat_card",
+            "stat_card"
+          ]
+        }
+      },
+      "html_length": 2391
+    },
+    {
+      "id": "slo-09",
+      "category": "slo-service-health",
+      "prompt": "How much error budget do we have left this quarter?",
+      "expected": {
+        "shell": [
+          "single-focus",
+          "investigation"
+        ],
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "widgetCount": [
+          1,
+          5
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred single-focus"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 2/6, drawer 0/2"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,sparkline]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "2 widgets (in [1,5])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "2134 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "single-focus",
+        "densityUsed": 2,
+        "budget": 6,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "sparkline"
+          ]
+        }
+      },
+      "html_length": 2134
+    },
+    {
+      "id": "slo-10",
+      "category": "slo-service-health",
+      "prompt": "Service health card for order-processing",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3765 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 6,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "stat_card"
+          ],
+          "context": [
+            "table",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3765
+    },
+    {
+      "id": "ct-01",
+      "category": "cloudtrail-security",
+      "prompt": "Who modified the IAM policy yesterday?",
+      "expected": {
+        "shell": "investigation",
+        "mustInclude": [
+          "change_event_list"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          1,
+          6
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 4/8, drawer 0/3"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,change_event_list,table]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "3 widgets (in [1,6])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3982 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 4,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "change_event_list",
+            "table"
+          ],
+          "context": []
+        }
+      },
+      "html_length": 3982
+    },
+    {
+      "id": "ct-02",
+      "category": "cloudtrail-security",
+      "prompt": "Show me CloudTrail events for the last 24 hours",
+      "expected": {
+        "shell": [
+          "investigation",
+          "dashboard"
+        ],
+        "mustInclude": [
+          "change_event_list"
+        ],
+        "forbidden": [
+          "trace_waterfall",
+          "log_viewer"
+        ],
+        "widgetCount": [
+          1,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred dashboard"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 4/10, drawer 0/4"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "4 widgets (in [1,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3365 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "dashboard",
+        "densityUsed": 4,
+        "budget": 10,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "grid": [
+            "stat_card",
+            "stat_card",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3365
+    },
+    {
+      "id": "ct-03",
+      "category": "cloudtrail-security",
+      "prompt": "Security audit: unauthorized access attempts",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "table",
+          "change_event_list"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/8, drawer 0/4"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "4 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3355 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 5,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "table"
+          ],
+          "context": [
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3355
+    },
+    {
+      "id": "ct-04",
+      "category": "cloudtrail-security",
+      "prompt": "Track all S3 bucket policy changes this week",
+      "expected": {
+        "shell": [
+          "investigation",
+          "dashboard"
+        ],
+        "mustInclude": [
+          "change_event_list"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          1,
+          6
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred dashboard"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 3/10, drawer 0/3"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "3 widgets (in [1,6])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "2917 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "dashboard",
+        "densityUsed": 3,
+        "budget": 10,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "grid": [
+            "stat_card",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 2917
+    },
+    {
+      "id": "ct-05",
+      "category": "cloudtrail-security",
+      "prompt": "Who deleted the production database?",
+      "expected": {
+        "shell": [
+          "investigation",
+          "single-focus",
+          "dashboard"
+        ],
+        "mustInclude": [
+          "change_event_list"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          1,
+          5
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred dashboard"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 3/10, drawer 0/3"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "3 widgets (in [1,5])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "2893 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "dashboard",
+        "densityUsed": 3,
+        "budget": 10,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "grid": [
+            "stat_card",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 2893
+    },
+    {
+      "id": "ct-06",
+      "category": "cloudtrail-security",
+      "prompt": "IAM role assumption events for admin role",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "table",
+          "change_event_list"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/8, drawer 0/4"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "4 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3481 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 5,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "table"
+          ],
+          "context": [
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3481
+    },
+    {
+      "id": "ct-07",
+      "category": "cloudtrail-security",
+      "prompt": "API calls from unknown IP addresses",
+      "expected": {
+        "shell": "investigation",
+        "mustInclude": [
+          "table"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/8, drawer 0/4"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "4 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3472 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 5,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "table"
+          ],
+          "context": [
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3472
+    },
+    {
+      "id": "ct-08",
+      "category": "cloudtrail-security",
+      "prompt": "Configuration changes that could affect availability",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "change_event_list",
+          "table"
+        ],
+        "forbidden": [
+          "trace_waterfall",
+          "log_viewer"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/8, drawer 0/4"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,change_event_list,table]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "4 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "4425 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 5,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "change_event_list"
+          ],
+          "context": [
+            "table"
+          ]
+        }
+      },
+      "html_length": 4425
+    },
+    {
+      "id": "ct-09",
+      "category": "cloudtrail-security",
+      "prompt": "Audit trail for KMS key usage",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "change_event_list",
+          "table"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3345 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 6,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "stat_card"
+          ],
+          "context": [
+            "table",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3345
+    },
+    {
+      "id": "ct-10",
+      "category": "cloudtrail-security",
+      "prompt": "CloudTrail events around the time of the incident",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "change_event_list",
+          "timeline"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/8, drawer 0/4"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,timeline,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "4 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "4559 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 5,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "timeline"
+          ],
+          "context": [
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 4559
+    },
+    {
+      "id": "mix-01",
+      "category": "mixed-complex",
+      "prompt": "Something's wrong with the checkout flow",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "table",
+          "log_viewer"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3822 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 6,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "stat_card"
+          ],
+          "context": [
+            "table",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3822
+    },
+    {
+      "id": "mix-02",
+      "category": "mixed-complex",
+      "prompt": "Help me understand what happened during last night's outage",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "timeline"
+        ],
+        "mustIncludeAny2": [
+          "change_event_list",
+          "stat_card",
+          "sparkline",
+          "log_viewer"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,timeline,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "4089 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 6,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "stat_card"
+          ],
+          "context": [
+            "timeline",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 4089
+    },
+    {
+      "id": "mix-03",
+      "category": "mixed-complex",
+      "prompt": "Is my service healthy after the deployment?",
+      "expected": {
+        "shell": [
+          "investigation",
+          "dashboard"
+        ],
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "change_event_list",
+          "timeline",
+          "table"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred dashboard"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/10, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,change_event_list,sparkline]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "2909 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "dashboard",
+        "densityUsed": 5,
+        "budget": 10,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "grid": [
+            "stat_card",
+            "stat_card",
+            "change_event_list",
+            "sparkline"
+          ]
+        }
+      },
+      "html_length": 2909
+    },
+    {
+      "id": "mix-04",
+      "category": "mixed-complex",
+      "prompt": "Root cause analysis: payment failures",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "stat_card"
+        ],
+        "mustIncludeAny2": [
+          "table",
+          "log_viewer",
+          "change_event_list"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 7/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,log_viewer,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3932 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 7,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "table"
+          ],
+          "context": [
+            "log_viewer",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3932
+    },
+    {
+      "id": "mix-05",
+      "category": "mixed-complex",
+      "prompt": "Compare service health before and after the release",
+      "expected": {
+        "shell": [
+          "investigation",
+          "dashboard"
+        ],
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "change_event_list",
+          "table"
+        ],
+        "widgetCount": [
+          3,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred dashboard"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/10, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,sparkline,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "2913 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "dashboard",
+        "densityUsed": 5,
+        "budget": 10,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "grid": [
+            "stat_card",
+            "stat_card",
+            "sparkline",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 2913
+    },
+    {
+      "id": "mix-06",
+      "category": "mixed-complex",
+      "prompt": "What changed in the last hour that could explain the errors?",
+      "expected": {
+        "shell": "investigation",
+        "mustInclude": [
+          "change_event_list"
+        ],
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/8, drawer 0/4"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,change_event_list,table]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "4 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "4779 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 5,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "change_event_list"
+          ],
+          "context": [
+            "table"
+          ]
+        }
+      },
+      "html_length": 4779
+    },
+    {
+      "id": "mix-07",
+      "category": "mixed-complex",
+      "prompt": "Full investigation: why did the page load time double?",
+      "expected": {
+        "shell": [
+          "investigation",
+          "single-focus"
+        ],
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "mustIncludeAny2": [
+          "table",
+          "trace_waterfall",
+          "change_event_list"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/8, drawer 0/4"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "4 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3739 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 5,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "table"
+          ],
+          "context": [
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3739
+    },
+    {
+      "id": "mix-08",
+      "category": "mixed-complex",
+      "prompt": "Correlate the CloudTrail changes with the error spike",
+      "expected": {
+        "shell": "investigation",
+        "mustInclude": [
+          "change_event_list"
+        ],
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline",
+          "timeline"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/8, drawer 0/4"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,sparkline,timeline,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "4 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "4513 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 5,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "sparkline",
+            "timeline"
+          ],
+          "context": [
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 4513
+    },
+    {
+      "id": "mix-09",
+      "category": "mixed-complex",
+      "prompt": "Give me the big picture on production health",
+      "expected": {
+        "shell": "dashboard",
+        "mustInclude": [
+          "stat_card"
+        ],
+        "forbidden": [
+          "trace_waterfall",
+          "log_viewer"
+        ],
+        "widgetCount": [
+          4,
+          10
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred dashboard"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/10, drawer 0/6"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "6 widgets (in [4,10])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "2073 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "dashboard",
+        "densityUsed": 6,
+        "budget": 10,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "grid": [
+            "stat_card",
+            "stat_card",
+            "stat_card",
+            "stat_card",
+            "stat_card"
+          ]
+        }
+      },
+      "html_length": 2073
+    },
+    {
+      "id": "mix-10",
+      "category": "mixed-complex",
+      "prompt": "Triage: multiple alarms firing simultaneously",
+      "expected": {
+        "shell": [
+          "investigation",
+          "dashboard"
+        ],
+        "mustInclude": [
+          "table"
+        ],
+        "forbidden": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/8, drawer 0/4"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "4 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3829 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 5,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "table"
+          ],
+          "context": [
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3829
+    },
+    {
+      "id": "mix-11",
+      "category": "mixed-complex",
+      "prompt": "Post-incident review: summarize what happened",
+      "expected": {
+        "shell": "investigation",
+        "mustInclude": [
+          "timeline"
+        ],
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline",
+          "change_event_list"
+        ],
+        "widgetCount": [
+          2,
+          8
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 6/8, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,timeline,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [2,8])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "4006 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 6,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "stat_card",
+            "stat_card"
+          ],
+          "context": [
+            "timeline",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 4006
+    },
+    {
+      "id": "mix-12",
+      "category": "mixed-complex",
+      "prompt": "Proactive check: anything concerning in the metrics?",
+      "expected": {
+        "shell": "dashboard",
+        "mustInclude": [
+          "stat_card"
+        ],
+        "forbidden": [
+          "trace_waterfall",
+          "log_viewer"
+        ],
+        "widgetCount": [
+          3,
+          10
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred dashboard"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/10, drawer 0/5"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "5 widgets (in [3,10])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3062 chars"
+        }
+      },
+      "summary": {
+        "passed": 6,
+        "failed": 0,
+        "total": 6
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "dashboard",
+        "densityUsed": 5,
+        "budget": 10,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "grid": [
+            "stat_card",
+            "stat_card",
+            "stat_card",
+            "change_event_list"
+          ]
+        }
+      },
+      "html_length": 3062
+    }
+  ]
+}

@@ -1,0 +1,315 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aws-apm-claude-plugin/schemas/manifest.schema.json",
+  "title": "Hybrid Renderer Manifest",
+  "description": "LLM-emitted artifact description. The renderer is a pure function: manifest in -> HTML out. The LLM picks WIDGETS; the renderer picks PLACEMENT.",
+  "type": "object",
+  "required": ["version", "metadata", "widgets"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Manifest schema version. Renderer rejects unknown versions."
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["title", "severity", "query_intent"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "subtitle": { "type": "string", "maxLength": 300 },
+        "severity": { "enum": ["critical", "warning", "info"] },
+        "query_intent": {
+          "type": "string",
+          "description": "Short tag describing what the user asked for. Used as part of cache key + telemetry. e.g. 'error-spike-triage', 'slo-breach', 'service-overview'.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "service": { "type": "string" },
+        "region": { "type": "string" },
+        "environment": { "type": "string" }
+      }
+    },
+    "widgets": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 24,
+      "items": { "$ref": "#/$defs/widget" }
+    }
+  },
+  "$defs": {
+    "widget": {
+      "type": "object",
+      "required": ["type", "priority", "data"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "stat_card",
+            "sparkline",
+            "timeline",
+            "table",
+            "trace_waterfall",
+            "log_viewer",
+            "change_event_list"
+          ]
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Lower = more important. Renderer places by ascending priority. Slot capacity overflow goes to the detail drawer."
+        },
+        "data": { "type": "object" },
+        "display_hints": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "size_preference": { "enum": ["compact", "default", "expanded"] },
+            "emphasis": { "enum": ["primary", "secondary", "tertiary"] }
+          }
+        }
+      },
+      "allOf": [
+        { "$ref": "#/$defs/widgetDataByType" }
+      ]
+    },
+    "widgetDataByType": {
+      "oneOf": [
+        {
+          "properties": {
+            "type": { "const": "stat_card" },
+            "data": { "$ref": "#/$defs/data_stat_card" }
+          }
+        },
+        {
+          "properties": {
+            "type": { "const": "sparkline" },
+            "data": { "$ref": "#/$defs/data_sparkline" }
+          }
+        },
+        {
+          "properties": {
+            "type": { "const": "timeline" },
+            "data": { "$ref": "#/$defs/data_timeline" }
+          }
+        },
+        {
+          "properties": {
+            "type": { "const": "table" },
+            "data": { "$ref": "#/$defs/data_table" }
+          }
+        },
+        {
+          "properties": {
+            "type": { "const": "trace_waterfall" },
+            "data": { "$ref": "#/$defs/data_trace_waterfall" }
+          }
+        },
+        {
+          "properties": {
+            "type": { "const": "log_viewer" },
+            "data": { "$ref": "#/$defs/data_log_viewer" }
+          }
+        },
+        {
+          "properties": {
+            "type": { "const": "change_event_list" },
+            "data": { "$ref": "#/$defs/data_change_event_list" }
+          }
+        }
+      ]
+    },
+
+    "data_stat_card": {
+      "type": "object",
+      "required": ["label", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "value": { "type": ["string", "number"] },
+        "unit": { "type": "string", "maxLength": 16 },
+        "baseline": { "type": ["string", "number"] },
+        "baseline_label": { "type": "string", "maxLength": 60 },
+        "trend": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "direction": { "enum": ["up", "down", "flat"] },
+            "magnitude": { "type": "string", "maxLength": 24 },
+            "good_or_bad": { "enum": ["good", "bad", "neutral"] }
+          }
+        },
+        "sparkline": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 200
+        },
+        "status": { "enum": ["healthy", "degraded", "warning", "unhealthy", "neutral"] }
+      }
+    },
+
+    "data_sparkline": {
+      "type": "object",
+      "required": ["label", "points"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "points": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 500
+        },
+        "unit": { "type": "string", "maxLength": 16 },
+        "current": { "type": ["string", "number"] },
+        "min": { "type": ["string", "number"] },
+        "max": { "type": ["string", "number"] },
+        "color": { "enum": ["blue", "orange", "red", "green", "gray"] }
+      }
+    },
+
+    "data_timeline": {
+      "type": "object",
+      "required": ["events"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "maxLength": 80 },
+        "events": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "required": ["timestamp", "title"],
+            "additionalProperties": false,
+            "properties": {
+              "timestamp": { "type": "string" },
+              "title": { "type": "string", "minLength": 1, "maxLength": 160 },
+              "description": { "type": "string", "maxLength": 400 },
+              "severity": { "enum": ["critical", "warning", "info", "success"] },
+              "link": { "type": "string", "format": "uri" }
+            }
+          }
+        }
+      }
+    },
+
+    "data_table": {
+      "type": "object",
+      "required": ["columns", "rows"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "maxLength": 80 },
+        "columns": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": {
+            "type": "object",
+            "required": ["key", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "key": { "type": "string", "minLength": 1, "maxLength": 40 },
+              "label": { "type": "string", "minLength": 1, "maxLength": 60 },
+              "align": { "enum": ["left", "right", "center"] },
+              "kind": { "enum": ["text", "number", "status", "link", "code"] }
+            }
+          }
+        },
+        "rows": {
+          "type": "array",
+          "maxItems": 500,
+          "items": { "type": "object" }
+        },
+        "searchable": { "type": "boolean" },
+        "sortable": { "type": "boolean" },
+        "empty_message": { "type": "string", "maxLength": 200 }
+      }
+    },
+
+    "data_trace_waterfall": {
+      "type": "object",
+      "required": ["trace_id", "total_duration_ms", "spans"],
+      "additionalProperties": false,
+      "properties": {
+        "trace_id": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "total_duration_ms": { "type": "number", "minimum": 0 },
+        "spans": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "required": ["name", "start_ms", "duration_ms"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+              "service": { "type": "string", "maxLength": 80 },
+              "start_ms": { "type": "number", "minimum": 0 },
+              "duration_ms": { "type": "number", "minimum": 0 },
+              "depth": { "type": "integer", "minimum": 0, "maximum": 16 },
+              "status": { "enum": ["ok", "error", "throttled"] },
+              "self_time_ms": { "type": "number", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+
+    "data_log_viewer": {
+      "type": "object",
+      "required": ["lines"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "maxLength": 80 },
+        "log_group": { "type": "string", "maxLength": 200 },
+        "lines": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 500,
+          "items": {
+            "type": "object",
+            "required": ["timestamp", "message"],
+            "additionalProperties": false,
+            "properties": {
+              "timestamp": { "type": "string" },
+              "message": { "type": "string", "maxLength": 4000 },
+              "severity": { "enum": ["error", "warn", "info", "debug"] }
+            }
+          }
+        }
+      }
+    },
+
+    "data_change_event_list": {
+      "type": "object",
+      "required": ["events"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "maxLength": 80 },
+        "events": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "required": ["timestamp", "title"],
+            "additionalProperties": false,
+            "properties": {
+              "timestamp": { "type": "string" },
+              "title": { "type": "string", "minLength": 1, "maxLength": 160 },
+              "principal": { "type": "string", "maxLength": 120 },
+              "resource": { "type": "string", "maxLength": 200 },
+              "kind": { "enum": ["deploy", "config", "iam", "infra", "other"] },
+              "link": { "type": "string", "format": "uri" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
