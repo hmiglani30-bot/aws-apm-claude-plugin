@@ -1,0 +1,16 @@
+<!--
+  SHELL: investigation
+  Used when the manifest mixes a dominant primary widget with supporting context (the typical
+  "what's broken + why" investigation artifact).
+  Slots:
+    HEADER   — exactly 1 widget (verdict / top-line summary)
+    PRIMARY  — 1..2 widgets (e.g. SLO burn chart + impacted operations table)
+    CONTEXT  — 0..3 widgets (timelines, change events, related stats)
+    DRAWER   — 0..N widgets (collapsed; raw logs, full traces, deep dives)
+-->
+<section class="hr-shell hr-shell-investigation" data-shell="investigation">
+  <header class="hr-shell-header" data-slot="header">{{HEADER}}</header>
+  <main class="hr-shell-primary" data-slot="primary">{{PRIMARY}}</main>
+  <aside class="hr-shell-context" data-slot="context">{{CONTEXT}}</aside>
+  {{DRAWER}}
+</section>

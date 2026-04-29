@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Hybrid Renderer — Test Harness</title>
+<link rel="stylesheet" href="./styles.css" />
+<style>
+  body {
+    margin: 0;
+    background: #0a121c;
+    color: #e9ebed;
+    font-family: "Open Sans", "Segoe UI", -apple-system, sans-serif;
+    font-size: 14px;
+    padding: 24px;
+  }
+  .harness-header {
+    max-width: 1400px;
+    margin: 0 auto 24px auto;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .harness-header h1 { font-size: 18px; font-weight: 600; margin: 0; }
+  .harness-header .sub { color: #95a5b8; font-size: 12px; }
+  .width-controls {
+    display: flex;
+    gap: 6px;
+    background: #192534;
+    border: 1px solid #2a3a4f;
+    border-radius: 6px;
+    padding: 4px;
+  }
+  .width-controls button {
+    background: transparent;
+    color: #95a5b8;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+  }
+  .width-controls button:hover { color: #e9ebed; background: #1f2d3d; }
+  .width-controls button.active { background: #539fe5; color: #0f1b2a; font-weight: 600; }
+
+  .panel-list {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .panel {
+    background: #0f1b2a;
+    border: 1px solid #2a3a4f;
+    border-radius: 10px;
+    padding: 0;
+    overflow: hidden;
+  }
+  .panel-meta {
+    padding: 12px 16px;
+    background: #1f2d3d;
+    border-bottom: 1px solid #2a3a4f;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12px;
+  }
+  .panel-meta .label { color: #95a5b8; text-transform: uppercase; letter-spacing: 0.05em; font-size: 10px; font-weight: 700; }
+  .panel-meta .value { color: #e9ebed; font-weight: 600; margin-left: 6px; }
+  .panel-meta code { background: #0f1b2a; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+  .panel-render {
+    margin: 0 auto;
+    transition: max-width 0.2s ease;
+  }
+  .panel-render.w-wide { max-width: 1100px; }
+  .panel-render.w-medium { max-width: 720px; }
+  .panel-render.w-narrow { max-width: 480px; }
+  .panel-render.w-tiny { max-width: 360px; }
+
+  pre.error {
+    margin: 0;
+    padding: 16px;
+    background: #2a0e0e;
+    color: #ff5d64;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+</style>
+</head>
+<body>
+
+<div class="harness-header">
+  <div>
+    <h1>Hybrid Renderer — Test Harness</h1>
+    <div class="sub">Renders three example manifests (one per shell type). Use the width controls to verify responsive reflow.</div>
+  </div>
+  <div class="width-controls" role="tablist" aria-label="Panel width">
+    <button data-width="wide" class="active">Wide (1100px)</button>
+    <button data-width="medium">Medium (720px)</button>
+    <button data-width="narrow">Narrow (480px)</button>
+    <button data-width="tiny">Tiny (360px)</button>
+  </div>
+</div>
+
+<div class="panel-list" id="panel-list"></div>
+
+<script type="module">
+import { initRenderer, renderManifest, planLayout, validateManifest } from "./render.js";
+import { bindInteractions } from "./interactions.js";
+
+// ---------- Example A — investigation shell -------------------------------
+const manifestInvestigation = {
+  version: "1.0",
+  metadata: {
+    title: "Error spike — checkout-api",
+    subtitle: "5xx error rate jumped 13× over baseline; investigating.",
+    severity: "critical",
+    query_intent: "error-spike-triage",
+    service: "checkout-api",
+    region: "us-east-1",
+    environment: "prod",
+    generated_at: "2026-04-28T14:12:00Z",
+  },
+  widgets: [
+    { type: "stat_card", priority: 1, data: {
+        label: "Error rate", value: 4.2, unit: "%",
+        baseline: 0.3, baseline_label: "24h ago",
+        trend: { direction: "up", magnitude: "+1300%", good_or_bad: "bad" },
+        sparkline: [0.3, 0.4, 0.3, 0.5, 0.6, 0.5, 1.2, 2.8, 4.2, 4.0, 4.2],
+        status: "unhealthy",
+      },
+      display_hints: { emphasis: "primary" } },
+    { type: "stat_card", priority: 2, data: {
+        label: "p99 latency", value: 410, unit: "ms",
+        baseline: 180, baseline_label: "24h ago",
+        trend: { direction: "up", magnitude: "+128%", good_or_bad: "bad" },
+        sparkline: [180, 175, 190, 185, 240, 320, 380, 410],
+        status: "degraded",
+      } },
+    { type: "stat_card", priority: 3, data: {
+        label: "Request rate", value: 412, unit: "req/s",
+        baseline: 430, baseline_label: "24h ago",
+        trend: { direction: "down", magnitude: "-4%", good_or_bad: "neutral" },
+        status: "healthy",
+      } },
+    { type: "table", priority: 4, data: {
+        label: "Top failing operations",
+        columns: [
+          { key: "op",      label: "Operation",  kind: "code" },
+          { key: "errors",  label: "Errors/min", kind: "number", align: "right" },
+          { key: "p99",     label: "p99 (ms)",   kind: "number", align: "right" },
+          { key: "health",  label: "Health",     kind: "status" },
+        ],
+        rows: [
+          { op: "POST /checkout",       errors: 142, p99: 980, health: "unhealthy" },
+          { op: "POST /payment/charge", errors: 84,  p99: 720, health: "unhealthy" },
+          { op: "GET /cart",            errors: 6,   p99: 220, health: "warning" },
+          { op: "GET /products",        errors: 1,   p99: 90,  health: "healthy" },
+          { op: "POST /address",        errors: 0,   p99: 60,  health: "healthy" },
+        ],
+        searchable: true, sortable: true,
+      } },
+    { type: "timeline", priority: 5, data: {
+        label: "Incident timeline",
+        events: [
+          { timestamp: "13:58 UTC", title: "Deploy rev-942 began",      severity: "info" },
+          { timestamp: "14:01 UTC", title: "Error rate exceeded 1%",    severity: "warning",
+            description: "Composite alarm 'checkout-api/error-rate-1pct' ARMED." },
+          { timestamp: "14:02 UTC", title: "Burn rate crossed 4× target", severity: "warning" },
+          { timestamp: "14:08 UTC", title: "Error budget at 50%",        severity: "critical",
+            description: "Fast-burn alarm fired. Page sent to checkout-oncall." },
+        ],
+      } },
+    { type: "change_event_list", priority: 6, data: {
+        label: "Recent changes (24h)",
+        events: [
+          { timestamp: "13:50 UTC", title: "ECS service updated",
+            principal: "deploy-bot", resource: "checkout-api:rev-942", kind: "deploy",
+            link: "https://console.aws.amazon.com/cloudtrail/" },
+          { timestamp: "09:14 UTC", title: "DynamoDB table autoscaling adjusted",
+            principal: "platform-team", resource: "carts", kind: "infra" },
+        ],
+      } },
+    { type: "log_viewer", priority: 7, data: {
+        label: "Error log sample",
+        log_group: "/aws/ecs/checkout-api",
+        lines: [
+          { timestamp: "14:08:02.123", severity: "error", message: "DynamoDB ProvisionedThroughputExceededException on table=carts" },
+          { timestamp: "14:08:02.350", severity: "warn",  message: "Retrying after 200ms" },
+          { timestamp: "14:08:02.612", severity: "error", message: "Cart read failed after 3 retries" },
+          { timestamp: "14:08:02.700", severity: "info",  message: "Returning HTTP 503 to client" },
+        ],
+      },
+      display_hints: { emphasis: "tertiary" } },
+    { type: "sparkline", priority: 8, data: {
+        label: "Throttled writes / min (carts table)",
+        points: [0, 0, 0, 1, 2, 14, 38, 52, 64, 71, 68],
+        unit: "count", current: 68, color: "red",
+      },
+      display_hints: { emphasis: "tertiary" } },
+  ],
+};
+
+// ---------- Example B — single-focus shell (trace) ------------------------
+const manifestSingleFocus = {
+  version: "1.0",
+  metadata: {
+    title: "Trace 1-66348f12-5a3b…",
+    subtitle: "POST /checkout · 1.84s end-to-end",
+    severity: "warning",
+    query_intent: "latency-regression-trace",
+    service: "checkout-api",
+    region: "us-east-1",
+  },
+  widgets: [
+    { type: "stat_card", priority: 1, data: {
+        label: "Total duration", value: 1840, unit: "ms",
+        baseline: 220, baseline_label: "p99 baseline",
+        trend: { direction: "up", magnitude: "+736%", good_or_bad: "bad" },
+        status: "unhealthy",
+      } },
+    { type: "trace_waterfall", priority: 2, data: {
+        trace_id: "1-66348f12-5a3b9c0e",
+        total_duration_ms: 1840,
+        spans: [
+          { name: "POST /checkout",     service: "checkout-api", start_ms: 0,    duration_ms: 1840, depth: 0, status: "error" },
+          { name: "auth.verify",         service: "auth-svc",     start_ms: 12,   duration_ms: 38,   depth: 1, status: "ok" },
+          { name: "db.cart.read",        service: "cart-db",      start_ms: 60,   duration_ms: 1620, depth: 1, status: "throttled" },
+          { name: "ddb.query",           service: "cart-db",      start_ms: 80,   duration_ms: 1590, depth: 2, status: "throttled" },
+          { name: "payment.charge",      service: "payment-svc",  start_ms: 1700, duration_ms: 130,  depth: 1, status: "ok" },
+          { name: "stripe.api.charge",   service: "payment-svc",  start_ms: 1715, duration_ms: 110,  depth: 2, status: "ok" },
+          { name: "db.order.write",      service: "order-db",     start_ms: 1830, duration_ms: 8,    depth: 1, status: "ok" },
+        ],
+      },
+      display_hints: { emphasis: "primary" } },
+    { type: "log_viewer", priority: 3, data: {
+        label: "Span error log",
+        lines: [
+          { timestamp: "14:08:02.080", severity: "warn",  message: "DynamoDB query received throttle signal, retrying with backoff" },
+          { timestamp: "14:08:02.612", severity: "error", message: "Cart read failed after 3 retries; surfacing 503 to client" },
+        ],
+      } },
+  ],
+};
+
+// ---------- Example C — dashboard shell -----------------------------------
+const manifestDashboard = {
+  version: "1.0",
+  metadata: {
+    title: "Portfolio SLO compliance",
+    subtitle: "8 services · 14 SLOs · last 7 days",
+    severity: "warning",
+    query_intent: "slo-compliance-report",
+    environment: "prod",
+  },
+  widgets: [
+    { type: "stat_card", priority: 1, data: {
+        label: "SLOs in breach", value: 3, unit: "of 14",
+        status: "unhealthy",
+        trend: { direction: "up", magnitude: "+1 vs last week", good_or_bad: "bad" },
+      },
+      display_hints: { emphasis: "primary" } },
+    { type: "stat_card", priority: 2, data: {
+        label: "Burning fast (>4×)", value: 2, unit: "services", status: "degraded",
+        sparkline: [0, 0, 1, 1, 1, 2, 2],
+      } },
+    { type: "stat_card", priority: 3, data: {
+        label: "Healthy SLOs", value: 11, unit: "of 14", status: "healthy",
+        sparkline: [10, 11, 11, 12, 11, 11, 11],
+      } },
+    { type: "stat_card", priority: 4, data: {
+        label: "Avg budget remaining", value: 62, unit: "%", status: "neutral",
+        trend: { direction: "down", magnitude: "-8 pts", good_or_bad: "bad" },
+      } },
+    { type: "change_event_list", priority: 5, data: {
+        label: "Largest budget burns this week",
+        events: [
+          { timestamp: "Mon", title: "checkout-api availability — 22% budget burn", kind: "other" },
+          { timestamp: "Wed", title: "auth-svc latency p99 — 14% budget burn",       kind: "other" },
+          { timestamp: "Fri", title: "search-svc availability — 9% budget burn",     kind: "other" },
+        ],
+      } },
+    { type: "change_event_list", priority: 6, data: {
+        label: "Recent SLO config changes",
+        events: [
+          { timestamp: "Tue", title: "p99 target tightened on cart-svc (250ms→180ms)",
+            principal: "platform-team", kind: "config" },
+          { timestamp: "Thu", title: "New availability SLO added: search-svc 99.9%",
+            principal: "search-team", kind: "config" },
+        ],
+      } },
+    { type: "stat_card", priority: 7, data: {
+        label: "Services without any SLO", value: 2, unit: "of 8",
+        status: "degraded",
+      },
+      display_hints: { emphasis: "tertiary" } },
+  ],
+};
+
+// --------------------------------------------------------------------------
+
+const examples = [
+  { name: "A. Error spike triage", expectedShell: "investigation", manifest: manifestInvestigation },
+  { name: "B. Slow trace deep-dive", expectedShell: "single-focus", manifest: manifestSingleFocus },
+  { name: "C. Portfolio SLO compliance", expectedShell: "dashboard", manifest: manifestDashboard },
+];
+
+async function main() {
+  await initRenderer({ shellsBaseUrl: "./shells/" });
+
+  const list = document.getElementById("panel-list");
+  for (const ex of examples) {
+    const validation = validateManifest(ex.manifest);
+    const plan = validation.ok ? planLayout(ex.manifest) : null;
+
+    const panel = document.createElement("section");
+    panel.className = "panel";
+
+    panel.innerHTML = `
+      <div class="panel-meta">
+        <div>
+          <span class="label">Manifest</span><span class="value">${ex.name}</span>
+        </div>
+        <div>
+          <span class="label">Inferred shell</span>
+          <span class="value">${plan ? plan.shell : "—"}</span>
+          <span class="label" style="margin-left:14px">Density</span>
+          <code>${plan ? plan.densityUsed + "/" + plan.budget : "—"}</code>
+          <span class="label" style="margin-left:14px">Drawer overflow</span>
+          <code>${plan ? plan.drawer.length : "—"}</code>
+          <span class="label" style="margin-left:14px">Expected</span>
+          <code>${ex.expectedShell}</code>
+          <span class="value" style="margin-left:8px;color:${plan && plan.shell === ex.expectedShell ? "#6aaf3f" : "#ff5d64"}">${plan && plan.shell === ex.expectedShell ? "✓" : "✗"}</span>
+        </div>
+      </div>
+      <div class="panel-render w-wide">
+        ${validation.ok ? renderManifest(ex.manifest) : `<pre class="error">Validation failed:\n${validation.errors.join("\n")}</pre>`}
+      </div>
+    `;
+    list.appendChild(panel);
+    bindInteractions(panel.querySelector(".panel-render"));
+  }
+
+  // Width toggle.
+  const buttons = document.querySelectorAll(".width-controls button");
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      buttons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const w = btn.getAttribute("data-width");
+      document.querySelectorAll(".panel-render").forEach(p => {
+        p.classList.remove("w-wide", "w-medium", "w-narrow", "w-tiny");
+        p.classList.add(`w-${w}`);
+      });
+    });
+  });
+}
+
+main().catch(err => {
+  document.body.insertAdjacentHTML("afterbegin",
+    `<pre class="error">Harness boot failed:\n${String(err && err.stack || err)}</pre>`);
+});
+</script>
+</body>
+</html>

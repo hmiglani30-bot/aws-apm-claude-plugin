@@ -1,0 +1,13 @@
+<!--
+  SHELL: dashboard
+  Used for homogeneous low-density artifacts (e.g. portfolio SLO compliance, multi-service health).
+  Slots:
+    HEADER — exactly 1 widget (overall scorecard / top-line)
+    GRID   — 2..6 equal-weight widgets (placed by priority; overflow goes to drawer)
+    DRAWER — 0..N widgets (collapsed; "Show all" expands)
+-->
+<section class="hr-shell hr-shell-dashboard" data-shell="dashboard">
+  <header class="hr-shell-header" data-slot="header">{{HEADER}}</header>
+  <main class="hr-shell-grid" data-slot="grid">{{GRID}}</main>
+  {{DRAWER}}
+</section>
