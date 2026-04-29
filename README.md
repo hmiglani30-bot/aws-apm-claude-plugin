@@ -1,9 +1,8 @@
-# AWS APM — Claude Code & Cowork plugin
+# AWS APM CloudWatch Plugin
 
 [![tests](https://github.com/hmiglani30/aws-apm-claude-plugin/actions/workflows/tests.yml/badge.svg)](https://github.com/hmiglani30/aws-apm-claude-plugin/actions/workflows/tests.yml)
 [![version](https://img.shields.io/badge/version-0.2.1-blue)](.claude-plugin/plugin.json)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-8A2BE2)](https://code.claude.com/docs/en/plugins-reference)
 [![Cowork](https://img.shields.io/badge/Cowork-compatible-teal)](https://www.anthropic.com/news/cowork)
 
 > A personal-prototype investigation method for **SREs and service-owning
@@ -12,10 +11,7 @@
 > hypothesis-with-evidence outputs, post-investigation self-validation, and
 > persistent incident memory on top of the four AWS-maintained MCP servers.
 
-> **Not an official AWS or Anthropic product.** See [Ownership](#ownership).
-
-**Ships in:** Claude Code (terminal / IDE / web), Cowork (desktop).
-&nbsp;·&nbsp; Docs: [ARCHITECTURE](ARCHITECTURE.md) ·
+Docs: [ARCHITECTURE](ARCHITECTURE.md) ·
 [MCP-TOOL-CONTRACTS](MCP-TOOL-CONTRACTS.md) ·
 [ACTION-SAFETY-MODEL](ACTION-SAFETY-MODEL.md) ·
 [SECURITY](SECURITY.md)
@@ -40,7 +36,7 @@ regardless of who runs it.
 
 ### Not the right tool for…
 
-- **Pure cost / billing investigations.** Cost Explorer + the AWS Cost MCP
+- **Pure billing investigations.** Cost Explorer + the AWS Cost MCP
   server are a better fit.
 - **Security incidents that aren't observability-shaped.** GuardDuty, Security
   Hub, IAM Access Analyzer.
@@ -51,8 +47,8 @@ regardless of who runs it.
 
 ## Why this plugin, not just MCP alone?
 
-> **MCP gives Claude *tools*. This plugin gives Claude an *AWS APM investigation
-> method*.**
+> **MCP gives the model *tools*. This plugin gives the model an *AWS APM
+> investigation method*.**
 
 The four `awslabs/mcp` servers expose AWS APM data — metrics, alarms, SLOs,
 traces, log queries, CloudTrail events. That's necessary but not sufficient
@@ -74,7 +70,7 @@ This plugin is the **investigation method** layered on top:
 | **Write safety** | Trust IAM alone | PreToolUse hook gates every write verb regardless of model intent |
 | **Console hand-off** | Free-form URLs (often wrong) | `open-in-cloudwatch` skill builds deep links with service / operation / window / filters preserved |
 
-If you have AWS APM telemetry and want a Claude that follows the same
+If you have AWS APM telemetry and want an agent that follows the same
 investigation playbook every time and shows its work, that's what this
 plugin is.
 
@@ -155,15 +151,15 @@ This is a focused tool, not a category replacement.
 
 | Adjacent thing | What it is | How this plugin differs |
 |---|---|---|
-| **AWS APM MCP servers alone** | Tools for Claude to call AWS APIs | This plugin adds the *investigation method* — workflow phases, hypothesis ranking, validator, memory, artifacts |
+| **AWS APM MCP servers alone** | Tools for an agent to call AWS APIs | This plugin adds the *investigation method* — workflow phases, hypothesis ranking, validator, memory, artifacts |
 | **Datadog / Honeycomb / New Relic incident agents** | Vendor-built agents for their APM platforms | Different platform. Use the right plugin for your APM. This is the AWS Application Signals one |
-| **General Claude Code with AWS access** | Claude + your AWS CLI credentials | Same data, no method, no safety hooks, no artifact shape, no memory. You can reproduce *parts* of this plugin in a long prompt; you can't reproduce the validator or the Tier 3 visual grammar |
-| **AWS Bedrock Agents for Application Signals** | Hosted agent framework | Different surface (Bedrock vs. Claude Code/Cowork), different cost model, different deployment. This plugin runs locally with your existing Anthropic / Claude Code subscription |
+| **General agent with AWS access** | An agent + your AWS CLI credentials | Same data, no method, no safety hooks, no artifact shape, no memory. You can reproduce *parts* of this plugin in a long prompt; you can't reproduce the validator or the Tier 3 visual grammar |
+| **AWS Bedrock Agents for Application Signals** | Hosted agent framework | Different surface, different deployment. This plugin runs locally with your existing agent runtime |
 | **PagerDuty AIOps / Incident.io copilots** | Workflow-attached AI on top of incident tooling | Adjacent — those start from an incident; this starts from a service or alert and produces evidence the incident channel can use |
 
-The plugin's wedge is the combination: **AWS Application Signals + Claude
-Code/Cowork plugin surface + opinionated investigation method**. If any of
-those three doesn't fit your stack, look elsewhere.
+The plugin's wedge is the combination: **AWS Application Signals + portable
+plugin surface + opinionated investigation method**. If any of those three
+doesn't fit your stack, look elsewhere.
 
 ## What you get
 
@@ -204,7 +200,7 @@ verify the model's reasoning before acting.
 - 🔗 **Open in CloudWatch** — deep links into the AWS console with service / operation / time range / filters preserved
 
 Tier 3 components render as rich **HTML artifacts** in Cowork (sparklines,
-waterfall SVGs, Cloudscape design tokens) and as Markdown in Claude Code.
+waterfall SVGs, Cloudscape design tokens) and as Markdown elsewhere.
 
 ### Quality + safety primitives
 
@@ -345,65 +341,6 @@ specific MCP tool call recorded in the metadata footer, and the
 `investigation-validator` confirms each citation resolves before the artifact
 is shown.
 
-## Cost awareness
-
-The plugin runs in your AWS account and your Claude Code / Cowork subscription
-— costs accrue to both.
-
-### AWS-side cost
-
-A typical investigation makes:
-
-- **3–8 `GetMetricData` calls** (current state + 24h baseline + per-operation contributors)
-- **1–3 Logs Insights queries** (`StartQuery` + polling `GetQueryResults`)
-- **1 `GetTraceSummaries` + 1 `BatchGetTraces`** for 5 representative traces
-- **1 `LookupEvents`** call for the change-correlation phase
-
-Approximate cost ranges (us-east region, April 2026 list prices, **subject to
-change — verify current pricing**):
-
-| Item | Per-investigation cost (approx) |
-|---|---|
-| CloudWatch metric reads (`GetMetricData`) | $0.001–$0.003 ($0.01 / 1k metrics retrieved) |
-| Logs Insights queries | $0.005 / GB scanned — typically $0.01–$0.10 / investigation depending on log volume in window |
-| X-Ray trace retrieval | $0.0005 / 100k traces retrieved — typically free in this volume |
-| CloudTrail Lookup | First 90 days of management events: free |
-| Application Signals SLO / contributor APIs | No additional charge above AS instrumentation |
-
-Per-investigation AWS cost is typically **<$0.10** unless the Logs Insights
-query scans a very large window or volume.
-
-### Anthropic-side cost
-
-Each investigation is one Claude conversation: input tokens for the workflow
-prompt + tool results, output tokens for the artifact. Use of MCP tool results
-adds significantly to input token volume, especially in `latency-regression`
-(traces are large). Expect:
-
-- **Input tokens:** 30–80k per investigation (workflow prompt + tool results)
-- **Output tokens:** 2–5k per investigation (artifact)
-
-At Claude Sonnet 4.6 pricing: typically **$0.10–$0.40 / investigation**.
-Opus models are higher. Pricing changes — check anthropic.com/pricing.
-
-### Cost guardrails
-
-- **Use `start_time` / `end_time` tightly.** The default time window is
-  ±30m around the trigger. Don't widen unless needed; Logs Insights cost
-  scales linearly with bytes scanned.
-- **Cap trace fetches.** The plugin fetches 5 representative failed traces by
-  default. Don't raise that without a reason.
-- **Disable Phase 6 dependency follow** for cheap-path investigations (set
-  the `--no-deps` flag on the slash command — roadmap).
-- **Pin MCP server versions in `.mcp.json`** to prevent silent upgrades that
-  add expensive new default queries.
-- **Audit cost via CloudTrail + Cost Explorer.** Every API call the plugin
-  makes appears in CloudTrail with the role identity from your `AWS_PROFILE`
-  — easy to attribute.
-
-The plugin does not currently surface running cost in the artifact's metadata
-footer. Adding "estimated cost of this investigation" is roadmap.
-
 ## Installation
 
 ### Prerequisites
@@ -423,7 +360,7 @@ footer. Adding "estimated cost of this investigation" is roadmap.
 > need zero write permissions. See
 > [SECURITY.md → Read-only recommended install](SECURITY.md#read-only-recommended-install).
 
-### Claude Code (terminal / IDE / web)
+### Plugin install
 
 ```bash
 # Add this marketplace, then install the plugin
@@ -443,20 +380,12 @@ git clone https://github.com/hmiglani30/aws-apm-claude-plugin
 
 In Cowork desktop, open the plugin marketplace, search for **AWS APM**, and
 click Install. The plugin format is identical — the same `.claude-plugin/plugin.json`,
-skills, commands, and hooks work in both surfaces.
-
-### Claude.ai consumer chat (future)
-
-Not supported today. The Claude.ai consumer surface needs a remote MCP
-**connector** path; the four `awslabs/mcp` servers are local-only via `uvx`.
-A hosted-MCP variant is on the roadmap — see
-[ARCHITECTURE.md → Remote / hosted future](ARCHITECTURE.md#remote--hosted-future)
-for the data-sovereignty changes that mode would require.
+skills, commands, and hooks work across surfaces.
 
 ### Configuring AWS profile and region
 
 The plugin's `.mcp.json` defaults to `AWS_PROFILE=default` and
-`AWS_REGION=us-east-2`. Override per-user via Claude Code's MCP settings, or
+`AWS_REGION=us-east-2`. Override per-user via the host's MCP settings, or
 edit `.mcp.json` directly:
 
 ```json
@@ -492,8 +421,8 @@ Health Card** + ranked remediation hypotheses. See
 
 The model auto-activates `latency-regression`, runs the workflow, and produces
 a **Trace Waterfall Summary** + **Service Health Card** + **Top Suspected
-Cause** as an HTML artifact in the side panel (Cowork) or markdown (Claude
-Code). See [Sample outputs § scenario 2](#scenario-2-payment-api-p99-regression-caused-by-dynamodb).
+Cause** as an HTML artifact in the side panel (Cowork) or markdown elsewhere.
+See [Sample outputs § scenario 2](#scenario-2-payment-api-p99-regression-caused-by-dynamodb).
 
 ### "My SLO is burning"
 
@@ -567,7 +496,7 @@ aws-apm-claude-plugin/
 ├── ARCHITECTURE.md           # Layering, context provider, time-window invariant, change providers, multi-account roadmap, data sovereignty, schema governance
 ├── MCP-TOOL-CONTRACTS.md     # Required MCP tool contracts (input/output/failures/pagination/permissions)
 ├── ACTION-SAFETY-MODEL.md    # 5-tier action model (read-only → suggested → console-deep-linked → MCP-with-approval → disallowed)
-├── SECURITY.md               # IAM policy examples, threat model, prompt-injection defenses, memory policy, integrity, ownership
+├── SECURITY.md               # IAM policy examples, threat model, prompt-injection defenses, memory policy, integrity
 ├── LICENSE                   # MIT
 └── README.md                 # This file
 ```
@@ -597,7 +526,7 @@ principle in [ARCHITECTURE.md](ARCHITECTURE.md#architectural-principle).
 
 ### Tier framing
 
-The plugin uses the three-tier framing common to Anthropic's plugin ecosystem:
+The plugin uses a three-tier framing:
 
 | Tier   | What ships                                                             | Output to the user            | Status |
 | ------ | ---------------------------------------------------------------------- | ----------------------------- | ------ |
@@ -607,11 +536,11 @@ The plugin uses the three-tier framing common to Anthropic's plugin ecosystem:
 
 **Tier 3, concretely:** every artifact in [`artifacts/`](./artifacts) is an HTML
 file with `{{PLACEHOLDER}}` tokens (e.g. `{{SLO_NAME}}`, `{{BURN_RATE}}`,
-`{{TRACE_WATERFALL_SVG}}`). At runtime, Claude fills in those placeholders from
+`{{TRACE_WATERFALL_SVG}}`). At runtime, the model fills in those placeholders from
 the MCP query results and the rendered artifact appears in Cowork's side panel
 as a styled HTML view — sparklines, waterfall SVGs, and Cloudscape design tokens
-for visual consistency with the AWS console. In Claude Code, the same artifact
-renders as Markdown (no HTML runtime, but the same structure and "Open in
+for visual consistency with the AWS console. In Markdown-only surfaces, the same
+artifact renders as Markdown (no HTML runtime, but the same structure and "Open in
 CloudWatch" deep links).
 
 That's what makes the plugin's investigations look the same every time, no
@@ -690,22 +619,6 @@ match the postmortem?" That's the bar.
 - **Trace-to-code developer commands** — `/cw-trace-to-code`,
   `/cw-suggest-fix`, `/cw-explain-this-span` are roadmap. See
   [Value by role → Service-owning developer](#service-owning-developer).
-- **`claude.ai` consumer chat** — needs a remote MCP connector path, not this
-  plugin.
-
-## Ownership
-
-This is a **personal prototype** by [@hmiglani30](https://github.com/hmiglani30).
-It is **not**:
-
-- An official AWS or Amazon product.
-- An AWS Labs project. (It uses `awslabs/mcp` servers, but does not modify or
-  redistribute them.)
-- An Anthropic project.
-
-For bugs, vulnerabilities, and questions, file a GitHub issue (or security
-advisory) on this repository — **not** to AWS Support, AWS Labs, or Anthropic.
-See [SECURITY.md → Reporting a vulnerability](SECURITY.md#reporting-a-vulnerability).
 
 ## Contributing
 
@@ -744,14 +657,14 @@ When adding a new MCP tool dependency, also update
 - [ACTION-SAFETY-MODEL.md](ACTION-SAFETY-MODEL.md) — 5-tier classification
   of every action the plugin can take or recommend.
 - [SECURITY.md](SECURITY.md) — IAM policy examples, threat model,
-  prompt-injection defenses, integrity, ownership, vulnerability reporting.
+  prompt-injection defenses, integrity, vulnerability reporting.
 
 ## Acknowledgments
 
 - The four AWS MCP servers are maintained at [`awslabs/mcp`](https://github.com/awslabs/mcp).
 - Workflow content adapted from the [AWS Observability Kiro power](https://github.com/kirodotdev/powers/tree/main/aws-observability).
-- Plugin format follows the [Anthropic plugins reference](https://code.claude.com/docs/en/plugins-reference)
-  and the patterns established by the [Honeycomb agent skill](https://github.com/honeycombio/agent-skill)
+- Plugin format follows patterns established by the
+  [Honeycomb agent skill](https://github.com/honeycombio/agent-skill)
   and [Datadog plugin](https://github.com/DataDog/datadog-api-claude-plugin).
 
 ## License
