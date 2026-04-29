@@ -38,6 +38,7 @@ EXPECTED_SKILLS = {
     "copy-to-incident",
     "observability-gap-analysis",
     "alerting-design",
+    "hybrid-renderer",
 }
 
 EXPECTED_COMMANDS = {
@@ -52,6 +53,7 @@ EXPECTED_COMMANDS = {
     "cw-verify-recovery.md",
     "cw-obs-gaps.md",
     "cw-alert-design.md",
+    "cw-trail-view.md",
 }
 
 EXPECTED_MCP_SERVERS = {
