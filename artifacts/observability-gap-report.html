@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<!--
+  ARTIFACT SCHEMA — observability-gap-report
+  Surface: Cowork (HTML), Claude Code (Markdown twin in skills/observability-gap-analysis/SKILL.md). Identical data.
+  Ownership: skills/observability-gap-analysis/SKILL.md is the source of truth for population.
+
+  Required fields:
+    ANALYZED_PATH, LANGUAGES_DETECTED, FILES_SCANNED, GENERATED_AT,
+    VERDICT (Healthy|Partial|Critical) + VERDICT_CLASS (healthy|degraded|unhealthy),
+    SEVERITY_ICON ("🟢"|"🟡"|"🔴"),
+    HERO_VERDICT_LINE, HERO_TOP_FIX_1, HERO_TOP_FIX_2, HERO_TOP_FIX_3,
+    STACK_FRAMEWORK, STACK_AWS_SDK, STACK_OBS_LIBS, STACK_DEPLOY_SURFACE,
+    SCORECARD_LOGGING_CLASS, SCORECARD_LOGGING_LABEL, SCORECARD_LOGGING_NOTE,
+    SCORECARD_METRICS_CLASS, SCORECARD_METRICS_LABEL, SCORECARD_METRICS_NOTE,
+    SCORECARD_TRACING_CLASS, SCORECARD_TRACING_LABEL, SCORECARD_TRACING_NOTE,
+    SCORECARD_ERRORS_CLASS, SCORECARD_ERRORS_LABEL, SCORECARD_ERRORS_NOTE,
+    SCORECARD_HEALTH_CLASS, SCORECARD_HEALTH_LABEL, SCORECARD_HEALTH_NOTE,
+    LOGGING_GAP_ROWS, METRICS_GAP_ROWS, TRACING_GAP_ROWS, ERRORS_GAP_ROWS, HEALTH_GAP_ROWS,
+    AWS_DOC_CITATIONS,
+    GAPS_CRITICAL_COUNT, GAPS_IMPORTANT_COUNT, GAPS_RECOMMENDED_COUNT.
+
+  Optional fields:
+    DATA_UNAVAILABLE_BANNER — when AWS docs MCP unreachable or path partially scanned.
+    EMPTY_STATE — when zero gaps found (lead with the 🟢 verdict).
+    CMD_SUGGESTIONS — array of follow-on /cw-* slash commands.
+
+  Empty-state contract:
+    - No application code: caller refuses to render this artifact; surface in command instead.
+    - Zero gaps: render 🟢 verdict, scorecard, and a "what good looks like" recap. Per-area
+      sections render single-row "No gaps detected in this area."
+    - Single language: omit per-language splits. Multi-language: repeat per-area sections per language.
+
+  Buttons (UX10): SAVE_ARTIFACT_BUTTON / SHARE_BUTTON. Cowork wires to host pin/share APIs;
+    Claude Code renders inert.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Observability Gap Report — {{ANALYZED_PATH}}</title>
+<style>
+  :root {
+    --bg-page: #0f1b2a;
+    --bg-surface: #192534;
+    --bg-surface-2: #1f2d3d;
+    --border: #2a3a4f;
+    --text-primary: #e9ebed;
+    --text-secondary: #95a5b8;
+    --link: #539fe5;
+    --link-hover: #89bdee;
+    --status-error: #ff5d64;
+    --status-warning: #ffa552;
+    --status-success: #6aaf3f;
+    --status-info: #539fe5;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: "Open Sans", "Segoe UI", -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 24px 96px 24px; }
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+  .title-block h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .subtitle { color: var(--text-secondary); font-size: 13px; }
+  .actions { display: flex; gap: 8px; }
+  .btn {
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { border-color: var(--link); color: var(--link); }
+  .btn-primary { background: var(--link); border-color: var(--link); color: #0f1b2a; font-weight: 600; }
+  .btn-primary:hover { background: var(--link-hover); color: #0f1b2a; }
+
+  .verdict-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .verdict-badge.healthy { background: rgba(106, 175, 63, 0.15); color: var(--status-success); border: 1px solid rgba(106, 175, 63, 0.4); }
+  .verdict-badge.degraded { background: rgba(255, 165, 82, 0.15); color: var(--status-warning); border: 1px solid rgba(255, 165, 82, 0.4); }
+  .verdict-badge.unhealthy { background: rgba(255, 93, 100, 0.15); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.4); }
+
+  .hero {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-left: 6px solid var(--status-success);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+  }
+  .hero.healthy { border-left-color: var(--status-success); }
+  .hero.degraded { border-left-color: var(--status-warning); }
+  .hero.unhealthy { border-left-color: var(--status-error); }
+  .hero-verdict { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+  .hero-icon { font-size: 30px; line-height: 1; flex-shrink: 0; }
+  .hero-verdict-text { font-size: 18px; font-weight: 600; line-height: 1.35; }
+
+  .top-fixes {
+    background: rgba(83, 159, 229, 0.08);
+    border: 1px solid rgba(83, 159, 229, 0.25);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .top-fixes .lbl { color: var(--link); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 8px; display: block; }
+  .top-fixes ol { margin: 0; padding-left: 22px; }
+  .top-fixes li { margin-bottom: 6px; font-size: 14px; }
+  .top-fixes li:last-child { margin-bottom: 0; }
+
+  .data-unavailable {
+    background: rgba(255, 165, 82, 0.08);
+    border: 1px solid rgba(255, 165, 82, 0.4);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+  .data-unavailable .lbl { color: var(--status-warning); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-right: 8px; }
+
+  .section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .section-body { padding: 16px 18px; }
+
+  .stack-grid { display: grid; grid-template-columns: 180px 1fr; gap: 6px 14px; font-size: 13px; }
+  .stack-grid dt { color: var(--text-secondary); }
+  .stack-grid dd { margin: 0; color: var(--text-primary); font-family: "SF Mono", "Monaco", monospace; font-size: 12px; }
+
+  .scorecard {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  @media (max-width: 720px) { .scorecard { grid-template-columns: repeat(2, 1fr); } }
+  .score-tile {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .score-tile .area { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .score-tile .label { font-size: 13px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .score-tile .label .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .score-tile.healthy .dot { background: var(--status-success); }
+  .score-tile.degraded .dot { background: var(--status-warning); }
+  .score-tile.unhealthy .dot { background: var(--status-error); }
+  .score-tile .note { color: var(--text-secondary); font-size: 12px; }
+
+  .gap-counts { display: flex; gap: 10px; margin-top: 12px; }
+  .gap-count-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+  }
+  .gap-count-pill.critical { color: var(--status-error); border-color: rgba(255, 93, 100, 0.4); }
+  .gap-count-pill.important { color: var(--status-warning); border-color: rgba(255, 165, 82, 0.4); }
+  .gap-count-pill.recommended { color: var(--link); border-color: rgba(83, 159, 229, 0.4); }
+
+  .gap-row {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .gap-row:last-child { margin-bottom: 0; }
+  .gap-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+  .gap-title { font-weight: 600; font-size: 14px; flex: 1 1 60%; }
+  .gap-severity {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .gap-severity.critical { background: rgba(255, 93, 100, 0.18); color: var(--status-error); border: 1px solid rgba(255, 93, 100, 0.5); }
+  .gap-severity.important { background: rgba(255, 165, 82, 0.18); color: var(--status-warning); border: 1px solid rgba(255, 165, 82, 0.5); }
+  .gap-severity.recommended { background: rgba(83, 159, 229, 0.18); color: var(--link); border: 1px solid rgba(83, 159, 229, 0.5); }
+  .gap-file { font-family: "SF Mono", "Monaco", monospace; color: var(--link); font-size: 12px; margin-bottom: 8px; }
+  .gap-why { color: var(--text-secondary); font-size: 13px; margin-bottom: 8px; }
+  .gap-fix-label { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; font-weight: 700; }
+  pre.code-block {
+    background: var(--bg-page);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin: 0;
+    overflow-x: auto;
+    font-family: "SF Mono", "Monaco", monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-primary);
+  }
+  pre.code-block .ko { color: var(--status-error); }
+  pre.code-block .ok { color: var(--status-success); }
+
+  .cite-list { display: flex; flex-direction: column; gap: 6px; }
+  .cite-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--link);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .cite-link:hover { border-color: var(--link); }
+  .cite-link::after { content: "↗"; opacity: 0.7; }
+
+  .cmd-list { display: flex; flex-direction: column; gap: 8px; }
+  .cmd-suggestion {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .cmd-suggestion code { color: var(--link); font-size: 13px; font-weight: 600; background: var(--bg-page); padding: 4px 8px; border-radius: 4px; align-self: flex-start; }
+  .cmd-suggestion .why { color: var(--text-secondary); font-size: 12px; }
+
+  .footer-meta {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .footer-meta dl { display: grid; grid-template-columns: 180px 1fr; gap: 4px 12px; margin: 0; }
+  .footer-meta dt { color: var(--text-secondary); }
+  .footer-meta dd { margin: 0; color: var(--text-primary); font-family: "SF Mono", "Monaco", monospace; font-size: 11px; }
+  code { font-family: "SF Mono", "Monaco", monospace; background: var(--bg-surface-2); padding: 1px 6px; border-radius: 3px; font-size: 12px; }
+  .empty-line { color: var(--text-secondary); font-style: italic; font-size: 13px; padding: 6px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="title-block">
+      <h1>
+        {{SEVERITY_ICON}} Observability Gap Report — <code>{{ANALYZED_PATH}}</code>
+        <span class="verdict-badge {{VERDICT_CLASS}}">{{VERDICT}}</span>
+      </h1>
+      <div class="subtitle">
+        Languages <code>{{LANGUAGES_DETECTED}}</code> · {{FILES_SCANNED}} files · Generated {{GENERATED_AT}}
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn">{{SAVE_ARTIFACT_BUTTON}}</button>
+      <button class="btn">{{SHARE_BUTTON}}</button>
+    </div>
+  </div>
+
+  {{DATA_UNAVAILABLE_BANNER}}
+
+  <div class="hero {{VERDICT_CLASS}}">
+    <div class="hero-verdict">
+      <div class="hero-icon">{{SEVERITY_ICON}}</div>
+      <div class="hero-verdict-text">{{HERO_VERDICT_LINE}}</div>
+    </div>
+    <div class="top-fixes">
+      <span class="lbl">Top 3 fixes — start here</span>
+      <ol>
+        <li>{{HERO_TOP_FIX_1}}</li>
+        <li>{{HERO_TOP_FIX_2}}</li>
+        <li>{{HERO_TOP_FIX_3}}</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Stack detected</div>
+    <div class="section-body">
+      <dl class="stack-grid">
+        <dt>Framework</dt><dd>{{STACK_FRAMEWORK}}</dd>
+        <dt>AWS SDK</dt><dd>{{STACK_AWS_SDK}}</dd>
+        <dt>Observability libs</dt><dd>{{STACK_OBS_LIBS}}</dd>
+        <dt>Deploy surface</dt><dd>{{STACK_DEPLOY_SURFACE}}</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Scorecard</div>
+    <div class="section-body">
+      <div class="scorecard">
+        <div class="score-tile {{SCORECARD_LOGGING_CLASS}}">
+          <div class="area">Logging</div>
+          <div class="label"><span class="dot"></span>{{SCORECARD_LOGGING_LABEL}}</div>
+          <div class="note">{{SCORECARD_LOGGING_NOTE}}</div>
+        </div>
+        <div class="score-tile {{SCORECARD_METRICS_CLASS}}">
+          <div class="area">Metrics</div>
+          <div class="label"><span class="dot"></span>{{SCORECARD_METRICS_LABEL}}</div>
+          <div class="note">{{SCORECARD_METRICS_NOTE}}</div>
+        </div>
+        <div class="score-tile {{SCORECARD_TRACING_CLASS}}">
+          <div class="area">Tracing</div>
+          <div class="label"><span class="dot"></span>{{SCORECARD_TRACING_LABEL}}</div>
+          <div class="note">{{SCORECARD_TRACING_NOTE}}</div>
+        </div>
+        <div class="score-tile {{SCORECARD_ERRORS_CLASS}}">
+          <div class="area">Error handling</div>
+          <div class="label"><span class="dot"></span>{{SCORECARD_ERRORS_LABEL}}</div>
+          <div class="note">{{SCORECARD_ERRORS_NOTE}}</div>
+        </div>
+        <div class="score-tile {{SCORECARD_HEALTH_CLASS}}">
+          <div class="area">Health checks</div>
+          <div class="label"><span class="dot"></span>{{SCORECARD_HEALTH_LABEL}}</div>
+          <div class="note">{{SCORECARD_HEALTH_NOTE}}</div>
+        </div>
+      </div>
+
+      <div class="gap-counts">
+        <span class="gap-count-pill critical">🔴 {{GAPS_CRITICAL_COUNT}} critical</span>
+        <span class="gap-count-pill important">🟡 {{GAPS_IMPORTANT_COUNT}} important</span>
+        <span class="gap-count-pill recommended">🔵 {{GAPS_RECOMMENDED_COUNT}} recommended</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Logging gaps</div>
+    <div class="section-body">
+      {{LOGGING_GAP_ROWS}}
+      <!-- Per-row template:
+      <div class="gap-row">
+        <div class="gap-head">
+          <div class="gap-title">{{GAP_TITLE}}</div>
+          <span class="gap-severity {{GAP_SEVERITY_CLASS}}">{{GAP_SEVERITY}}</span>
+        </div>
+        <div class="gap-file">{{GAP_FILE}}:{{GAP_LINES}}</div>
+        <div class="gap-why">{{GAP_WHY}}</div>
+        <div class="gap-fix-label">Fix</div>
+        <pre class="code-block">{{GAP_FIX_SNIPPET}}</pre>
+      </div>
+      Empty state: <div class="empty-line">No logging gaps detected in this codebase.</div>
+      -->
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Metrics gaps</div>
+    <div class="section-body">
+      {{METRICS_GAP_ROWS}}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Tracing gaps</div>
+    <div class="section-body">
+      {{TRACING_GAP_ROWS}}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Error-handling gaps</div>
+    <div class="section-body">
+      {{ERRORS_GAP_ROWS}}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Health-check gaps</div>
+    <div class="section-body">
+      {{HEALTH_GAP_ROWS}}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">AWS documentation cited</div>
+    <div class="section-body">
+      <div class="cite-list">
+        {{AWS_DOC_CITATIONS}}
+        <!-- Empty state: <div class="empty-line">No AWS docs cited (offline or no AWS-specific gaps).</div> -->
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Suggested next commands</div>
+    <div class="section-body">
+      <div class="cmd-list">
+        {{CMD_SUGGESTIONS}}
+        <!-- Examples:
+        /cw-alert-design — design alarms once instrumentation lands so the new metrics get monitored.
+        /cw-doctor — verify the AWS APM plugin can read what your code emits, once instrumentation lands.
+        /cw-health-check <service> — confirm the changes are visible in Application Signals after deploy.
+        -->
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-meta">
+    <dl>
+      <dt>Path analyzed</dt><dd>{{ANALYZED_PATH}}</dd>
+      <dt>Languages detected</dt><dd>{{LANGUAGES_DETECTED}}</dd>
+      <dt>Files scanned</dt><dd>{{FILES_SCANNED}}</dd>
+      <dt>AWS docs MCP</dt><dd>{{AWS_DOCS_MCP_STATUS}}</dd>
+      <dt>Generated</dt><dd>{{GENERATED_AT}}</dd>
+    </dl>
+  </div>
+
+</div>
+</body>
+</html>
