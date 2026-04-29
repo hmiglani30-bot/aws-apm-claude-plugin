@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<!--
+  ARTIFACT SCHEMA — cloudtrail-timeline
+  Surface: Cowork (HTML), Claude Code (file on disk).
+  Ownership: skills/cloudtrail-explorer/SKILL.md is the source of truth for population.
+
+  Required fields:
+    GENERATED_AT, AWS_REGION,
+    TIME_RANGE_START, TIME_RANGE_END,
+    FILTERS_APPLIED (human-readable string),
+    TOTAL_EVENTS, UNIQUE_PRINCIPALS, UNIQUE_SOURCES,
+    EVENTS_JSON (JSON array, see schema below),
+    LINK_CLOUDTRAIL_CONSOLE,
+    SOURCE_MCP_SERVERS, MCP_TOOLS_LIST.
+
+  Optional fields:
+    PAGINATION_NOTE — empty unless the 1000-event cap was hit.
+
+  EVENTS_JSON schema (per element):
+    {
+      "id": string,             // EventId
+      "time": string,           // ISO 8601 UTC
+      "source": string,         // EventSource, e.g. "iam.amazonaws.com"
+      "name": string,           // EventName
+      "username": string,
+      "region": string,
+      "resources": [{"type": string, "name": string}],
+      "errorCode": string|null,
+      "raw": string             // full CloudTrailEvent JSON, redacted
+    }
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CloudTrail Timeline — {{TIME_RANGE_START}} to {{TIME_RANGE_END}}</title>
+<style>
+  :root {
+    --bg-page: #0f1b2a;
+    --bg-surface: #192534;
+    --bg-surface-2: #1f2d3d;
+    --bg-surface-3: #243447;
+    --border: #2a3a4f;
+    --border-strong: #3a4d65;
+    --text-primary: #e9ebed;
+    --text-secondary: #95a5b8;
+    --text-muted: #6c7c91;
+    --link: #539fe5;
+    --link-hover: #89bdee;
+    --status-error: #ff5d64;
+    --status-warning: #ffa552;
+    --status-success: #6aaf3f;
+    --timeline-line: #2a3a4f;
+
+    --src-iam: #539fe5;
+    --src-sts: #ffd166;
+    --src-ec2: #ffa552;
+    --src-s3: #6aaf3f;
+    --src-cloudwatch: #b07dff;
+    --src-lambda: #3ed4c4;
+    --src-signin: #ffd166;
+    --src-cloudtrail: #95a5b8;
+    --src-other: #7c8ba0;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: "Open Sans", "Segoe UI", -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 24px 64px 24px; }
+
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .title-block h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+  }
+  .subtitle { color: var(--text-secondary); font-size: 13px; }
+  .subtitle code {
+    font-family: "SF Mono", "Monaco", monospace;
+    background: var(--bg-surface-2);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { border-color: var(--link); color: var(--link); }
+  .btn-primary { background: var(--link); border-color: var(--link); color: var(--bg-page); font-weight: 600; }
+  .btn-primary:hover { background: var(--link-hover); border-color: var(--link-hover); color: var(--bg-page); }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 720px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+  .stat-tile {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .stat-tile .lbl {
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .stat-tile .num {
+    font-size: 24px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-tile .num.shown { color: var(--link); }
+  .stat-tile .sub {
+    color: var(--text-muted);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  .filters-bar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .filters-bar .applied {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-right: 6px;
+  }
+  .filters-bar .applied .lbl {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-right: 6px;
+  }
+  .filters-bar input,
+  .filters-bar select {
+    background: var(--bg-page);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .filters-bar input:focus,
+  .filters-bar select:focus {
+    outline: none;
+    border-color: var(--link);
+  }
+  .filters-bar input { flex: 1 1 240px; min-width: 200px; }
+  .filters-bar select { min-width: 180px; }
+  .filters-bar .clear {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .filters-bar .clear:hover { color: var(--link); border-color: var(--link); }
+
+  .data-unavailable {
+    background: rgba(255, 165, 82, 0.08);
+    border: 1px solid rgba(255, 165, 82, 0.4);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+  .data-unavailable .lbl {
+    color: var(--status-warning);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-right: 8px;
+  }
+
+  /* Timeline */
+  .day-header {
+    margin: 22px 0 10px 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .day-header .count {
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-left: 8px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .timeline {
+    position: relative;
+    padding-left: 28px;
+  }
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--timeline-line);
+  }
+  .event {
+    position: relative;
+    margin-bottom: 10px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--src-other);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.12s ease, background 0.12s ease;
+  }
+  .event:hover { background: var(--bg-surface-2); }
+  .event::before {
+    content: "";
+    position: absolute;
+    left: -23px;
+    top: 16px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--bg-page);
+    border: 2px solid var(--src-other);
+  }
+  .event[data-source="iam.amazonaws.com"] { border-left-color: var(--src-iam); }
+  .event[data-source="iam.amazonaws.com"]::before { border-color: var(--src-iam); }
+  .event[data-source="sts.amazonaws.com"] { border-left-color: var(--src-sts); }
+  .event[data-source="sts.amazonaws.com"]::before { border-color: var(--src-sts); }
+  .event[data-source="ec2.amazonaws.com"] { border-left-color: var(--src-ec2); }
+  .event[data-source="ec2.amazonaws.com"]::before { border-color: var(--src-ec2); }
+  .event[data-source="s3.amazonaws.com"] { border-left-color: var(--src-s3); }
+  .event[data-source="s3.amazonaws.com"]::before { border-color: var(--src-s3); }
+  .event[data-source="monitoring.amazonaws.com"],
+  .event[data-source="logs.amazonaws.com"] { border-left-color: var(--src-cloudwatch); }
+  .event[data-source="monitoring.amazonaws.com"]::before,
+  .event[data-source="logs.amazonaws.com"]::before { border-color: var(--src-cloudwatch); }
+  .event[data-source="lambda.amazonaws.com"] { border-left-color: var(--src-lambda); }
+  .event[data-source="lambda.amazonaws.com"]::before { border-color: var(--src-lambda); }
+  .event[data-source="signin.amazonaws.com"] { border-left-color: var(--src-signin); }
+  .event[data-source="signin.amazonaws.com"]::before { border-color: var(--src-signin); }
+  .event[data-source="cloudtrail.amazonaws.com"] { border-left-color: var(--src-cloudtrail); }
+  .event[data-source="cloudtrail.amazonaws.com"]::before { border-color: var(--src-cloudtrail); }
+
+  .event-row {
+    display: grid;
+    grid-template-columns: 88px 1fr auto;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+  }
+  .event-time {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-family: "SF Mono", "Monaco", monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .event-main { min-width: 0; }
+  .event-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .event-meta {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .event-meta .src-tag {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 6px;
+    background: var(--bg-surface-3);
+    color: var(--text-primary);
+  }
+  .event-meta .principal {
+    font-family: "SF Mono", "Monaco", monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .event-error-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(255, 93, 100, 0.18);
+    color: var(--status-error);
+    border: 1px solid rgba(255, 93, 100, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .event-chevron {
+    color: var(--text-muted);
+    font-size: 14px;
+    transition: transform 0.12s ease;
+    user-select: none;
+  }
+  .event.open .event-chevron { transform: rotate(90deg); }
+
+  .event-details {
+    display: none;
+    padding: 4px 14px 14px 14px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-surface-2);
+  }
+  .event.open .event-details { display: block; }
+  .event-details dl {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 4px 14px;
+    margin: 10px 0;
+    font-size: 13px;
+  }
+  .event-details dt {
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-top: 2px;
+  }
+  .event-details dd { margin: 0; }
+  .event-details code {
+    font-family: "SF Mono", "Monaco", monospace;
+    background: var(--bg-page);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+  .event-details pre {
+    background: var(--bg-page);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin: 6px 0 0 0;
+    font-family: "SF Mono", "Monaco", monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    overflow-x: auto;
+    max-height: 360px;
+    overflow-y: auto;
+  }
+  .resource-list { margin: 0; padding: 0; list-style: none; }
+  .resource-list li {
+    display: inline-block;
+    background: var(--bg-page);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin: 2px 6px 2px 0;
+    font-size: 12px;
+    font-family: "SF Mono", "Monaco", monospace;
+  }
+  .resource-list li .rt { color: var(--text-muted); margin-right: 6px; }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 24px;
+    background: var(--bg-surface);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+  .empty-state .icon { font-size: 28px; margin-bottom: 8px; }
+
+  .legend {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+    padding: 10px 14px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .legend .lbl {
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-right: 6px;
+    align-self: center;
+  }
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .legend-item .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .footer-meta {
+    margin-top: 28px;
+    padding: 14px 18px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .footer-meta dl { display: grid; grid-template-columns: 180px 1fr; gap: 4px 12px; margin: 0; }
+  .footer-meta dt { color: var(--text-secondary); }
+  .footer-meta dd { margin: 0; color: var(--text-primary); font-family: "SF Mono", "Monaco", monospace; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="title-block">
+      <h1>CloudTrail Timeline</h1>
+      <div class="subtitle">
+        <code>{{TIME_RANGE_START}}</code> → <code>{{TIME_RANGE_END}}</code>
+        · Region <code>{{AWS_REGION}}</code>
+        · Generated <code>{{GENERATED_AT}}</code>
+      </div>
+    </div>
+    <div class="actions">
+      <a class="btn btn-primary" href="{{LINK_CLOUDTRAIL_CONSOLE}}" target="_blank" rel="noopener">Open in CloudTrail console →</a>
+    </div>
+  </div>
+
+  {{PAGINATION_NOTE}}
+
+  <div class="stats-row">
+    <div class="stat-tile">
+      <div class="lbl">Total events</div>
+      <div class="num" id="stat-total">{{TOTAL_EVENTS}}</div>
+      <div class="sub"><span class="num shown" id="stat-shown">{{TOTAL_EVENTS}}</span> shown</div>
+    </div>
+    <div class="stat-tile">
+      <div class="lbl">Unique principals</div>
+      <div class="num">{{UNIQUE_PRINCIPALS}}</div>
+    </div>
+    <div class="stat-tile">
+      <div class="lbl">Unique event sources</div>
+      <div class="num">{{UNIQUE_SOURCES}}</div>
+    </div>
+    <div class="stat-tile">
+      <div class="lbl">Time range</div>
+      <div class="num" style="font-size: 14px; font-family: 'SF Mono', monospace;">7d</div>
+      <div class="sub">LookupEvents API limit</div>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="applied"><span class="lbl">Server filters</span>{{FILTERS_APPLIED}}</div>
+    <input id="search" type="search" placeholder="Search event name, principal, resource…" autocomplete="off" />
+    <select id="source-filter">
+      <option value="">All event sources</option>
+    </select>
+    <select id="error-filter">
+      <option value="">All outcomes</option>
+      <option value="error">Errors only</option>
+      <option value="success">Success only</option>
+    </select>
+    <button class="clear" id="clear-filters" type="button">Clear</button>
+  </div>
+
+  <div class="legend">
+    <span class="lbl">Color by source</span>
+    <span class="legend-item"><span class="swatch" style="background: var(--src-iam);"></span>IAM</span>
+    <span class="legend-item"><span class="swatch" style="background: var(--src-sts);"></span>STS / Sign-in</span>
+    <span class="legend-item"><span class="swatch" style="background: var(--src-ec2);"></span>EC2</span>
+    <span class="legend-item"><span class="swatch" style="background: var(--src-s3);"></span>S3</span>
+    <span class="legend-item"><span class="swatch" style="background: var(--src-cloudwatch);"></span>CloudWatch / Logs</span>
+    <span class="legend-item"><span class="swatch" style="background: var(--src-lambda);"></span>Lambda</span>
+    <span class="legend-item"><span class="swatch" style="background: var(--src-cloudtrail);"></span>CloudTrail</span>
+    <span class="legend-item"><span class="swatch" style="background: var(--src-other);"></span>Other</span>
+  </div>
+
+  <div id="timeline-root"></div>
+
+  <div class="footer-meta">
+    <dl>
+      <dt>Source</dt><dd>{{SOURCE_MCP_SERVERS}}</dd>
+      <dt>MCP tools called</dt><dd>{{MCP_TOOLS_LIST}}</dd>
+      <dt>Window</dt><dd>{{TIME_RANGE_START}} → {{TIME_RANGE_END}} (UTC)</dd>
+      <dt>Filters applied</dt><dd>{{FILTERS_APPLIED}}</dd>
+    </dl>
+  </div>
+
+</div>
+
+<script id="events-data" type="application/json">{{EVENTS_JSON}}</script>
+<script>
+(function () {
+  "use strict";
+
+  function safeParseEvents() {
+    var node = document.getElementById("events-data");
+    if (!node) return [];
+    var txt = (node.textContent || "").trim();
+    if (!txt || txt.indexOf("{{") === 0) return [];
+    try {
+      var data = JSON.parse(txt);
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.error("Failed to parse events JSON:", e);
+      return [];
+    }
+  }
+
+  function escapeHtml(s) {
+    if (s == null) return "";
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function formatDayHeader(iso) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    var opts = { weekday: "short", year: "numeric", month: "short", day: "numeric", timeZone: "UTC" };
+    return d.toLocaleDateString(undefined, opts) + " UTC";
+  }
+
+  function formatTime(iso) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    var hh = String(d.getUTCHours()).padStart(2, "0");
+    var mm = String(d.getUTCMinutes()).padStart(2, "0");
+    var ss = String(d.getUTCSeconds()).padStart(2, "0");
+    return hh + ":" + mm + ":" + ss;
+  }
+
+  function dayKey(iso) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return iso.slice(0, 10);
+    return d.getUTCFullYear() + "-" +
+      String(d.getUTCMonth() + 1).padStart(2, "0") + "-" +
+      String(d.getUTCDate()).padStart(2, "0");
+  }
+
+  function shortPrincipal(p) {
+    if (!p) return "unknown";
+    if (p.indexOf("arn:aws:") === 0) {
+      var parts = p.split("/");
+      return parts.length > 1 ? parts[parts.length - 1] : p;
+    }
+    return p;
+  }
+
+  function renderEventCard(ev) {
+    var sourceAttr = escapeHtml((ev.source || "").toLowerCase());
+    var resourcesHtml = "";
+    if (ev.resources && ev.resources.length) {
+      resourcesHtml = '<ul class="resource-list">' +
+        ev.resources.map(function (r) {
+          var t = r.type ? '<span class="rt">' + escapeHtml(r.type) + '</span>' : "";
+          return "<li>" + t + escapeHtml(r.name || "") + "</li>";
+        }).join("") + "</ul>";
+    } else {
+      resourcesHtml = '<span style="color: var(--text-muted); font-size: 12px;">—</span>';
+    }
+
+    var errorTag = ev.errorCode
+      ? '<span class="event-error-tag">' + escapeHtml(ev.errorCode) + "</span>"
+      : "";
+
+    var rawPretty = "";
+    if (ev.raw) {
+      try {
+        var parsed = typeof ev.raw === "string" ? JSON.parse(ev.raw) : ev.raw;
+        rawPretty = JSON.stringify(parsed, null, 2);
+      } catch (e) {
+        rawPretty = String(ev.raw);
+      }
+    }
+
+    return (
+      '<div class="event" data-source="' + sourceAttr + '" data-id="' + escapeHtml(ev.id || "") + '">' +
+        '<div class="event-row">' +
+          '<div class="event-time">' + escapeHtml(formatTime(ev.time)) + " UTC</div>" +
+          '<div class="event-main">' +
+            '<div class="event-name">' + escapeHtml(ev.name || "(unknown)") + "</div>" +
+            '<div class="event-meta">' +
+              '<span class="src-tag">' + escapeHtml(ev.source || "unknown") + "</span>" +
+              '<span class="principal">' + escapeHtml(shortPrincipal(ev.username)) + "</span>" +
+              (ev.region ? ' · <span style="color: var(--text-muted); font-family: \'SF Mono\', monospace; font-size: 11px;">' + escapeHtml(ev.region) + "</span>" : "") +
+            "</div>" +
+          "</div>" +
+          '<div style="display: flex; align-items: center; gap: 10px;">' +
+            errorTag +
+            '<span class="event-chevron">▶</span>' +
+          "</div>" +
+        "</div>" +
+        '<div class="event-details">' +
+          "<dl>" +
+            "<dt>Event ID</dt><dd><code>" + escapeHtml(ev.id || "") + "</code></dd>" +
+            "<dt>Time</dt><dd><code>" + escapeHtml(ev.time || "") + "</code></dd>" +
+            "<dt>Event source</dt><dd><code>" + escapeHtml(ev.source || "") + "</code></dd>" +
+            "<dt>Event name</dt><dd><code>" + escapeHtml(ev.name || "") + "</code></dd>" +
+            "<dt>Principal</dt><dd><code>" + escapeHtml(ev.username || "unknown") + "</code></dd>" +
+            "<dt>Region</dt><dd><code>" + escapeHtml(ev.region || "") + "</code></dd>" +
+            (ev.errorCode ? "<dt>Error</dt><dd><code>" + escapeHtml(ev.errorCode) + "</code></dd>" : "") +
+            "<dt>Resources</dt><dd>" + resourcesHtml + "</dd>" +
+            (rawPretty ? "<dt>Raw event</dt><dd><pre>" + escapeHtml(rawPretty) + "</pre></dd>" : "") +
+          "</dl>" +
+        "</div>" +
+      "</div>"
+    );
+  }
+
+  function renderTimeline(events) {
+    var root = document.getElementById("timeline-root");
+    if (!events.length) {
+      root.innerHTML = (
+        '<div class="empty-state">' +
+          '<div class="icon">∅</div>' +
+          "<div>No events match the current filter.</div>" +
+          '<div style="margin-top: 6px; font-size: 12px; color: var(--text-muted);">' +
+            "Clear filters or widen the server-side filter and re-run." +
+          "</div>" +
+        "</div>"
+      );
+      return;
+    }
+
+    var groups = {};
+    var order = [];
+    events.forEach(function (ev) {
+      var key = dayKey(ev.time);
+      if (!groups[key]) { groups[key] = []; order.push(key); }
+      groups[key].push(ev);
+    });
+
+    var html = "";
+    order.forEach(function (k) {
+      html += '<div class="day-header">' +
+        escapeHtml(formatDayHeader(k + "T00:00:00Z")) +
+        '<span class="count">' + groups[k].length + " event" + (groups[k].length === 1 ? "" : "s") + "</span>" +
+      "</div>";
+      html += '<div class="timeline">';
+      groups[k].forEach(function (ev) { html += renderEventCard(ev); });
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  function populateSourceFilter(events) {
+    var sel = document.getElementById("source-filter");
+    var sources = {};
+    events.forEach(function (ev) {
+      var s = (ev.source || "unknown").toLowerCase();
+      sources[s] = (sources[s] || 0) + 1;
+    });
+    Object.keys(sources).sort().forEach(function (s) {
+      var opt = document.createElement("option");
+      opt.value = s;
+      opt.textContent = s + " (" + sources[s] + ")";
+      sel.appendChild(opt);
+    });
+  }
+
+  function applyFilters(events) {
+    var q = (document.getElementById("search").value || "").trim().toLowerCase();
+    var src = document.getElementById("source-filter").value;
+    var err = document.getElementById("error-filter").value;
+
+    return events.filter(function (ev) {
+      if (src && (ev.source || "").toLowerCase() !== src) return false;
+      if (err === "error" && !ev.errorCode) return false;
+      if (err === "success" && ev.errorCode) return false;
+      if (q) {
+        var hay = [
+          ev.name, ev.source, ev.username, ev.region, ev.errorCode,
+          (ev.resources || []).map(function (r) { return (r.type || "") + " " + (r.name || ""); }).join(" ")
+        ].join(" ").toLowerCase();
+        if (hay.indexOf(q) === -1) return false;
+      }
+      return true;
+    });
+  }
+
+  function refresh(events) {
+    var filtered = applyFilters(events);
+    document.getElementById("stat-shown").textContent = filtered.length.toLocaleString();
+    renderTimeline(filtered);
+  }
+
+  function wireEvents(events) {
+    document.getElementById("search").addEventListener("input", function () { refresh(events); });
+    document.getElementById("source-filter").addEventListener("change", function () { refresh(events); });
+    document.getElementById("error-filter").addEventListener("change", function () { refresh(events); });
+    document.getElementById("clear-filters").addEventListener("click", function () {
+      document.getElementById("search").value = "";
+      document.getElementById("source-filter").value = "";
+      document.getElementById("error-filter").value = "";
+      refresh(events);
+    });
+
+    document.getElementById("timeline-root").addEventListener("click", function (e) {
+      var card = e.target.closest(".event");
+      if (!card) return;
+      card.classList.toggle("open");
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var events = safeParseEvents();
+    var total = events.length;
+    var totalNode = document.getElementById("stat-total");
+    var shownNode = document.getElementById("stat-shown");
+    if (totalNode && (totalNode.textContent || "").indexOf("{{") === 0) {
+      totalNode.textContent = total.toLocaleString();
+    }
+    if (shownNode && (shownNode.textContent || "").indexOf("{{") === 0) {
+      shownNode.textContent = total.toLocaleString();
+    }
+    populateSourceFilter(events);
+    wireEvents(events);
+    renderTimeline(events);
+  });
+})();
+</script>
+</body>
+</html>
