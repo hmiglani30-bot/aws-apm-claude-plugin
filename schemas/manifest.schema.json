@@ -148,7 +148,7 @@
           "minItems": 2,
           "maxItems": 200
         },
-        "status": { "enum": ["healthy", "degraded", "unhealthy", "neutral"] }
+        "status": { "enum": ["healthy", "degraded", "warning", "unhealthy", "neutral"] }
       }
     },
 

@@ -24,6 +24,7 @@ export function statusToClass(status) {
   switch (status) {
     case "healthy": return "status-healthy";
     case "degraded": return "status-degraded";
+    case "warning": return "status-warning";
     case "unhealthy": return "status-unhealthy";
     default: return "status-neutral";
   }

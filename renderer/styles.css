@@ -204,6 +204,7 @@
 
 .widget-stat-card.status-healthy { border-left: 4px solid var(--status-success); padding-left: 12px; }
 .widget-stat-card.status-degraded { border-left: 4px solid var(--status-warning); padding-left: 12px; }
+.widget-stat-card.status-warning { border-left: 4px solid var(--status-warning); padding-left: 12px; }
 .widget-stat-card.status-unhealthy { border-left: 4px solid var(--status-error); padding-left: 12px; }
 
 /* ---------- sparkline ------------------------------------------------- */

@@ -64,6 +64,8 @@ Densities determine how many widgets fit before overflow.
 ### `stat_card` — density 1
 Big-number tile. Use for: KPIs, RED tiles, error budgets remaining, current p99 vs baseline.
 
+`status` values: `healthy | degraded | warning | unhealthy | neutral`. Pick `degraded` for partial impact, `warning` for early-signal anomalies, `unhealthy` for actively failing.
+
 ```json
 {
   "type": "stat_card",
