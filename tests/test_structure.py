@@ -36,6 +36,8 @@ EXPECTED_SKILLS = {
     "trace-to-code",
     "service-ownership",
     "copy-to-incident",
+    "observability-gap-analysis",
+    "alerting-design",
 }
 
 EXPECTED_COMMANDS = {
@@ -48,6 +50,8 @@ EXPECTED_COMMANDS = {
     "cw-doctor.md",
     "cw-set-context.md",
     "cw-verify-recovery.md",
+    "cw-obs-gaps.md",
+    "cw-alert-design.md",
 }
 
 EXPECTED_MCP_SERVERS = {
@@ -63,6 +67,8 @@ EXPECTED_ARTIFACTS = {
     "service-health-card.html",
     "top-suspected-cause.html",
     "investigation-summary.html",
+    "observability-gap-report.html",
+    "alerting-plan.html",
 }
 
 # Workflow skills that must include a Phase 6 cascading dependency check.
