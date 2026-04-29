@@ -189,6 +189,7 @@ The model invokes these based on what the user describes — no command needed.
 | `/cw-slo-report` | Portfolio-wide SLO compliance report ranked by risk, with recommendations |
 | `/cw-obs-gaps [path] [language]` | Codebase observability gap analysis → Observability Gap Report (logging / metrics / tracing / error-handling / health-check coverage; multi-language) |
 | `/cw-alert-design [service-or-namespace] [window]` | Alerting design → Alerting Plan (existing-alarm audit, coverage matrix, recommended thresholds, composite-alarm patterns, IaC snippets) |
+| `/cw-trail-view [time-range] [service-filter] [event-type]` | View recent CloudTrail events as a hybrid-renderer manifest — layout (timeline / audit table / dashboard) is selected from the prompt intent |
 | `/cw-set-context` | Pick the AWS profile and region the plugin operates against |
 | `/cw-doctor` | End-to-end diagnostic: MCP servers, AWS identity, region, Application Signals, logs, traces, CloudTrail |
 | `/cw-verify-recovery <service>` | Verify a service has recovered after a mitigation (SLO burn stopped, p99 returned, errors normalized, alarms back to OK) |
@@ -394,7 +395,7 @@ skills, commands, and hooks work across surfaces.
 ### Configuring AWS profile and region
 
 The plugin's `.mcp.json` defaults to `AWS_PROFILE=default` and
-`AWS_REGION=us-east-2`. Override per-user via the host's MCP settings, or
+`AWS_REGION=us-east-1`. Override per-user via the host's MCP settings, or
 edit `.mcp.json` directly:
 
 ```json
@@ -471,7 +472,7 @@ aws-apm-claude-plugin/
 │   ├── plugin.json           # Plugin metadata (v0.2.1)
 │   └── marketplace.json      # Marketplace manifest
 ├── .mcp.json                 # Wires the 4 awslabs/mcp servers via uvx
-├── skills/                   # 18 skills total
+├── skills/                   # 19 skills total
 │   ├── slo-breach-investigation/    # Workflow
 │   ├── latency-regression/          # Workflow
 │   ├── error-spike-triage/          # Workflow
@@ -489,6 +490,7 @@ aws-apm-claude-plugin/
 │   ├── service-ownership/           # Resolve owning team / on-call
 │   ├── trace-to-code/               # Map trace span to source code
 │   ├── copy-to-incident/            # Reformat artifact for Slack / postmortem / status page
+│   ├── hybrid-renderer/             # JSON manifest grammar for the deterministic HTML renderer
 │   └── aws-apm-setup/               # Prerequisite walkthrough
 ├── artifacts/                # 7 HTML artifact templates with {{PLACEHOLDERS}}
 │   ├── slo-breach-explainer.html
@@ -498,7 +500,7 @@ aws-apm-claude-plugin/
 │   ├── investigation-summary.html
 │   ├── observability-gap-report.html
 │   └── alerting-plan.html
-├── commands/                 # 11 slash commands
+├── commands/                 # 12 slash commands
 │   ├── cw-investigate-slo.md
 │   ├── cw-investigate-latency.md
 │   ├── cw-investigate-errors.md
@@ -507,6 +509,7 @@ aws-apm-claude-plugin/
 │   ├── cw-slo-report.md
 │   ├── cw-obs-gaps.md
 │   ├── cw-alert-design.md
+│   ├── cw-trail-view.md
 │   ├── cw-set-context.md
 │   ├── cw-doctor.md
 │   └── cw-verify-recovery.md
