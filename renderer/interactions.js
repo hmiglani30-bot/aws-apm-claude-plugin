@@ -22,24 +22,34 @@ function bindTable(tableEl) {
   if (!tbody) return;
   const headers = tableEl.querySelectorAll("th.sortable");
 
+  const sortBy = th => {
+    const key = th.getAttribute("data-sort-key");
+    const kind = th.getAttribute("data-sort-kind") || "text";
+    const current = th.getAttribute("aria-sort");
+    const next = current === "ascending" ? "descending" : "ascending";
+
+    // Reset other columns to "none" rather than removing the attribute, so
+    // assistive tech keeps announcing them as sortable.
+    headers.forEach(h => { if (h !== th) h.setAttribute("aria-sort", "none"); });
+    th.setAttribute("aria-sort", next);
+
+    const rows = [...tbody.querySelectorAll("tr")].filter(r => !r.querySelector(".empty-row"));
+    rows.sort((rowA, rowB) => {
+      const a = rowA.querySelector(`td[data-col="${key}"]`)?.textContent.trim();
+      const b = rowB.querySelector(`td[data-col="${key}"]`)?.textContent.trim();
+      const cmp = compareCells(a, b, kind);
+      return next === "ascending" ? cmp : -cmp;
+    });
+    rows.forEach(r => tbody.appendChild(r));
+  };
+
   headers.forEach(th => {
-    th.addEventListener("click", () => {
-      const key = th.getAttribute("data-sort-key");
-      const kind = th.getAttribute("data-sort-kind") || "text";
-      const current = th.getAttribute("aria-sort");
-      const next = current === "ascending" ? "descending" : "ascending";
-
-      headers.forEach(h => h.removeAttribute("aria-sort"));
-      th.setAttribute("aria-sort", next);
-
-      const rows = [...tbody.querySelectorAll("tr")].filter(r => !r.querySelector(".empty-row"));
-      rows.sort((rowA, rowB) => {
-        const a = rowA.querySelector(`td[data-col="${key}"]`)?.textContent.trim();
-        const b = rowB.querySelector(`td[data-col="${key}"]`)?.textContent.trim();
-        const cmp = compareCells(a, b, kind);
-        return next === "ascending" ? cmp : -cmp;
-      });
-      rows.forEach(r => tbody.appendChild(r));
+    th.addEventListener("click", () => sortBy(th));
+    th.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        sortBy(th);
+      }
     });
   });
 }

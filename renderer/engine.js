@@ -159,16 +159,18 @@ function renderDrawer(items) {
 </details>`;
 }
 
-function renderShellHeader(meta) {
+let titleUid = 0;
+
+function renderShellHeader(meta, titleId) {
   const sevClass = `sev-${meta.severity || "info"}`;
   const sub = [meta.service, meta.region, meta.environment].filter(Boolean).map(esc).join(" · ");
   return `<div class="hr-meta-bar ${sevClass}">
   <div class="hr-meta-titles">
-    <h1 class="hr-title">${esc(meta.title || "Untitled")}</h1>
+    <h1 class="hr-title" id="${titleId}">${esc(meta.title || "Untitled")}</h1>
     ${meta.subtitle ? `<div class="hr-subtitle">${esc(meta.subtitle)}</div>` : ""}
   </div>
   <div class="hr-meta-tags">
-    <span class="hr-sev-badge ${sevClass}">${esc(meta.severity || "info")}</span>
+    <span class="hr-sev-badge ${sevClass}" aria-label="Severity: ${esc(meta.severity || "info")}">${esc(meta.severity || "info")}</span>
     ${sub ? `<span class="hr-meta-context">${sub}</span>` : ""}
     ${meta.generated_at ? `<span class="hr-meta-time">${esc(meta.generated_at)}</span>` : ""}
   </div>
@@ -257,11 +259,12 @@ export function renderToHtml(manifest, opts = {}) {
   const plan = planLayout(manifest);
   const drawerHtml = renderDrawer(plan.drawer);
   const shellHtml = fillShell(plan.shell, plan.slots, drawerHtml);
-  const metaBar = renderShellHeader(manifest.metadata);
+  const titleId = `hr-title-${++titleUid}`;
+  const metaBar = renderShellHeader(manifest.metadata, titleId);
   const overflowNote = plan.drawer.length
     ? `<div class="hr-overflow-note">${plan.drawer.length} additional ${plan.drawer.length === 1 ? "widget" : "widgets"} hidden in detail drawer below.</div>`
     : "";
-  return `<article class="hr-artifact" data-shell="${esc(plan.shell)}" data-density="${plan.densityUsed}/${plan.budget}">
+  return `<article class="hr-artifact" data-shell="${esc(plan.shell)}" data-density="${plan.densityUsed}/${plan.budget}" aria-labelledby="${titleId}">
   ${metaBar}
   ${overflowNote}
   ${shellHtml}

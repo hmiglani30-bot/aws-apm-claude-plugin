@@ -19,6 +19,7 @@ const DIM_LABELS = {
   widget_count: "Widget count",
   density_budget: "Density budget",
   rendering: "Rendering",
+  html_quality: "HTML quality / a11y",
 };
 const DIMS = Object.keys(DIM_LABELS);
 

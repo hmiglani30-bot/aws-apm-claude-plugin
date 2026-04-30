@@ -1,41 +1,46 @@
 {
-  "generated_at": "2026-04-29T04:22:05.841Z",
+  "generated_at": "2026-04-30T17:35:03.273Z",
   "renderer_branch": "feature/hybrid-renderer",
-  "total_prompts": 52,
+  "total_prompts": 58,
   "categories": {
     "error-investigation": "Error investigation",
     "latency-performance": "Latency / performance",
     "slo-service-health": "SLO / service health",
     "cloudtrail-security": "CloudTrail / security",
-    "mixed-complex": "Mixed / complex"
+    "mixed-complex": "Mixed / complex",
+    "quality-regression": "HTML quality / a11y / safety"
   },
   "summary": {
     "overall": {
-      "total_cases": 52,
-      "all_dim_pass": 52,
+      "total_cases": 58,
+      "all_dim_pass": 58,
       "per_dim": {
         "manifest_validity": {
-          "pass": 52,
+          "pass": 58,
           "fail": 0
         },
         "shell_selection": {
-          "pass": 52,
+          "pass": 58,
           "fail": 0
         },
         "widget_relevance": {
-          "pass": 52,
+          "pass": 58,
           "fail": 0
         },
         "widget_count": {
-          "pass": 52,
+          "pass": 58,
           "fail": 0
         },
         "density_budget": {
-          "pass": 52,
+          "pass": 58,
           "fail": 0
         },
         "rendering": {
-          "pass": 52,
+          "pass": 58,
+          "fail": 0
+        },
+        "html_quality": {
+          "pass": 58,
           "fail": 0
         }
       }
@@ -68,6 +73,10 @@
           "rendering": {
             "pass": 10,
             "fail": 0
+          },
+          "html_quality": {
+            "pass": 10,
+            "fail": 0
           }
         }
       },
@@ -96,6 +105,10 @@
             "fail": 0
           },
           "rendering": {
+            "pass": 10,
+            "fail": 0
+          },
+          "html_quality": {
             "pass": 10,
             "fail": 0
           }
@@ -128,6 +141,10 @@
           "rendering": {
             "pass": 10,
             "fail": 0
+          },
+          "html_quality": {
+            "pass": 10,
+            "fail": 0
           }
         }
       },
@@ -156,6 +173,10 @@
             "fail": 0
           },
           "rendering": {
+            "pass": 10,
+            "fail": 0
+          },
+          "html_quality": {
             "pass": 10,
             "fail": 0
           }
@@ -187,6 +208,44 @@
           },
           "rendering": {
             "pass": 12,
+            "fail": 0
+          },
+          "html_quality": {
+            "pass": 12,
+            "fail": 0
+          }
+        }
+      },
+      "quality-regression": {
+        "total": 6,
+        "all_dim_pass": 6,
+        "per_dim": {
+          "manifest_validity": {
+            "pass": 6,
+            "fail": 0
+          },
+          "shell_selection": {
+            "pass": 6,
+            "fail": 0
+          },
+          "widget_relevance": {
+            "pass": 6,
+            "fail": 0
+          },
+          "widget_count": {
+            "pass": 6,
+            "fail": 0
+          },
+          "density_budget": {
+            "pass": 6,
+            "fail": 0
+          },
+          "rendering": {
+            "pass": 6,
+            "fail": 0
+          },
+          "html_quality": {
+            "pass": 6,
             "fail": 0
           }
         }
@@ -239,13 +298,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "5210 chars"
+          "note": "5730 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -271,7 +334,7 @@
           ]
         }
       },
-      "html_length": 5210
+      "html_length": 5730
     },
     {
       "id": "err-02",
@@ -318,13 +381,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "5648 chars"
+          "note": "6170 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -350,7 +417,7 @@
           ]
         }
       },
-      "html_length": 5648
+      "html_length": 6170
     },
     {
       "id": "err-03",
@@ -398,13 +465,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "4286 chars"
+          "note": "4590 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -429,7 +500,7 @@
           ]
         }
       },
-      "html_length": 4286
+      "html_length": 4590
     },
     {
       "id": "err-04",
@@ -475,13 +546,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "4561 chars"
+          "note": "4859 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -507,7 +582,7 @@
           ]
         }
       },
-      "html_length": 4561
+      "html_length": 4859
     },
     {
       "id": "err-05",
@@ -555,13 +630,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "4405 chars"
+          "note": "4852 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -586,7 +665,7 @@
           ]
         }
       },
-      "html_length": 4405
+      "html_length": 4852
     },
     {
       "id": "err-06",
@@ -634,13 +713,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "4347 chars"
+          "note": "4919 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -666,7 +749,7 @@
           ]
         }
       },
-      "html_length": 4347
+      "html_length": 4919
     },
     {
       "id": "err-07",
@@ -713,13 +796,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3614 chars"
+          "note": "3919 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -745,7 +832,7 @@
           ]
         }
       },
-      "html_length": 3614
+      "html_length": 3919
     },
     {
       "id": "err-08",
@@ -792,13 +879,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3446 chars"
+          "note": "3757 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -824,7 +915,7 @@
           ]
         }
       },
-      "html_length": 3446
+      "html_length": 3757
     },
     {
       "id": "err-09",
@@ -872,13 +963,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3694 chars"
+          "note": "4002 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -904,7 +999,7 @@
           ]
         }
       },
-      "html_length": 3694
+      "html_length": 4002
     },
     {
       "id": "err-10",
@@ -952,13 +1047,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3718 chars"
+          "note": "3797 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -984,7 +1083,7 @@
           ]
         }
       },
-      "html_length": 3718
+      "html_length": 3797
     },
     {
       "id": "lat-01",
@@ -1028,13 +1127,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "4680 chars"
+          "note": "5150 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -1060,7 +1163,7 @@
           ]
         }
       },
-      "html_length": 4680
+      "html_length": 5150
     },
     {
       "id": "lat-02",
@@ -1105,13 +1208,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3824 chars"
+          "note": "4137 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -1136,7 +1243,7 @@
           ]
         }
       },
-      "html_length": 3824
+      "html_length": 4137
     },
     {
       "id": "lat-03",
@@ -1175,13 +1282,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3954 chars"
+          "note": "4032 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,trace_bar_containment,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -1202,7 +1313,7 @@
           ]
         }
       },
-      "html_length": 3954
+      "html_length": 4032
     },
     {
       "id": "lat-04",
@@ -1245,13 +1356,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "4208 chars"
+          "note": "4863 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -1274,7 +1389,7 @@
           "context": []
         }
       },
-      "html_length": 4208
+      "html_length": 4863
     },
     {
       "id": "lat-05",
@@ -1322,13 +1437,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3286 chars"
+          "note": "3364 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -1352,7 +1471,7 @@
           ]
         }
       },
-      "html_length": 3286
+      "html_length": 3364
     },
     {
       "id": "lat-06",
@@ -1399,13 +1518,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3247 chars"
+          "note": "3555 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -1430,7 +1553,7 @@
           ]
         }
       },
-      "html_length": 3247
+      "html_length": 3555
     },
     {
       "id": "lat-07",
@@ -1476,13 +1599,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "4027 chars"
+          "note": "4404 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -1508,7 +1635,7 @@
           ]
         }
       },
-      "html_length": 4027
+      "html_length": 4404
     },
     {
       "id": "lat-08",
@@ -1554,13 +1681,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3596 chars"
+          "note": "3957 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -1585,7 +1716,7 @@
           ]
         }
       },
-      "html_length": 3596
+      "html_length": 3957
     },
     {
       "id": "lat-09",
@@ -1630,13 +1761,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3762 chars"
+          "note": "3840 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -1662,7 +1797,7 @@
           ]
         }
       },
-      "html_length": 3762
+      "html_length": 3840
     },
     {
       "id": "lat-10",
@@ -1704,13 +1839,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "4273 chars"
+          "note": "4351 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,trace_bar_containment,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -1731,7 +1870,7 @@
           ]
         }
       },
-      "html_length": 4273
+      "html_length": 4351
     },
     {
       "id": "slo-01",
@@ -1774,13 +1913,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3787 chars"
+          "note": "3865 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -1805,7 +1948,7 @@
           ]
         }
       },
-      "html_length": 3787
+      "html_length": 3865
     },
     {
       "id": "slo-02",
@@ -1853,13 +1996,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3200 chars"
+          "note": "3794 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -1882,7 +2029,7 @@
           "context": []
         }
       },
-      "html_length": 3200
+      "html_length": 3794
     },
     {
       "id": "slo-03",
@@ -1922,13 +2069,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3439 chars"
+          "note": "3517 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -1954,7 +2105,7 @@
           ]
         }
       },
-      "html_length": 3439
+      "html_length": 3517
     },
     {
       "id": "slo-04",
@@ -1997,13 +2148,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "2271 chars"
+          "note": "2346 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -2028,7 +2183,7 @@
           ]
         }
       },
-      "html_length": 2271
+      "html_length": 2346
     },
     {
       "id": "slo-05",
@@ -2073,13 +2228,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "4878 chars"
+          "note": "5278 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -2106,7 +2265,7 @@
           ]
         }
       },
-      "html_length": 4878
+      "html_length": 5278
     },
     {
       "id": "slo-06",
@@ -2149,13 +2308,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3396 chars"
+          "note": "3471 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -2179,7 +2342,7 @@
           ]
         }
       },
-      "html_length": 3396
+      "html_length": 3471
     },
     {
       "id": "slo-07",
@@ -2224,13 +2387,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3547 chars"
+          "note": "4161 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -2253,7 +2420,7 @@
           "context": []
         }
       },
-      "html_length": 3547
+      "html_length": 4161
     },
     {
       "id": "slo-08",
@@ -2296,13 +2463,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "2391 chars"
+          "note": "2466 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -2327,7 +2498,7 @@
           ]
         }
       },
-      "html_length": 2391
+      "html_length": 2466
     },
     {
       "id": "slo-09",
@@ -2370,13 +2541,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "2134 chars"
+          "note": "2209 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -2397,7 +2572,7 @@
           ]
         }
       },
-      "html_length": 2134
+      "html_length": 2209
     },
     {
       "id": "slo-10",
@@ -2437,13 +2612,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3765 chars"
+          "note": "4161 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -2469,7 +2648,7 @@
           ]
         }
       },
-      "html_length": 3765
+      "html_length": 4161
     },
     {
       "id": "ct-01",
@@ -2511,13 +2690,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3982 chars"
+          "note": "4207 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -2540,7 +2723,7 @@
           "context": []
         }
       },
-      "html_length": 3982
+      "html_length": 4207
     },
     {
       "id": "ct-02",
@@ -2586,13 +2769,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3365 chars"
+          "note": "3440 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -2615,7 +2802,7 @@
           ]
         }
       },
-      "html_length": 3365
+      "html_length": 3440
     },
     {
       "id": "ct-03",
@@ -2658,13 +2845,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3355 chars"
+          "note": "3659 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -2689,7 +2880,7 @@
           ]
         }
       },
-      "html_length": 3355
+      "html_length": 3659
     },
     {
       "id": "ct-04",
@@ -2734,13 +2925,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "2917 chars"
+          "note": "2992 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -2762,7 +2957,7 @@
           ]
         }
       },
-      "html_length": 2917
+      "html_length": 2992
     },
     {
       "id": "ct-05",
@@ -2808,13 +3003,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "2893 chars"
+          "note": "2972 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -2836,7 +3035,7 @@
           ]
         }
       },
-      "html_length": 2893
+      "html_length": 2972
     },
     {
       "id": "ct-06",
@@ -2879,13 +3078,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3481 chars"
+          "note": "3847 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -2910,7 +3113,7 @@
           ]
         }
       },
-      "html_length": 3481
+      "html_length": 3847
     },
     {
       "id": "ct-07",
@@ -2952,13 +3155,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3472 chars"
+          "note": "3848 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -2983,7 +3190,7 @@
           ]
         }
       },
-      "html_length": 3472
+      "html_length": 3848
     },
     {
       "id": "ct-08",
@@ -3027,13 +3234,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "4425 chars"
+          "note": "4644 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -3058,7 +3269,7 @@
           ]
         }
       },
-      "html_length": 4425
+      "html_length": 4644
     },
     {
       "id": "ct-09",
@@ -3101,13 +3312,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3345 chars"
+          "note": "3639 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -3133,7 +3348,7 @@
           ]
         }
       },
-      "html_length": 3345
+      "html_length": 3639
     },
     {
       "id": "ct-10",
@@ -3176,13 +3391,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "4559 chars"
+          "note": "4637 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -3207,7 +3426,7 @@
           ]
         }
       },
-      "html_length": 4559
+      "html_length": 4637
     },
     {
       "id": "mix-01",
@@ -3251,13 +3470,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3822 chars"
+          "note": "4295 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -3283,7 +3506,7 @@
           ]
         }
       },
-      "html_length": 3822
+      "html_length": 4295
     },
     {
       "id": "mix-02",
@@ -3328,13 +3551,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "4089 chars"
+          "note": "4168 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -3360,7 +3587,7 @@
           ]
         }
       },
-      "html_length": 4089
+      "html_length": 4168
     },
     {
       "id": "mix-03",
@@ -3408,13 +3635,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "2909 chars"
+          "note": "2984 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -3438,7 +3669,7 @@
           ]
         }
       },
-      "html_length": 2909
+      "html_length": 2984
     },
     {
       "id": "mix-04",
@@ -3482,13 +3713,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3932 chars"
+          "note": "4383 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -3514,7 +3749,7 @@
           ]
         }
       },
-      "html_length": 3932
+      "html_length": 4383
     },
     {
       "id": "mix-05",
@@ -3561,13 +3796,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "2913 chars"
+          "note": "2988 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -3591,7 +3830,7 @@
           ]
         }
       },
-      "html_length": 2913
+      "html_length": 2988
     },
     {
       "id": "mix-06",
@@ -3634,13 +3873,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "4779 chars"
+          "note": "5233 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -3665,7 +3908,7 @@
           ]
         }
       },
-      "html_length": 4779
+      "html_length": 5233
     },
     {
       "id": "mix-07",
@@ -3713,13 +3956,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3739 chars"
+          "note": "4038 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -3744,7 +3991,7 @@
           ]
         }
       },
-      "html_length": 3739
+      "html_length": 4038
     },
     {
       "id": "mix-08",
@@ -3788,13 +4035,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "4513 chars"
+          "note": "4591 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -3819,7 +4070,7 @@
           ]
         }
       },
-      "html_length": 4513
+      "html_length": 4591
     },
     {
       "id": "mix-09",
@@ -3862,13 +4113,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "2073 chars"
+          "note": "2148 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -3893,7 +4148,7 @@
           ]
         }
       },
-      "html_length": 2073
+      "html_length": 2148
     },
     {
       "id": "mix-10",
@@ -3938,13 +4193,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3829 chars"
+          "note": "4394 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -3969,7 +4228,7 @@
           ]
         }
       },
-      "html_length": 3829
+      "html_length": 4394
     },
     {
       "id": "mix-11",
@@ -4013,13 +4272,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "4006 chars"
+          "note": "4084 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -4045,7 +4308,7 @@
           ]
         }
       },
-      "html_length": 4006
+      "html_length": 4084
     },
     {
       "id": "mix-12",
@@ -4088,13 +4351,17 @@
         },
         "rendering": {
           "pass": true,
-          "note": "3062 chars"
+          "note": "3137 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
         }
       },
       "summary": {
-        "passed": 6,
+        "passed": 7,
         "failed": 0,
-        "total": 6
+        "total": 7
       },
       "error": null,
       "engine_validation": {
@@ -4118,7 +4385,448 @@
           ]
         }
       },
-      "html_length": 3062
+      "html_length": 3137
+    },
+    {
+      "id": "qa-01",
+      "category": "quality-regression",
+      "prompt": "[regression] Mixed status cells incl. degraded must color-code correctly",
+      "expected": {
+        "shell": [
+          "investigation",
+          "single-focus"
+        ],
+        "mustInclude": [
+          "table"
+        ],
+        "widgetCount": [
+          2,
+          6
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred single-focus"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 3/6, drawer 0/2"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "2 widgets (in [2,6])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "2895 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
+        }
+      },
+      "summary": {
+        "passed": 7,
+        "failed": 0,
+        "total": 7
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "single-focus",
+        "densityUsed": 3,
+        "budget": 6,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "table"
+          ]
+        }
+      },
+      "html_length": 2895
+    },
+    {
+      "id": "qa-02",
+      "category": "quality-regression",
+      "prompt": "[regression] Sortable table must announce sort state and be keyboard-focusable",
+      "expected": {
+        "shell": [
+          "investigation",
+          "single-focus"
+        ],
+        "mustInclude": [
+          "table"
+        ],
+        "widgetCount": [
+          2,
+          6
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred single-focus"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 3/6, drawer 0/2"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,table]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "2 widgets (in [2,6])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3176 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,landmark], skipped [status_map,link_safety,trace_bar_containment]"
+        }
+      },
+      "summary": {
+        "passed": 7,
+        "failed": 0,
+        "total": 7
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "single-focus",
+        "densityUsed": 3,
+        "budget": 6,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "table"
+          ]
+        }
+      },
+      "html_length": 3176
+    },
+    {
+      "id": "qa-03",
+      "category": "quality-regression",
+      "prompt": "[regression] Trace span at the edge of total duration must not overflow the track",
+      "expected": {
+        "shell": "single-focus",
+        "mustInclude": [
+          "trace_waterfall"
+        ],
+        "widgetCount": [
+          2,
+          4
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred single-focus"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 4/6, drawer 0/2"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,trace_waterfall]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "2 widgets (in [2,4])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "2775 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,trace_bar_containment,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety]"
+        }
+      },
+      "summary": {
+        "passed": 7,
+        "failed": 0,
+        "total": 7
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "single-focus",
+        "densityUsed": 4,
+        "budget": 6,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "trace_waterfall"
+          ]
+        }
+      },
+      "html_length": 2775
+    },
+    {
+      "id": "qa-04",
+      "category": "quality-regression",
+      "prompt": "[regression] HTML-shaped strings in titles and log lines must be escaped",
+      "expected": {
+        "shell": [
+          "investigation",
+          "single-focus"
+        ],
+        "mustInclude": [
+          "log_viewer"
+        ],
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline"
+        ],
+        "widgetCount": [
+          2,
+          6
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred single-focus"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 3/6, drawer 0/2"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card,log_viewer]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "2 widgets (in [2,6])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "2055 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
+        }
+      },
+      "summary": {
+        "passed": 7,
+        "failed": 0,
+        "total": 7
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "single-focus",
+        "densityUsed": 3,
+        "budget": 6,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": [
+            "log_viewer"
+          ]
+        }
+      },
+      "html_length": 2055
+    },
+    {
+      "id": "qa-05",
+      "category": "quality-regression",
+      "prompt": "[regression] All target=_blank links must carry rel=noreferrer noopener",
+      "expected": {
+        "shell": "investigation",
+        "mustIncludeAny": [
+          "timeline",
+          "change_event_list",
+          "table"
+        ],
+        "widgetCount": [
+          2,
+          6
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred investigation"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 5/8, drawer 0/3"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[timeline,table,change_event_list]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "3 widgets (in [2,6])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "3884 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,aria_sort,sort_keyboard,link_safety,landmark], skipped [status_map,trace_bar_containment]"
+        }
+      },
+      "summary": {
+        "passed": 7,
+        "failed": 0,
+        "total": 7
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "investigation",
+        "densityUsed": 5,
+        "budget": 8,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "timeline"
+          ],
+          "primary": [
+            "table",
+            "change_event_list"
+          ],
+          "context": []
+        }
+      },
+      "html_length": 3884
+    },
+    {
+      "id": "qa-06",
+      "category": "quality-regression",
+      "prompt": "[regression] Artifact root must expose an accessible name for landmark navigation",
+      "expected": {
+        "shell": [
+          "investigation",
+          "single-focus",
+          "dashboard"
+        ],
+        "mustIncludeAny": [
+          "stat_card",
+          "sparkline",
+          "table"
+        ],
+        "widgetCount": [
+          1,
+          4
+        ]
+      },
+      "scores": {
+        "manifest_validity": {
+          "pass": true,
+          "note": "valid against schemas/manifest.schema.json"
+        },
+        "shell_selection": {
+          "pass": true,
+          "note": "inferred single-focus"
+        },
+        "density_budget": {
+          "pass": true,
+          "note": "density 1/6, drawer 0/1"
+        },
+        "widget_relevance": {
+          "pass": true,
+          "note": "widgets=[stat_card]"
+        },
+        "widget_count": {
+          "pass": true,
+          "note": "1 widgets (in [1,4])"
+        },
+        "rendering": {
+          "pass": true,
+          "note": "893 chars"
+        },
+        "html_quality": {
+          "pass": true,
+          "note": "passed [escaping,landmark], skipped [aria_sort,sort_keyboard,status_map,link_safety,trace_bar_containment]"
+        }
+      },
+      "summary": {
+        "passed": 7,
+        "failed": 0,
+        "total": 7
+      },
+      "error": null,
+      "engine_validation": {
+        "ok": true,
+        "errors": []
+      },
+      "plan": {
+        "shell": "single-focus",
+        "densityUsed": 1,
+        "budget": 6,
+        "drawer": 0,
+        "slots": {
+          "header": [
+            "stat_card"
+          ],
+          "primary": []
+        }
+      },
+      "html_length": 893
     }
   ]
 }

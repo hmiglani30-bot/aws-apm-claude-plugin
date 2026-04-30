@@ -103,23 +103,23 @@
 <h1>Hybrid Renderer — Evaluation Scorecard</h1>
 <div class="subtitle">52 prompts across 5 categories, scored on 6 dimensions</div>
 <div class="meta-line">
-  Generated 2026-04-29T04:22:05.841Z · branch <code>feature/hybrid-renderer</code> · renderer entry <code>renderer/render.js</code> · schema <code>schemas/manifest.schema.json</code>
+  Generated 2026-04-30T17:35:03.273Z · branch <code>feature/hybrid-renderer</code> · renderer entry <code>renderer/render.js</code> · schema <code>schemas/manifest.schema.json</code>
 </div>
 
 <div class="kpi-row">
   <div class="kpi pass">
     <div class="label">All-dimensions pass</div>
-    <div class="value">52/52</div>
+    <div class="value">58/58</div>
     <div class="sub">100.0% of cases pass every dimension</div>
   </div>
   <div class="kpi pass">
     <div class="label">Schema-valid manifests</div>
-    <div class="value">52/52</div>
+    <div class="value">58/58</div>
     <div class="sub">conform to manifest.schema.json (draft 2020-12)</div>
   </div>
   <div class="kpi pass">
     <div class="label">Render without errors</div>
-    <div class="value">52/52</div>
+    <div class="value">58/58</div>
     <div class="sub">renderManifest produced clean HTML</div>
   </div>
 </div>
@@ -128,27 +128,31 @@
 <div class="dim-bars">
     <div class="dim-label">Manifest validity</div>
     <div class="bar-track"><div class="bar-fill " style="width:100%"></div></div>
-    <div class="dim-num">52/52 (100.0%)</div>
+    <div class="dim-num">58/58 (100.0%)</div>
   </div><div class="dim-bars">
     <div class="dim-label">Shell selection</div>
     <div class="bar-track"><div class="bar-fill " style="width:100%"></div></div>
-    <div class="dim-num">52/52 (100.0%)</div>
+    <div class="dim-num">58/58 (100.0%)</div>
   </div><div class="dim-bars">
     <div class="dim-label">Widget relevance</div>
     <div class="bar-track"><div class="bar-fill " style="width:100%"></div></div>
-    <div class="dim-num">52/52 (100.0%)</div>
+    <div class="dim-num">58/58 (100.0%)</div>
   </div><div class="dim-bars">
     <div class="dim-label">Widget count</div>
     <div class="bar-track"><div class="bar-fill " style="width:100%"></div></div>
-    <div class="dim-num">52/52 (100.0%)</div>
+    <div class="dim-num">58/58 (100.0%)</div>
   </div><div class="dim-bars">
     <div class="dim-label">Density budget</div>
     <div class="bar-track"><div class="bar-fill " style="width:100%"></div></div>
-    <div class="dim-num">52/52 (100.0%)</div>
+    <div class="dim-num">58/58 (100.0%)</div>
   </div><div class="dim-bars">
     <div class="dim-label">Rendering</div>
     <div class="bar-track"><div class="bar-fill " style="width:100%"></div></div>
-    <div class="dim-num">52/52 (100.0%)</div>
+    <div class="dim-num">58/58 (100.0%)</div>
+  </div><div class="dim-bars">
+    <div class="dim-label">HTML quality / a11y</div>
+    <div class="bar-track"><div class="bar-fill " style="width:100%"></div></div>
+    <div class="dim-num">58/58 (100.0%)</div>
   </div>
 
 <h2>Per-category results</h2>
@@ -157,34 +161,39 @@
   <tr>
     <th class="cat-name">Category</th>
     <th class="num">All-dim pass</th>
-    <th class="num">Manifest validity</th><th class="num">Shell selection</th><th class="num">Widget relevance</th><th class="num">Widget count</th><th class="num">Density budget</th><th class="num">Rendering</th>
+    <th class="num">Manifest validity</th><th class="num">Shell selection</th><th class="num">Widget relevance</th><th class="num">Widget count</th><th class="num">Density budget</th><th class="num">Rendering</th><th class="num">HTML quality / a11y</th>
   </tr>
 </thead>
 <tbody>
 <tr>
   <th class="cat-name">Error investigation</th>
   <td class="num">10/10 <span class="muted">(100.0%)</span></td>
-  <td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td>
+  <td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td>
 </tr>
 <tr>
   <th class="cat-name">Latency / performance</th>
   <td class="num">10/10 <span class="muted">(100.0%)</span></td>
-  <td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td>
+  <td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td>
 </tr>
 <tr>
   <th class="cat-name">SLO / service health</th>
   <td class="num">10/10 <span class="muted">(100.0%)</span></td>
-  <td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td>
+  <td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td>
 </tr>
 <tr>
   <th class="cat-name">CloudTrail / security</th>
   <td class="num">10/10 <span class="muted">(100.0%)</span></td>
-  <td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td>
+  <td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td><td class="cell-ok">10/10</td>
 </tr>
 <tr>
   <th class="cat-name">Mixed / complex</th>
   <td class="num">12/12 <span class="muted">(100.0%)</span></td>
-  <td class="cell-ok">12/12</td><td class="cell-ok">12/12</td><td class="cell-ok">12/12</td><td class="cell-ok">12/12</td><td class="cell-ok">12/12</td><td class="cell-ok">12/12</td>
+  <td class="cell-ok">12/12</td><td class="cell-ok">12/12</td><td class="cell-ok">12/12</td><td class="cell-ok">12/12</td><td class="cell-ok">12/12</td><td class="cell-ok">12/12</td><td class="cell-ok">12/12</td>
+</tr>
+<tr>
+  <th class="cat-name">HTML quality / a11y / safety</th>
+  <td class="num">6/6 <span class="muted">(100.0%)</span></td>
+  <td class="cell-ok">6/6</td><td class="cell-ok">6/6</td><td class="cell-ok">6/6</td><td class="cell-ok">6/6</td><td class="cell-ok">6/6</td><td class="cell-ok">6/6</td><td class="cell-ok">6/6</td>
 </tr>
 </tbody>
 </table>
@@ -256,7 +265,7 @@
     <th>Prompt</th>
     <th>Shell</th>
     <th>Density</th>
-    <th title="Manifest validity">Mv</th><th title="Shell selection">Ss</th><th title="Widget relevance">Wr</th><th title="Widget count">Wc</th><th title="Density budget">Db</th><th title="Rendering">R</th>
+    <th title="Manifest validity">Mv</th><th title="Shell selection">Ss</th><th title="Widget relevance">Wr</th><th title="Widget count">Wc</th><th title="Density budget">Db</th><th title="Rendering">R</th><th title="HTML quality / a11y">Hq/a</th>
   </tr>
 </thead>
 <tbody>
@@ -265,70 +274,70 @@
   <td class="case-prompt"><span class="prompt-text">Why is my API returning 500 errors?</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">7/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">err-02</td>
   <td class="case-prompt"><span class="prompt-text">Investigate high error rate on payment-service</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">8/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">err-03</td>
   <td class="case-prompt"><span class="prompt-text">What&#39;s causing the spike in 5xx errors since 2pm?</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">5/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">err-04</td>
   <td class="case-prompt"><span class="prompt-text">Debug: order-service throwing NullPointerException</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">7/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">err-05</td>
   <td class="case-prompt"><span class="prompt-text">Error rate jumped from 0.1% to 5% in the last hour</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">5/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">err-06</td>
   <td class="case-prompt"><span class="prompt-text">Multiple services showing increased error rates</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">6/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">err-07</td>
   <td class="case-prompt"><span class="prompt-text">Lambda function timing out on cold starts</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">7/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">err-08</td>
   <td class="case-prompt"><span class="prompt-text">DynamoDB throttling errors in checkout flow</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">7/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">err-09</td>
   <td class="case-prompt"><span class="prompt-text">API Gateway returning 403 forbidden intermittently</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">7/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">err-10</td>
   <td class="case-prompt"><span class="prompt-text">ECS task keeps crashing with OOM killer</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">6/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 </tbody>
 </table>
@@ -341,7 +350,7 @@
     <th>Prompt</th>
     <th>Shell</th>
     <th>Density</th>
-    <th title="Manifest validity">Mv</th><th title="Shell selection">Ss</th><th title="Widget relevance">Wr</th><th title="Widget count">Wc</th><th title="Density budget">Db</th><th title="Rendering">R</th>
+    <th title="Manifest validity">Mv</th><th title="Shell selection">Ss</th><th title="Widget relevance">Wr</th><th title="Widget count">Wc</th><th title="Density budget">Db</th><th title="Rendering">R</th><th title="HTML quality / a11y">Hq/a</th>
   </tr>
 </thead>
 <tbody>
@@ -350,70 +359,70 @@
   <td class="case-prompt"><span class="prompt-text">Why is my API slow?</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">6/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">lat-02</td>
   <td class="case-prompt"><span class="prompt-text">P99 latency increased from 200ms to 2s on user-service</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">5/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">lat-03</td>
   <td class="case-prompt"><span class="prompt-text">Trace analysis: slow checkout flow</span></td>
   <td class="case-shell"><span class="shell-pill shell-single-focus">single-focus</span></td>
   <td class="case-density"><span class="muted">4/6</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">lat-04</td>
   <td class="case-prompt"><span class="prompt-text">Which downstream dependency is causing latency?</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">4/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">lat-05</td>
   <td class="case-prompt"><span class="prompt-text">Compare latency before and after deployment</span></td>
   <td class="case-shell"><span class="shell-pill shell-dashboard">dashboard</span></td>
   <td class="case-density"><span class="muted">5/10</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">lat-06</td>
   <td class="case-prompt"><span class="prompt-text">Database query taking 30 seconds</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">6/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">lat-07</td>
   <td class="case-prompt"><span class="prompt-text">Cold start latency on Lambda functions</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">6/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">lat-08</td>
   <td class="case-prompt"><span class="prompt-text">Cross-region latency between us-east-1 and eu-west-1</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">5/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">lat-09</td>
   <td class="case-prompt"><span class="prompt-text">API response time degraded after scaling event</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">6/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">lat-10</td>
   <td class="case-prompt"><span class="prompt-text">Identify bottleneck in microservice chain</span></td>
   <td class="case-shell"><span class="shell-pill shell-single-focus">single-focus</span></td>
   <td class="case-density"><span class="muted">4/6</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 </tbody>
 </table>
@@ -426,7 +435,7 @@
     <th>Prompt</th>
     <th>Shell</th>
     <th>Density</th>
-    <th title="Manifest validity">Mv</th><th title="Shell selection">Ss</th><th title="Widget relevance">Wr</th><th title="Widget count">Wc</th><th title="Density budget">Db</th><th title="Rendering">R</th>
+    <th title="Manifest validity">Mv</th><th title="Shell selection">Ss</th><th title="Widget relevance">Wr</th><th title="Widget count">Wc</th><th title="Density budget">Db</th><th title="Rendering">R</th><th title="HTML quality / a11y">Hq/a</th>
   </tr>
 </thead>
 <tbody>
@@ -435,70 +444,70 @@
   <td class="case-prompt"><span class="prompt-text">Show me SLO compliance for all services</span></td>
   <td class="case-shell"><span class="shell-pill shell-dashboard">dashboard</span></td>
   <td class="case-density"><span class="muted">6/10</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">slo-02</td>
   <td class="case-prompt"><span class="prompt-text">Which SLOs are at risk of breaching?</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">4/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">slo-03</td>
   <td class="case-prompt"><span class="prompt-text">Error budget status for payment-service</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">6/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">slo-04</td>
   <td class="case-prompt"><span class="prompt-text">Service health overview for production</span></td>
   <td class="case-shell"><span class="shell-pill shell-dashboard">dashboard</span></td>
   <td class="case-density"><span class="muted">6/10</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">slo-05</td>
   <td class="case-prompt"><span class="prompt-text">SLO breach on availability target for auth-service</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">8/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">slo-06</td>
   <td class="case-prompt"><span class="prompt-text">Monthly SLO compliance report</span></td>
   <td class="case-shell"><span class="shell-pill shell-dashboard">dashboard</span></td>
   <td class="case-density"><span class="muted">5/10</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">slo-07</td>
   <td class="case-prompt"><span class="prompt-text">Which services have the worst error rates?</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">4/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">slo-08</td>
   <td class="case-prompt"><span class="prompt-text">Dashboard: current state of all production services</span></td>
   <td class="case-shell"><span class="shell-pill shell-dashboard">dashboard</span></td>
   <td class="case-density"><span class="muted">6/10</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">slo-09</td>
   <td class="case-prompt"><span class="prompt-text">How much error budget do we have left this quarter?</span></td>
   <td class="case-shell"><span class="shell-pill shell-single-focus">single-focus</span></td>
   <td class="case-density"><span class="muted">2/6</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">slo-10</td>
   <td class="case-prompt"><span class="prompt-text">Service health card for order-processing</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">6/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 </tbody>
 </table>
@@ -511,7 +520,7 @@
     <th>Prompt</th>
     <th>Shell</th>
     <th>Density</th>
-    <th title="Manifest validity">Mv</th><th title="Shell selection">Ss</th><th title="Widget relevance">Wr</th><th title="Widget count">Wc</th><th title="Density budget">Db</th><th title="Rendering">R</th>
+    <th title="Manifest validity">Mv</th><th title="Shell selection">Ss</th><th title="Widget relevance">Wr</th><th title="Widget count">Wc</th><th title="Density budget">Db</th><th title="Rendering">R</th><th title="HTML quality / a11y">Hq/a</th>
   </tr>
 </thead>
 <tbody>
@@ -520,70 +529,70 @@
   <td class="case-prompt"><span class="prompt-text">Who modified the IAM policy yesterday?</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">4/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">ct-02</td>
   <td class="case-prompt"><span class="prompt-text">Show me CloudTrail events for the last 24 hours</span></td>
   <td class="case-shell"><span class="shell-pill shell-dashboard">dashboard</span></td>
   <td class="case-density"><span class="muted">4/10</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">ct-03</td>
   <td class="case-prompt"><span class="prompt-text">Security audit: unauthorized access attempts</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">5/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">ct-04</td>
   <td class="case-prompt"><span class="prompt-text">Track all S3 bucket policy changes this week</span></td>
   <td class="case-shell"><span class="shell-pill shell-dashboard">dashboard</span></td>
   <td class="case-density"><span class="muted">3/10</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">ct-05</td>
   <td class="case-prompt"><span class="prompt-text">Who deleted the production database?</span></td>
   <td class="case-shell"><span class="shell-pill shell-dashboard">dashboard</span></td>
   <td class="case-density"><span class="muted">3/10</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">ct-06</td>
   <td class="case-prompt"><span class="prompt-text">IAM role assumption events for admin role</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">5/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">ct-07</td>
   <td class="case-prompt"><span class="prompt-text">API calls from unknown IP addresses</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">5/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">ct-08</td>
   <td class="case-prompt"><span class="prompt-text">Configuration changes that could affect availability</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">5/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">ct-09</td>
   <td class="case-prompt"><span class="prompt-text">Audit trail for KMS key usage</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">6/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">ct-10</td>
   <td class="case-prompt"><span class="prompt-text">CloudTrail events around the time of the incident</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">5/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 </tbody>
 </table>
@@ -596,7 +605,7 @@
     <th>Prompt</th>
     <th>Shell</th>
     <th>Density</th>
-    <th title="Manifest validity">Mv</th><th title="Shell selection">Ss</th><th title="Widget relevance">Wr</th><th title="Widget count">Wc</th><th title="Density budget">Db</th><th title="Rendering">R</th>
+    <th title="Manifest validity">Mv</th><th title="Shell selection">Ss</th><th title="Widget relevance">Wr</th><th title="Widget count">Wc</th><th title="Density budget">Db</th><th title="Rendering">R</th><th title="HTML quality / a11y">Hq/a</th>
   </tr>
 </thead>
 <tbody>
@@ -605,84 +614,141 @@
   <td class="case-prompt"><span class="prompt-text">Something&#39;s wrong with the checkout flow</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">6/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">mix-02</td>
   <td class="case-prompt"><span class="prompt-text">Help me understand what happened during last night&#39;s outage</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">6/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">mix-03</td>
   <td class="case-prompt"><span class="prompt-text">Is my service healthy after the deployment?</span></td>
   <td class="case-shell"><span class="shell-pill shell-dashboard">dashboard</span></td>
   <td class="case-density"><span class="muted">5/10</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">mix-04</td>
   <td class="case-prompt"><span class="prompt-text">Root cause analysis: payment failures</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">7/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">mix-05</td>
   <td class="case-prompt"><span class="prompt-text">Compare service health before and after the release</span></td>
   <td class="case-shell"><span class="shell-pill shell-dashboard">dashboard</span></td>
   <td class="case-density"><span class="muted">5/10</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">mix-06</td>
   <td class="case-prompt"><span class="prompt-text">What changed in the last hour that could explain the errors?</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">5/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">mix-07</td>
   <td class="case-prompt"><span class="prompt-text">Full investigation: why did the page load time double?</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">5/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">mix-08</td>
   <td class="case-prompt"><span class="prompt-text">Correlate the CloudTrail changes with the error spike</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">5/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">mix-09</td>
   <td class="case-prompt"><span class="prompt-text">Give me the big picture on production health</span></td>
   <td class="case-shell"><span class="shell-pill shell-dashboard">dashboard</span></td>
   <td class="case-density"><span class="muted">6/10</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">mix-10</td>
   <td class="case-prompt"><span class="prompt-text">Triage: multiple alarms firing simultaneously</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">5/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">mix-11</td>
   <td class="case-prompt"><span class="prompt-text">Post-incident review: summarize what happened</span></td>
   <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
   <td class="case-density"><span class="muted">6/8</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 <tr>
   <td class="case-id">mix-12</td>
   <td class="case-prompt"><span class="prompt-text">Proactive check: anything concerning in the metrics?</span></td>
   <td class="case-shell"><span class="shell-pill shell-dashboard">dashboard</span></td>
   <td class="case-density"><span class="muted">5/10</span></td>
-  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+</tr>
+</tbody>
+</table>
+
+<h3>HTML quality / a11y / safety <span class="muted">— 6/6 all-dim pass</span></h3>
+<table class="case-table">
+<thead>
+  <tr>
+    <th>ID</th>
+    <th>Prompt</th>
+    <th>Shell</th>
+    <th>Density</th>
+    <th title="Manifest validity">Mv</th><th title="Shell selection">Ss</th><th title="Widget relevance">Wr</th><th title="Widget count">Wc</th><th title="Density budget">Db</th><th title="Rendering">R</th><th title="HTML quality / a11y">Hq/a</th>
+  </tr>
+</thead>
+<tbody>
+<tr>
+  <td class="case-id">qa-01</td>
+  <td class="case-prompt"><span class="prompt-text">[regression] Mixed status cells incl. degraded must color-code correctly</span></td>
+  <td class="case-shell"><span class="shell-pill shell-single-focus">single-focus</span></td>
+  <td class="case-density"><span class="muted">3/6</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+</tr>
+<tr>
+  <td class="case-id">qa-02</td>
+  <td class="case-prompt"><span class="prompt-text">[regression] Sortable table must announce sort state and be keyboard-focusable</span></td>
+  <td class="case-shell"><span class="shell-pill shell-single-focus">single-focus</span></td>
+  <td class="case-density"><span class="muted">3/6</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+</tr>
+<tr>
+  <td class="case-id">qa-03</td>
+  <td class="case-prompt"><span class="prompt-text">[regression] Trace span at the edge of total duration must not overflow the track</span></td>
+  <td class="case-shell"><span class="shell-pill shell-single-focus">single-focus</span></td>
+  <td class="case-density"><span class="muted">4/6</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+</tr>
+<tr>
+  <td class="case-id">qa-04</td>
+  <td class="case-prompt"><span class="prompt-text">[regression] HTML-shaped strings in titles and log lines must be escaped</span></td>
+  <td class="case-shell"><span class="shell-pill shell-single-focus">single-focus</span></td>
+  <td class="case-density"><span class="muted">3/6</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+</tr>
+<tr>
+  <td class="case-id">qa-05</td>
+  <td class="case-prompt"><span class="prompt-text">[regression] All target=_blank links must carry rel=noreferrer noopener</span></td>
+  <td class="case-shell"><span class="shell-pill shell-investigation">investigation</span></td>
+  <td class="case-density"><span class="muted">5/8</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
+</tr>
+<tr>
+  <td class="case-id">qa-06</td>
+  <td class="case-prompt"><span class="prompt-text">[regression] Artifact root must expose an accessible name for landmark navigation</span></td>
+  <td class="case-shell"><span class="shell-pill shell-single-focus">single-focus</span></td>
+  <td class="case-density"><span class="muted">1/6</span></td>
+  <td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td><td class="cell"><span class="dot pass" aria-label="pass">●</span></td>
 </tr>
 </tbody>
 </table>
