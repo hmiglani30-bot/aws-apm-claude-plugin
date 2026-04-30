@@ -105,6 +105,78 @@ guess. Show the candidates with their environments / ARNs and ask the user to pi
 before continuing. If the name is ambiguous and `list_services` returns zero matches,
 treat it as the "wrong region" case above.
 
+## App Signals Enablement for Lambda (ADOT Layer)
+
+To get App Signals data from a Lambda function, add the AWS Distro for OpenTelemetry
+(ADOT) Lambda layer. This instruments the function automatically — no code changes needed.
+
+### Required Lambda configuration
+
+1. **Add the ADOT Lambda layer** (AWS-managed, region-specific):
+   ```
+   arn:aws:lambda:<region>:901920570463:layer:aws-otel-python-amd64-ver-1-25-0:1
+   ```
+   Replace `<region>` with your deployment region. For other runtimes (Node.js, Java, .NET),
+   see https://aws-otel.github.io/docs/getting-started/lambda
+
+2. **Set environment variables** on the Lambda:
+   | Variable | Value | Purpose |
+   |----------|-------|---------|
+   | `AWS_LAMBDA_EXEC_WRAPPER` | `/opt/otel-handler` | Runs ADOT bootstrap before handler |
+   | `OTEL_SERVICE_NAME` | `<your-service-name>` | Name shown in App Signals console |
+   | `OTEL_PROPAGATORS` | `xray` | Trace context propagation format |
+   | `OTEL_TRACES_EXPORTER` | `otlp` | Export traces via ADOT collector |
+   | `OTEL_AWS_APPLICATION_SIGNALS_ENABLED` | `true` | Enable App Signals metric export |
+   | `OTEL_RESOURCE_ATTRIBUTES` | `service.name=<your-service-name>` | Resource identification |
+
+3. **Enable X-Ray active tracing** on the Lambda (`TracingConfig.Mode: Active`)
+
+4. **IAM permissions** — the Lambda execution role needs:
+   - `AWSXRayDaemonWriteAccess` (managed policy)
+   - `CloudWatchLambdaApplicationSignalsExecutionRolePolicy` (managed policy)
+
+### CloudFormation snippet
+
+```yaml
+MyFunction:
+  Type: AWS::Lambda::Function
+  Properties:
+    # ... your existing function config ...
+    Layers:
+      - !Sub 'arn:aws:lambda:${AWS::Region}:901920570463:layer:aws-otel-python-amd64-ver-1-25-0:1'
+    TracingConfig:
+      Mode: Active
+    Environment:
+      Variables:
+        AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-handler
+        OTEL_SERVICE_NAME: my-service-name
+        OTEL_PROPAGATORS: xray
+        OTEL_TRACES_EXPORTER: otlp
+        OTEL_AWS_APPLICATION_SIGNALS_ENABLED: 'true'
+        OTEL_RESOURCE_ATTRIBUTES: service.name=my-service-name
+```
+
+The Lambda execution role must include:
+```yaml
+ManagedPolicyArns:
+  - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+  - arn:aws:iam::aws:policy/CloudWatchLambdaApplicationSignalsExecutionRolePolicy
+```
+
+### Verification
+
+After deploying, invoke the Lambda a few times, then check:
+- **X-Ray traces**: should appear within 1-2 minutes
+- **App Signals service list**: `list_services` should return the service after 5-10 minutes
+- **App Signals console**: deep link to `#application-signals:services/<service-name>`
+
+If `list_services` returns empty after 10 minutes, verify:
+1. The ADOT layer ARN matches your region and runtime
+2. `AWS_LAMBDA_EXEC_WRAPPER` is set to `/opt/otel-handler`
+3. The Lambda role has both X-Ray and App Signals managed policies
+4. App Signals is enabled in the account (account-level setting)
+
 ## What this skill does NOT do
 
 - Does not write to `~/.aws/credentials` or `~/.aws/config` automatically.

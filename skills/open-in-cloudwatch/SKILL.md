@@ -92,6 +92,27 @@ https://<region>.console.aws.amazon.com/cloudwatch/home?region=<region>#containe
 https://<region>.console.aws.amazon.com/cloudwatch/home?region=<region>#database-insights:resource/<resource-id>
 ```
 
+### Application Signals — enablement / overview page
+```
+https://<region>.console.aws.amazon.com/cloudwatch/home?region=<region>#application-signals:
+```
+Use this when the user needs to enable App Signals for their account, or to see the
+top-level overview of all instrumented services.
+
+### Application Signals — service detail (parameterized)
+```
+https://<region>.console.aws.amazon.com/cloudwatch/home?region=<region>#application-signals:services/<service-name>
+```
+Substitutes `context.service` for `<service-name>`. Shows latency, error rate,
+throughput, operations, and dependencies for a single service.
+
+### Application Signals — SLO creation page
+```
+https://<region>.console.aws.amazon.com/cloudwatch/home?region=<region>#application-signals:slo/create
+```
+Deep link to the SLO creation wizard. Use when the plugin's guided SLO workflow
+needs to hand off to the console for the actual create action.
+
 ## Rendering rules
 
 - **Always include the time range** — never link to a "now" view; observability links go
