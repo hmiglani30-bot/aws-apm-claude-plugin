@@ -1,0 +1,9 @@
+{
+  "id": "investigation_with_actions",
+  "layout": "SpaceBetween + Divider",
+  "description": "Investigation results above, action forms below a visual divider. For workflows that diagnose then offer remediation.",
+  "slots": {
+    "diagnostic": { "maxComponents": 4, "allowedTypes": ["stat_card", "table", "chart", "timeline"] },
+    "actions": { "maxComponents": 2, "allowedTypes": ["action_form"] }
+  }
+}

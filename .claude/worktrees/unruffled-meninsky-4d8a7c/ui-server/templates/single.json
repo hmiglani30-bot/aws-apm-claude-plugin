@@ -1,0 +1,8 @@
+{
+  "id": "single",
+  "layout": "Container",
+  "description": "One component, full width. For focused answers (single metric, single table, single trace).",
+  "slots": {
+    "primary": { "maxComponents": 1, "allowedTypes": ["*"] }
+  }
+}

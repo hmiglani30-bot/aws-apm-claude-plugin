@@ -1,0 +1,9 @@
+{
+  "id": "compare",
+  "layout": "ColumnLayout + Header",
+  "description": "Before/after or A/B comparison layout. For deployment impact, config change analysis, time-range comparison.",
+  "slots": {
+    "before": { "maxComponents": 3, "allowedTypes": ["stat_card", "chart", "table"] },
+    "after": { "maxComponents": 3, "allowedTypes": ["stat_card", "chart", "table"] }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "dashboard",
+  "layout": "Grid + SpaceBetween",
+  "description": "Full dashboard with metric cards row, two side-by-side charts, and a detail table. For comprehensive service overviews.",
+  "slots": {
+    "cards": { "maxComponents": 6, "allowedTypes": ["stat_card"] },
+    "charts": { "maxComponents": 2, "allowedTypes": ["chart", "timeline"] },
+    "detail": { "maxComponents": 1, "allowedTypes": ["table", "log_viewer"] }
+  }
+}

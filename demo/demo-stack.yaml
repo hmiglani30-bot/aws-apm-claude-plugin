@@ -1,0 +1,514 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  AWS APM Claude Plugin — Zero-Cost Demo Stack
+  Deploys a sample "Pet Clinic API" with Lambda, API Gateway, App Signals (ADOT),
+  CloudWatch Alarms, SNS topic, and a dashboard. Everything stays within free tier.
+  Use with generate-load.sh to populate metrics, traces, and logs for plugin demos.
+
+# ============================================================================
+# PARAMETERS
+# ============================================================================
+Parameters:
+  ServiceName:
+    Type: String
+    Default: pet-clinic-api
+    Description: >
+      OTEL service name used by App Signals. This is the name that appears in
+      the Application Signals console and is referenced by plugin commands like
+      "investigate service pet-clinic-api".
+
+  AlertEmail:
+    Type: String
+    Default: ''
+    Description: >
+      Optional email for alarm notifications. Leave blank to skip subscription.
+      SNS topic is created either way so the plugin can list/describe it.
+
+Conditions:
+  HasAlertEmail: !Not [!Equals [!Ref AlertEmail, '']]
+
+# ============================================================================
+# RESOURCES
+# ============================================================================
+Resources:
+
+  # --------------------------------------------------------------------------
+  # IAM Role for Lambda
+  # --------------------------------------------------------------------------
+  # Why: Lambda needs basic execution permissions (CloudWatch Logs) plus
+  # X-Ray write access for App Signals / ADOT tracing.
+  PetClinicLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ServiceName}-lambda-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        # Basic execution — creates log group/stream, puts log events
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        # X-Ray daemon write — required for ADOT/App Signals trace export
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+        # CloudWatch Application Signals write — required for App Signals metrics
+        - arn:aws:iam::aws:policy/CloudWatchLambdaApplicationSignalsExecutionRolePolicy
+
+  # --------------------------------------------------------------------------
+  # Lambda Function — Pet Clinic API
+  # --------------------------------------------------------------------------
+  # Why: A real Lambda gives the plugin something to investigate. The function
+  # intentionally introduces random errors (~10%) and variable latency (50-500ms)
+  # so CloudWatch metrics, X-Ray traces, and logs have interesting distributions.
+  PetClinicFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref ServiceName
+      Runtime: python3.12
+      Handler: index.handler
+      Timeout: 30
+      MemorySize: 128
+      Role: !GetAtt PetClinicLambdaRole.Arn
+
+      # --- App Signals / ADOT Configuration ---
+      # The AWS-managed ADOT Lambda layer instruments the function automatically.
+      # AWS_LAMBDA_EXEC_WRAPPER tells Lambda to run the ADOT bootstrap script
+      # before the handler, which sets up OpenTelemetry auto-instrumentation.
+      Layers:
+        # AWS-managed ADOT Python layer — auto-instruments the Lambda
+        # This ARN works in us-east-1; for other regions see:
+        # https://aws-otel.github.io/docs/getting-started/lambda/lambda-python
+        - !Sub 'arn:aws:lambda:${AWS::Region}:901920570463:layer:aws-otel-python-amd64-ver-1-25-0:1'
+      TracingConfig:
+        Mode: Active  # Enables X-Ray active tracing
+      Environment:
+        Variables:
+          # ADOT wrapper — bootstraps OTel auto-instrumentation before handler runs
+          AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-handler
+          # Service name shown in App Signals console
+          OTEL_SERVICE_NAME: !Ref ServiceName
+          # Propagator config for trace context propagation
+          OTEL_PROPAGATORS: xray
+          # Exporter sends traces to X-Ray via the ADOT collector
+          OTEL_TRACES_EXPORTER: otlp
+          # Enable App Signals metrics export
+          OTEL_AWS_APPLICATION_SIGNALS_ENABLED: 'true'
+          # Resource attributes for better service identification
+          OTEL_RESOURCE_ATTRIBUTES: !Sub 'service.name=${ServiceName}'
+
+      # --- Inline function code ---
+      Code:
+        ZipFile: |
+          """
+          Pet Clinic API — Demo Lambda for AWS APM Claude Plugin
+
+          Three endpoints:
+            GET  /pets       — list all pets
+            GET  /pets/{id}  — get a single pet
+            POST /pets       — create a new pet
+
+          Behaviors for demo purposes:
+            - ~10% of requests raise an exception (generates error metrics)
+            - Random latency 50-500ms (generates interesting duration distributions)
+            - Structured JSON logging (lets Logs Insights queries work well)
+          """
+          import json
+          import random
+          import time
+          import logging
+          import os
+
+          logger = logging.getLogger()
+          logger.setLevel(logging.INFO)
+
+          # In-memory "database" — resets on cold start, which is fine for a demo
+          PETS_DB = [
+              {"id": 1, "name": "Buddy",    "species": "dog",    "age": 3, "owner": "Alice"},
+              {"id": 2, "name": "Whiskers", "species": "cat",    "age": 5, "owner": "Bob"},
+              {"id": 3, "name": "Goldie",   "species": "fish",   "age": 1, "owner": "Charlie"},
+              {"id": 4, "name": "Rex",      "species": "dog",    "age": 7, "owner": "Diana"},
+              {"id": 5, "name": "Mittens",  "species": "cat",    "age": 2, "owner": "Eve"},
+          ]
+          next_id = 6
+
+
+          def handler(event, context):
+              global next_id
+
+              method = event.get("requestContext", {}).get("http", {}).get("method", "GET")
+              path = event.get("rawPath", "/")
+
+              # --- Simulate variable latency (50-500ms) ---
+              latency_ms = random.randint(50, 500)
+              time.sleep(latency_ms / 1000.0)
+
+              # --- Simulate random errors (~10% of requests) ---
+              if random.random() < 0.10:
+                  error_msg = random.choice([
+                      "Database connection timeout",
+                      "Upstream service unavailable",
+                      "Internal consistency check failed",
+                      "Cache miss caused fallback failure",
+                  ])
+                  logger.error(json.dumps({
+                      "level": "ERROR",
+                      "message": error_msg,
+                      "path": path,
+                      "method": method,
+                      "latency_ms": latency_ms,
+                      "service": os.environ.get("OTEL_SERVICE_NAME", "unknown"),
+                  }))
+                  raise Exception(error_msg)
+
+              # --- Route handling ---
+              if method == "GET" and path == "/pets":
+                  body = {"pets": PETS_DB, "count": len(PETS_DB)}
+                  status = 200
+
+              elif method == "GET" and path.startswith("/pets/"):
+                  try:
+                      pet_id = int(path.split("/")[-1])
+                      pet = next((p for p in PETS_DB if p["id"] == pet_id), None)
+                      if pet:
+                          body = pet
+                          status = 200
+                      else:
+                          body = {"error": "Pet not found", "id": pet_id}
+                          status = 404
+                  except ValueError:
+                      body = {"error": "Invalid pet ID"}
+                      status = 400
+
+              elif method == "POST" and path == "/pets":
+                  try:
+                      request_body = json.loads(event.get("body", "{}"))
+                      new_pet = {
+                          "id": next_id,
+                          "name": request_body.get("name", "Unknown"),
+                          "species": request_body.get("species", "unknown"),
+                          "age": request_body.get("age", 0),
+                          "owner": request_body.get("owner", "Anonymous"),
+                      }
+                      PETS_DB.append(new_pet)
+                      next_id += 1
+                      body = new_pet
+                      status = 201
+                  except (json.JSONDecodeError, KeyError) as e:
+                      body = {"error": f"Invalid request body: {str(e)}"}
+                      status = 400
+
+              else:
+                  body = {"error": "Not found", "path": path, "method": method}
+                  status = 404
+
+              # --- Structured log entry ---
+              logger.info(json.dumps({
+                  "level": "INFO",
+                  "message": "Request processed",
+                  "path": path,
+                  "method": method,
+                  "status": status,
+                  "latency_ms": latency_ms,
+                  "service": os.environ.get("OTEL_SERVICE_NAME", "unknown"),
+              }))
+
+              return {
+                  "statusCode": status,
+                  "headers": {"Content-Type": "application/json"},
+                  "body": json.dumps(body),
+              }
+
+  # --------------------------------------------------------------------------
+  # API Gateway (HTTP API v2)
+  # --------------------------------------------------------------------------
+  # Why: Gives the Lambda a real HTTPS endpoint. HTTP API v2 is simpler, cheaper,
+  # and free-tier eligible (1M requests/month). The plugin can investigate the
+  # full request->Lambda->response path.
+  PetClinicApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub '${ServiceName}-api'
+      ProtocolType: HTTP
+      Description: HTTP API for Pet Clinic demo — routes to Lambda
+
+  # Default stage with auto-deploy — no manual deployment step needed
+  PetClinicApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref PetClinicApi
+      StageName: '$default'
+      AutoDeploy: true
+
+  # Lambda integration — proxy all requests to the function
+  PetClinicApiIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref PetClinicApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt PetClinicFunction.Arn
+      PayloadFormatVersion: '2.0'
+
+  # Catch-all route — sends every path/method to the Lambda
+  # The Lambda itself handles routing based on path and method
+  PetClinicApiRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref PetClinicApi
+      RouteKey: '$default'
+      Target: !Sub 'integrations/${PetClinicApiIntegration}'
+
+  # Permission for API Gateway to invoke the Lambda
+  PetClinicApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PetClinicFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PetClinicApi}/*'
+
+  # --------------------------------------------------------------------------
+  # SNS Topic — Alarm Notifications
+  # --------------------------------------------------------------------------
+  # Why: Alarms need an action target. The plugin can list SNS topics, describe
+  # alarm actions, and the user can subscribe their email for real notifications.
+  ApmDemoAlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: apm-demo-alerts
+      DisplayName: APM Demo Alerts
+
+  # Optional email subscription — only created if AlertEmail parameter is provided
+  ApmDemoAlertsSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasAlertEmail
+    Properties:
+      TopicArn: !Ref ApmDemoAlertsTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+
+  # --------------------------------------------------------------------------
+  # CloudWatch Alarms
+  # --------------------------------------------------------------------------
+  # Why: Alarms are a core plugin capability. These three cover the most common
+  # patterns: error rate, latency (p99), and throttling. The plugin can list,
+  # describe, and investigate each of these.
+
+  # Alarm 1: Error rate — fires when Lambda errors exceed 5 in 5 minutes
+  # Exercises: describe_alarms, get_metric_data, error investigation workflow
+  ErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ServiceName}-error-rate'
+      AlarmDescription: >
+        Fires when the pet-clinic-api Lambda has more than 5 errors in a 5-minute
+        window. Useful for testing the plugin's alarm investigation workflow.
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref PetClinicFunction
+      Statistic: Sum
+      Period: 300        # 5 minutes
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref ApmDemoAlertsTopic
+      OKActions:
+        - !Ref ApmDemoAlertsTopic
+
+  # Alarm 2: p99 Duration — fires when p99 latency exceeds 1000ms over 5 minutes
+  # Exercises: extended statistics, latency investigation, duration analysis
+  DurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ServiceName}-p99-duration'
+      AlarmDescription: >
+        Fires when p99 Lambda duration exceeds 1000ms over 5 minutes. Tests the
+        plugin's ability to investigate latency issues and analyze duration
+        distributions.
+      Namespace: AWS/Lambda
+      MetricName: Duration
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref PetClinicFunction
+      ExtendedStatistic: p99
+      Period: 300        # 5 minutes
+      EvaluationPeriods: 1
+      Threshold: 1000    # 1000ms
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref ApmDemoAlertsTopic
+
+  # Alarm 3: Throttles — fires on any throttle event (informational)
+  # Exercises: throttle detection, concurrency investigation
+  ThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ServiceName}-throttles'
+      AlarmDescription: >
+        Informational alarm — fires on any Lambda throttle event. Unlikely to
+        trigger in the demo but exercises the plugin's alarm listing and
+        description capabilities.
+      Namespace: AWS/Lambda
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref PetClinicFunction
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref ApmDemoAlertsTopic
+
+  # --------------------------------------------------------------------------
+  # CloudWatch Dashboard
+  # --------------------------------------------------------------------------
+  # Why: Dashboards are a plugin investigation target. The plugin can describe
+  # dashboard widgets, read metric data from them, and generate deep links.
+  PetClinicDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: pet-clinic-dashboard
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "text",
+              "x": 0, "y": 0, "width": 24, "height": 1,
+              "properties": {
+                "markdown": "# Pet Clinic API — Operational Dashboard\nAWS APM Claude Plugin demo environment. Use the plugin to investigate metrics shown here."
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0, "y": 1, "width": 8, "height": 6,
+              "properties": {
+                "title": "Invocations",
+                "metrics": [
+                  ["AWS/Lambda", "Invocations", "FunctionName", "${ServiceName}", {"stat": "Sum", "period": 60}]
+                ],
+                "view": "timeSeries",
+                "region": "${AWS::Region}",
+                "period": 60
+              }
+            },
+            {
+              "type": "metric",
+              "x": 8, "y": 1, "width": 8, "height": 6,
+              "properties": {
+                "title": "Errors",
+                "metrics": [
+                  ["AWS/Lambda", "Errors", "FunctionName", "${ServiceName}", {"stat": "Sum", "period": 60, "color": "#d62728"}]
+                ],
+                "view": "timeSeries",
+                "region": "${AWS::Region}",
+                "period": 60
+              }
+            },
+            {
+              "type": "metric",
+              "x": 16, "y": 1, "width": 8, "height": 6,
+              "properties": {
+                "title": "Duration (Avg / p99)",
+                "metrics": [
+                  ["AWS/Lambda", "Duration", "FunctionName", "${ServiceName}", {"stat": "Average", "period": 60, "label": "Avg"}],
+                  ["AWS/Lambda", "Duration", "FunctionName", "${ServiceName}", {"stat": "p99", "period": 60, "label": "p99", "color": "#d62728"}]
+                ],
+                "view": "timeSeries",
+                "region": "${AWS::Region}",
+                "period": 60
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0, "y": 7, "width": 8, "height": 6,
+              "properties": {
+                "title": "Error Rate (%)",
+                "metrics": [
+                  [{"expression": "100 * errors / invocations", "label": "Error %", "id": "error_rate"}],
+                  ["AWS/Lambda", "Errors", "FunctionName", "${ServiceName}", {"stat": "Sum", "period": 60, "id": "errors", "visible": false}],
+                  ["AWS/Lambda", "Invocations", "FunctionName", "${ServiceName}", {"stat": "Sum", "period": 60, "id": "invocations", "visible": false}]
+                ],
+                "view": "timeSeries",
+                "region": "${AWS::Region}",
+                "period": 60
+              }
+            },
+            {
+              "type": "metric",
+              "x": 8, "y": 7, "width": 8, "height": 6,
+              "properties": {
+                "title": "Concurrent Executions",
+                "metrics": [
+                  ["AWS/Lambda", "ConcurrentExecutions", "FunctionName", "${ServiceName}", {"stat": "Maximum", "period": 60}]
+                ],
+                "view": "timeSeries",
+                "region": "${AWS::Region}",
+                "period": 60
+              }
+            },
+            {
+              "type": "metric",
+              "x": 16, "y": 7, "width": 8, "height": 6,
+              "properties": {
+                "title": "Throttles",
+                "metrics": [
+                  ["AWS/Lambda", "Throttles", "FunctionName", "${ServiceName}", {"stat": "Sum", "period": 60, "color": "#ff7f0e"}]
+                ],
+                "view": "timeSeries",
+                "region": "${AWS::Region}",
+                "period": 60
+              }
+            }
+          ]
+        }
+
+# ============================================================================
+# OUTPUTS
+# ============================================================================
+# Why: Outputs give the user (and the load generator script) the URLs and ARNs
+# they need. The App Signals deep link lets them jump straight into the console.
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint — use this with generate-load.sh
+    Value: !GetAtt PetClinicApi.ApiEndpoint
+
+  LambdaArn:
+    Description: Lambda function ARN — reference for plugin commands
+    Value: !GetAtt PetClinicFunction.Arn
+
+  LambdaFunctionName:
+    Description: Lambda function name — use in plugin service investigations
+    Value: !Ref PetClinicFunction
+
+  SnsTopicArn:
+    Description: SNS topic ARN for alarm notifications
+    Value: !Ref ApmDemoAlertsTopic
+
+  DashboardUrl:
+    Description: CloudWatch Dashboard URL
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards/dashboard/${ServiceName}-dashboard'
+
+  AppSignalsServiceUrl:
+    Description: App Signals service detail page for pet-clinic-api
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#application-signals:services/${ServiceName}'
+
+  AppSignalsServiceMapUrl:
+    Description: App Signals service map — shows dependencies and traffic flow
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#application-signals:service-map'
+
+  XRayTracesUrl:
+    Description: X-Ray traces console — view distributed traces
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#xray:traces'
+
+  AlarmsUrl:
+    Description: CloudWatch Alarms console — view all demo alarms
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#alarmsV2:'
