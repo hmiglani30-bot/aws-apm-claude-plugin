@@ -39,6 +39,7 @@ EXPECTED_SKILLS = {
     "observability-gap-analysis",
     "alerting-design",
     "hybrid-renderer",
+    "widget-catalog",
 }
 
 EXPECTED_COMMANDS = {

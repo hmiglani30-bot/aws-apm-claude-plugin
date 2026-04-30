@@ -1,6 +1,6 @@
 {
   "name": "aws-apm",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Personal-prototype AWS APM investigation plugin for Claude Code and Cowork — SLO breach investigation, latency regression, error spike triage, CloudWatch alarm response, SLO compliance reporting, fleet health check, post-investigation self-validation, and persistent incident memory, with curated artifact components on top of AWS CloudWatch, Application Signals, and CloudTrail MCP servers. Not an official AWS or Anthropic product.",
   "author": {
     "name": "hmiglani30",
