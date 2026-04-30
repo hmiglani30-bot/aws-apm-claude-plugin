@@ -1,7 +1,7 @@
 # AWS Observability Claude Plugin
 
 [![tests](https://github.com/hmiglani30/aws-apm-claude-plugin/actions/workflows/tests.yml/badge.svg)](https://github.com/hmiglani30/aws-apm-claude-plugin/actions/workflows/tests.yml)
-[![version](https://img.shields.io/badge/version-0.2.1-blue)](.claude-plugin/plugin.json)
+[![version](https://img.shields.io/badge/version-0.3.0-blue)](.claude-plugin/plugin.json)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Cowork](https://img.shields.io/badge/Cowork-compatible-teal)](https://www.anthropic.com/news/cowork)
 
@@ -10,11 +10,18 @@
 > X-Ray, CloudWatch, and CloudTrail. Encodes a fixed multi-phase workflow,
 > hypothesis-with-evidence outputs, post-investigation self-validation, and
 > persistent incident memory on top of the four AWS-maintained MCP servers.
+> Investigations render as **interactive MCP-UI widgets** built on the
+> **Cloudscape Design System**, with support for **write actions** (alarm
+> creation, resource tagging) gated by a 5-tier safety model.
 
 Docs: [ARCHITECTURE](ARCHITECTURE.md) ·
 [MCP-TOOL-CONTRACTS](MCP-TOOL-CONTRACTS.md) ·
 [ACTION-SAFETY-MODEL](ACTION-SAFETY-MODEL.md) ·
-[SECURITY](SECURITY.md)
+[SECURITY](SECURITY.md) ·
+[WRITE-ACTION-WIDGETS](WRITE-ACTION-WIDGETS.md) ·
+[QUICK-APP-PLAN](QUICK-APP-PLAN.md) ·
+[eval-analysis.pdf](eval-analysis.pdf) ·
+[template-design-analysis.pdf](template-design-analysis.pdf)
 
 ## Who this is for
 
@@ -34,7 +41,7 @@ AWS APM telemetry. The plugin is opinionated about *how* to investigate them
 (see [Workflow phases](#workflow-phases)) so the result is the same shape
 regardless of who runs it.
 
-### Not the right tool for…
+### Not the right tool for...
 
 - **Pure billing investigations.** Cost Explorer + the AWS Cost MCP
   server are a better fit.
@@ -62,17 +69,103 @@ This plugin is the **investigation method** layered on top:
 
 | Concern | Without plugin (raw MCP) | With this plugin |
 |---|---|---|
-| **Workflow** | Model invents one each time | Fixed Phase 1–6: classify → contributors → evidence (metric/log/trace) → correlate changes → rank hypotheses → follow dependencies |
+| **Workflow** | Model invents one each time | Fixed Phase 1-6: classify → contributors → evidence (metric/log/trace) → correlate changes → rank hypotheses → follow dependencies |
 | **Time window** | Inconsistent across calls | Single window computed once, propagated to every phase ([invariant](ARCHITECTURE.md#time-window-propagation-invariant)) |
-| **Output shape** | Free-form prose | Tier 3 artifacts with metadata footer (source metric, queries, MCP calls, confidence) |
+| **Output shape** | Free-form prose | MCP-UI widgets with Cloudscape components, consistent visual grammar, metadata footer |
+| **Visual rendering** | Plain text or ad-hoc HTML | 9 widget types, 7 templates, deterministic renderer via MCP-UI protocol |
+| **Write actions** | Trust IAM alone | `action_form` widget with 5-tier safety model and PreToolUse hook gating |
 | **Correctness gate** | Trust the model | `investigation-validator` 6-check self-audit before output |
 | **Recurrence detection** | Lost between sessions | `incident-memory` flags "we saw this on this service 3 days ago" |
-| **Write safety** | Trust IAM alone | PreToolUse hook gates every write verb regardless of model intent |
 | **Console hand-off** | Free-form URLs (often wrong) | `open-in-cloudwatch` skill builds deep links with service / operation / window / filters preserved |
 
 If you have AWS APM telemetry and want an agent that follows the same
 investigation playbook every time and shows its work, that's what this
 plugin is.
+
+## Visual Intelligence Layer
+
+Investigations render as structured MCP-UI manifests composed of widgets and
+templates. The deterministic renderer converts manifests into interactive HTML
+using the **Cloudscape Design System** for visual consistency with the AWS
+console.
+
+### 9 Widget Types
+
+| Widget | Cloudscape Component | Purpose |
+|---|---|---|
+| `stat_card` | `Container` + `StatusIndicator` + `Badge` | Single KPI tile with trend, sparkline, and status |
+| `table` | `Table` with sorting/filtering | Sortable tabular data (alarms, services, operations, contributors) |
+| `chart` | Time-series line/area | Metric time-series with baseline overlay |
+| `timeline` | Vertical event list | Ordered events (deploys, config changes, alarm transitions) |
+| `trace_waterfall` | Custom SVG | Distributed trace visualization with span-level detail |
+| `log_viewer` | Severity-colored entries | Log lines with level coloring and pattern highlighting |
+| `change_event_list` | Change cards | Deployment and config change events from CloudTrail |
+| `sparkline` | Inline mini chart | Compact inline trend for embedding in stat cards or tables |
+| `action_form` | `Form` + `Input` + `Button` | Interactive write-action forms (Tier 4 safety) |
+
+### 7 Templates
+
+Templates control slot layout — which widgets go where in the rendered view.
+
+| Template | Use case | Typical command |
+|---|---|---|
+| `focus` | Single-widget deep dive | `/cw-investigate-latency` |
+| `investigate` | Multi-evidence investigation | `/cw-investigate-slo` |
+| `overview` | Fleet-level summary | `/cw-health-check` |
+| `status` | Alarm/SLO status board | `/cw-slo-report` |
+| `compare` | Side-by-side metric comparison | Regression analysis |
+| `dashboard` | Multi-section grid | `/cw-trail-view` |
+| `investigation_with_actions` | Investigation + write-action forms | Alarm response with remediation |
+
+### Widget Catalog Skill
+
+The `widget-catalog` skill is a master reference loaded whenever the LLM must
+choose which widgets to place in a manifest, which template to select, or how
+to map MCP tool output to visual components. It includes:
+
+- Widget registry with data shapes, density costs, and usage rules
+- Template selection matrix and command-to-template defaults
+- Query pattern decision tree for 25+ example queries
+- MCP tool-to-widget mapping (which tool output feeds which widget)
+
+### Color System
+
+- **16-color visualization palette** for chart series, categorical data
+- **Status colors**: healthy (green), degraded (yellow), warning (orange), unhealthy (red), neutral (grey)
+- **Semantic tokens** aligned with Cloudscape design tokens for light/dark mode
+
+## Interactive Write Actions
+
+The plugin supports interactive write actions through the `action_form` widget
+type, enabling users to execute Tier 4 operations directly from investigation
+artifacts.
+
+### Supported Actions (v1)
+
+| Action | MCP Tool | Use case |
+|---|---|---|
+| **Create Metric Alarm** | `PutMetricAlarm` | Create the alarm recommended by `alerting-design` |
+| **Tag Resource** | `TagResource` | Tag resources for ownership, cost allocation, investigation notes |
+
+### 5-Tier Safety Model
+
+| Tier | Classification | Behavior |
+|---|---|---|
+| 1 | Read-only | Pass through — no gating |
+| 2 | Suggested | Plugin recommends; user executes manually |
+| 3 | Console-deep-linked | Plugin builds an AWS console URL; user clicks through |
+| 4 | MCP-executable with approval | `action_form` renders; PreToolUse hook requires explicit `CONFIRM` in chat |
+| 5 | Disallowed | Console-only fallback; never executed via MCP (deletes, IAM, billing) |
+
+### How It Works
+
+1. Investigation identifies a remediation (e.g., "create an alarm for this metric")
+2. `action_form` widget renders in the `investigation_with_actions` template
+3. User reviews pre-filled form fields (metric, threshold, period, etc.)
+4. PreToolUse hook intercepts the write call and presents a structured approval block
+5. User types `CONFIRM` in chat to execute, or uses the console deep link as fallback
+
+Full spec in [WRITE-ACTION-WIDGETS.md](WRITE-ACTION-WIDGETS.md).
 
 ## Product tenets
 
@@ -85,8 +178,9 @@ shapes are all consequences of these.
    does not cache, summarize-then-discard, or interpret without a citation.
    See [ARCHITECTURE.md](ARCHITECTURE.md#architectural-principle).
 2. **Read-only by default.** The plugin's investigations need zero write
-   permissions. When remediation is required, the plugin deep-links to the
-   AWS console rather than executing. See
+   permissions. When remediation is required, Tier 4 `action_form` widgets
+   offer MCP-executable writes with explicit approval; Tier 5 actions
+   deep-link to the AWS console. See
    [ACTION-SAFETY-MODEL.md](ACTION-SAFETY-MODEL.md).
 3. **Same shape every time.** A 6-check self-audit (`investigation-validator`)
    runs as the last step of every workflow. Metadata footer present. Every
@@ -141,7 +235,7 @@ PR — is **roadmap**:
 | `/cw-suggest-fix <hypothesis>` | Given a Top Suspected Cause, draft a code change |
 | `/cw-explain-this-span <span-id>` | Annotate a span with what its source-of-truth code does |
 
-These are intentionally not in v0.2.x — they require source-tree integration
+These are intentionally not in v0.3.x — they require source-tree integration
 the SRE workflows don't. Today, expect this plugin to be **strong on the SRE
 side and partial on the developer side**.
 
@@ -151,15 +245,15 @@ This is a focused tool, not a category replacement.
 
 | Adjacent thing | What it is | How this plugin differs |
 |---|---|---|
-| **AWS APM MCP servers alone** | Tools for an agent to call AWS APIs | This plugin adds the *investigation method* — workflow phases, hypothesis ranking, validator, memory, artifacts |
+| **AWS APM MCP servers alone** | Tools for an agent to call AWS APIs | This plugin adds the *investigation method* — workflow phases, hypothesis ranking, validator, memory, MCP-UI visual layer |
 | **Datadog / Honeycomb / New Relic incident agents** | Vendor-built agents for their APM platforms | Different platform. Use the right plugin for your APM. This is the AWS Application Signals one |
-| **General agent with AWS access** | An agent + your AWS CLI credentials | Same data, no method, no safety hooks, no artifact shape, no memory. You can reproduce *parts* of this plugin in a long prompt; you can't reproduce the validator or the Tier 3 visual grammar |
+| **General agent with AWS access** | An agent + your AWS CLI credentials | Same data, no method, no safety hooks, no artifact shape, no memory. You can reproduce *parts* of this plugin in a long prompt; you can't reproduce the validator or the Cloudscape visual grammar |
 | **AWS Bedrock Agents for Application Signals** | Hosted agent framework | Different surface, different deployment. This plugin runs locally with your existing agent runtime |
 | **PagerDuty AIOps / Incident.io copilots** | Workflow-attached AI on top of incident tooling | Adjacent — those start from an incident; this starts from a service or alert and produces evidence the incident channel can use |
 
 The plugin's wedge is the combination: **AWS Application Signals + portable
-plugin surface + opinionated investigation method**. If any of those three
-doesn't fit your stack, look elsewhere.
+plugin surface + opinionated investigation method + Cloudscape visual layer**.
+If any of those doesn't fit your stack, look elsewhere.
 
 ## What you get
 
@@ -167,7 +261,7 @@ doesn't fit your stack, look elsewhere.
 
 The model invokes these based on what the user describes — no command needed.
 
-| Skill | Triggers when… |
+| Skill | Triggers when... |
 |---|---|
 | `slo-breach-investigation` | An Application Signals SLO is breaching (fast or slow burn) |
 | `latency-regression` | A service or operation got slower than baseline |
@@ -177,7 +271,7 @@ The model invokes these based on what the user describes — no command needed.
 | `observability-gap-analysis` | "audit my code for logging", "missing instrumentation", "is my service observable" — scans a codebase for logging / metrics / tracing / error-handling / health-check gaps |
 | `alerting-design` | "what alarms should I have", "audit alarms", "alarm fatigue" — inventories existing alarms and recommends a per-service alerting plan |
 
-### Slash commands (user-invoked)
+### Slash commands (12)
 
 | Command | What it does |
 |---|---|
@@ -194,23 +288,33 @@ The model invokes these based on what the user describes — no command needed.
 | `/cw-doctor` | End-to-end diagnostic: MCP servers, AWS identity, region, Application Signals, logs, traces, CloudTrail |
 | `/cw-verify-recovery <service>` | Verify a service has recovered after a mitigation (SLO burn stopped, p99 returned, errors normalized, alarms back to OK) |
 
+### Skills (20 total)
+
+| Category | Skills |
+|---|---|
+| **Workflow** | `slo-breach-investigation`, `latency-regression`, `error-spike-triage`, `alarm-response`, `slo-compliance-report`, `observability-gap-analysis`, `alerting-design` |
+| **Artifact rendering** | `slo-breach-explainer`, `trace-waterfall-summary`, `service-health-card`, `top-suspected-cause`, `hybrid-renderer` |
+| **Visual intelligence** | `widget-catalog` |
+| **Quality + safety** | `investigation-validator`, `incident-memory` |
+| **Utilities** | `open-in-cloudwatch`, `service-ownership`, `trace-to-code`, `copy-to-incident`, `aws-apm-setup` |
+
 ### Tier 3 artifact components (consistent visual grammar)
 
 Every investigation produces the same canonical shape, with a **metadata footer**
 (source metric, time range, queries, MCP tools called, confidence) so you can
 verify the model's reasoning before acting.
 
-- 🚨 **SLO Breach Explainer** — burn rate, error budget, impacted operations, correlated deploys, ranked hypotheses
-- ⏱️ **Trace Waterfall Summary** — top slow spans by self-time, dependency contribution, span-to-code, Mermaid gantt
-- 🟢 **Service Health Card** — RED metrics (5m + 24h baseline), SLO status, top dependencies, recent CloudTrail changes
-- 🔍 **Top Suspected Cause** — ranked hypotheses with evidence cards (metric / log / trace / deploy), confidence, falsifiable next step
-- 📋 **Investigation Summary** — wrapper report for `slo-breach-investigation`, `latency-regression`, `error-spike-triage`: verdict callout, ranked hypotheses, evidence cards
-- 🩺 **Observability Gap Report** — per-file findings on logging / metrics / tracing / error-handling / health-check coverage, ranked by severity, with language-specific fix snippets
-- 🔔 **Alerting Plan** — existing-alarm inventory, noise audit, per-service coverage matrix, recommended alarms with thresholds and IaC snippets, composite-alarm and anomaly-detection candidates
-- 🔗 **Open in CloudWatch** — deep links into the AWS console with service / operation / time range / filters preserved
+- **SLO Breach Explainer** — burn rate, error budget, impacted operations, correlated deploys, ranked hypotheses
+- **Trace Waterfall Summary** — top slow spans by self-time, dependency contribution, span-to-code, Mermaid gantt
+- **Service Health Card** — RED metrics (5m + 24h baseline), SLO status, top dependencies, recent CloudTrail changes
+- **Top Suspected Cause** — ranked hypotheses with evidence cards (metric / log / trace / deploy), confidence, falsifiable next step
+- **Investigation Summary** — wrapper report for `slo-breach-investigation`, `latency-regression`, `error-spike-triage`: verdict callout, ranked hypotheses, evidence cards
+- **Observability Gap Report** — per-file findings on logging / metrics / tracing / error-handling / health-check coverage, ranked by severity, with language-specific fix snippets
+- **Alerting Plan** — existing-alarm inventory, noise audit, per-service coverage matrix, recommended alarms with thresholds and IaC snippets, composite-alarm and anomaly-detection candidates
+- **Open in CloudWatch** — deep links into the AWS console with service / operation / time range / filters preserved
 
-Tier 3 components render as rich **HTML artifacts** in Cowork (sparklines,
-waterfall SVGs, Cloudscape design tokens) and as Markdown elsewhere.
+Artifacts render as interactive **MCP-UI widgets** with Cloudscape components
+in Cowork and as Markdown elsewhere.
 
 ### Quality + safety primitives
 
@@ -231,6 +335,64 @@ waterfall SVGs, Cloudscape design tokens) and as Markdown elsewhere.
   through unmodified. See [ACTION-SAFETY-MODEL.md](ACTION-SAFETY-MODEL.md)
   for the full 5-tier model.
 
+## Demo Environment
+
+A zero-cost demo stack exercises every capability of the plugin without
+requiring an existing production AWS environment.
+
+### What it deploys
+
+- **Lambda function** (`pet-clinic-api`) with Python 3.12 and ADOT instrumentation layer
+- **API Gateway** (HTTP API) as the public endpoint
+- **CloudWatch Alarms** (3) for error rate, latency, and throttling
+- **CloudWatch Dashboard** with invocation, error, and duration graphs
+- **SNS Topic** for alarm notifications (optional email subscription)
+- **X-Ray tracing** via ADOT for distributed trace collection
+- **Application Signals** integration for service map and SLO support
+
+### Quick start
+
+```bash
+# Deploy the stack
+aws cloudformation deploy \
+  --template-file demo/demo-stack.yaml \
+  --stack-name apm-demo \
+  --capabilities CAPABILITY_IAM
+
+# Generate load (~10% error rate by design)
+./demo/generate-load.sh $(aws cloudformation describe-stacks \
+  --stack-name apm-demo \
+  --query 'Stacks[0].Outputs[?OutputKey==`ApiUrl`].OutputValue' \
+  --output text)
+
+# Tear down when done
+aws cloudformation delete-stack --stack-name apm-demo
+```
+
+See [demo/README.md](demo/README.md) for full instructions, cost breakdown,
+and plugin commands to try.
+
+## Quick App Compatibility
+
+The same MCP servers and intelligence layer that power the Claude Code plugin
+can serve **Amazon Q Quick Apps** with minimal adaptation.
+
+| Concern | Claude Code Plugin | Amazon Q Quick App |
+|---|---|---|
+| **Transport** | Local stdio via `uvx` | Remote HTTP/SSE via action connectors |
+| **Intelligence layer** | Skills, commands, templates, safety model | Same prompts, same widget catalog |
+| **Rendering** | MCP-UI in Cowork side panel | Quick App native rendering |
+| **Filesystem access** | Full (for `obs-gaps`, `trace-to-code`) | None — 3 skills are plugin-only |
+
+**~80% reuse**: 14 of 20 skills work identically in both hosts. 3 skills
+(`aws-apm-setup`, `observability-gap-analysis`, `trace-to-code`) require local
+filesystem access and are plugin-only. 2 skills (`incident-memory`,
+`service-ownership`) work with degraded capability in Quick Apps (need
+persistence adapter and additional MCP integrations respectively).
+
+See [QUICK-APP-PLAN.md](QUICK-APP-PLAN.md) for the full parity matrix and
+migration plan.
+
 ## Workflow phases
 
 Every workflow skill follows the same six phases. This is the investigation
@@ -240,10 +402,10 @@ method the plugin encodes.
 |---|---|
 | **0. Recurrence check** | `incident-memory` checks `.aws-apm/incidents/` for prior incidents on the same service. If a near-duplicate exists, the workflow surfaces the previous root cause and resolution before re-investigating |
 | **1. Classify** | Pull current SLO state / RED metrics / alarm state. Classify (fast burn vs. slow burn; regression magnitude; error rate vs. fault rate). Establishes the time window all later phases inherit |
-| **2. Top contributors** | Rank operations / dependencies by contribution to the breach. Pick 3–5 representative failed traces |
+| **2. Top contributors** | Rank operations / dependencies by contribution to the breach. Pick 3-5 representative failed traces |
 | **3. Evidence** | For each candidate, pull metric + log + trace evidence. Every fact in the artifact gets cited to one of these |
-| **4. Correlate changes** | Query CloudTrail for deploys / config changes / IAM changes / scaling events in the breach window ± 30m |
-| **5. Rank hypotheses** | 2–4 hypotheses with explicit evidence + confidence + falsifiable next step. Include "considered and ruled out" |
+| **4. Correlate changes** | Query CloudTrail for deploys / config changes / IAM changes / scaling events in the breach window +/- 30m |
+| **5. Rank hypotheses** | 2-4 hypotheses with explicit evidence + confidence + falsifiable next step. Include "considered and ruled out" |
 | **6. Follow dependencies** | If a downstream service is suspected, recurse one level (depth 2 cap) into its own RED metrics rather than stopping at the boundary |
 | **Validate + persist** | `investigation-validator` runs the 6-check self-audit; passing artifact is rendered; `incident-memory` writes the structured summary |
 
@@ -261,8 +423,8 @@ service names are illustrative.
 
 **SLO Breach Explainer (excerpt):**
 
-> 🚨 **checkout-availability — FAST BURN**
-> Burn rate: **14.2× budget** (1h window, threshold = 14.4×)
+> **checkout-availability — FAST BURN**
+> Burn rate: **14.2x budget** (1h window, threshold = 14.4x)
 > Error budget remaining: **18% (was 73% 90 min ago)**
 > Impacted operations: `POST /api/checkout` (94% of error volume), `POST /api/cart/checkout` (4%)
 >
@@ -290,7 +452,7 @@ service names are illustrative.
 
 **Trace Waterfall Summary (excerpt):**
 
-> ⏱️ **payment-api — p99 regression detected**
+> **payment-api — p99 regression detected**
 > Window: last 1h vs. 24h baseline
 > p99: **950ms (baseline 180ms; +427%)**
 > Affected operation: `POST /api/charge`
@@ -322,7 +484,7 @@ service names are illustrative.
 
 **Service Health Card + Top Suspected Cause (excerpt):**
 
-> 🟢 **orders-svc** — alarm `HighOrdersErrorRate` ALARM since 14:08 UTC
+> **orders-svc** — alarm `HighOrdersErrorRate` ALARM since 14:08 UTC
 > 5m: error rate **8.4%** (24h baseline: 0.3%)
 > p99: 410ms (baseline 380ms — not regressed)
 > Throughput: 2,100 rpm (baseline 2,050 rpm — not regressed)
@@ -431,8 +593,8 @@ Health Card** + ranked remediation hypotheses. See
 
 The model auto-activates `latency-regression`, runs the workflow, and produces
 a **Trace Waterfall Summary** + **Service Health Card** + **Top Suspected
-Cause** as an HTML artifact in the side panel (Cowork) or markdown elsewhere.
-See [Sample outputs § scenario 2](#scenario-2-payment-api-p99-regression-caused-by-dynamodb).
+Cause** rendered as MCP-UI widgets in the side panel (Cowork) or markdown
+elsewhere. See [Sample outputs § scenario 2](#scenario-2-payment-api-p99-regression-caused-by-dynamodb).
 
 ### "My SLO is burning"
 
@@ -469,10 +631,13 @@ rather than executing through MCP. Full classification in
 ```
 aws-apm-claude-plugin/
 ├── .claude-plugin/
-│   ├── plugin.json           # Plugin metadata (v0.2.1)
+│   ├── plugin.json           # Plugin metadata (v0.3.0)
 │   └── marketplace.json      # Marketplace manifest
+├── .claude/worktrees/*/ui-server/
+│   ├── components/widgets/   # Cloudscape widget components (StatCard, Table)
+│   └── templates/            # 7 layout templates + 3 shell layouts (10 JSON files)
 ├── .mcp.json                 # Wires the 4 awslabs/mcp servers via uvx
-├── skills/                   # 19 skills total
+├── skills/                   # 20 skills total
 │   ├── slo-breach-investigation/    # Workflow
 │   ├── latency-regression/          # Workflow
 │   ├── error-spike-triage/          # Workflow
@@ -491,6 +656,7 @@ aws-apm-claude-plugin/
 │   ├── trace-to-code/               # Map trace span to source code
 │   ├── copy-to-incident/            # Reformat artifact for Slack / postmortem / status page
 │   ├── hybrid-renderer/             # JSON manifest grammar for the deterministic HTML renderer
+│   ├── widget-catalog/              # Master catalog of widgets, templates, rendering rules
 │   └── aws-apm-setup/               # Prerequisite walkthrough
 ├── artifacts/                # 7 HTML artifact templates with {{PLACEHOLDERS}}
 │   ├── slo-breach-explainer.html
@@ -513,6 +679,10 @@ aws-apm-claude-plugin/
 │   ├── cw-set-context.md
 │   ├── cw-doctor.md
 │   └── cw-verify-recovery.md
+├── demo/                     # Demo environment
+│   ├── demo-stack.yaml       # CloudFormation template (Lambda + APIGW + ADOT + Alarms + SNS)
+│   ├── generate-load.sh      # Load generator script
+│   └── README.md             # Demo instructions and cost breakdown
 ├── hooks/
 │   ├── hooks.json            # PreToolUse confirmation gate on write actions
 │   └── scripts/confirm-write.sh
@@ -521,6 +691,10 @@ aws-apm-claude-plugin/
 ├── MCP-TOOL-CONTRACTS.md     # Required MCP tool contracts (input/output/failures/pagination/permissions)
 ├── ACTION-SAFETY-MODEL.md    # 5-tier action model (read-only → suggested → console-deep-linked → MCP-with-approval → disallowed)
 ├── SECURITY.md               # IAM policy examples, threat model, prompt-injection defenses, memory policy, integrity
+├── WRITE-ACTION-WIDGETS.md   # action_form widget spec, supported write actions, safety model
+├── QUICK-APP-PLAN.md         # Amazon Q Quick App parity plan and migration guide
+├── eval-analysis.pdf         # Evaluation analysis
+├── template-design-analysis.pdf # Template design analysis
 ├── LICENSE                   # MIT
 └── README.md                 # This file
 ```
@@ -556,22 +730,40 @@ The plugin uses a three-tier framing:
 | ------ | ---------------------------------------------------------------------- | ----------------------------- | ------ |
 | Tier 1 | Raw MCP tool calls — the model talks to the API directly               | Plain text                    | Already exists at [`awslabs/mcp`](https://github.com/awslabs/mcp) |
 | Tier 2 | MCP + skills + slash commands + safety hooks                           | Structured Markdown           | This plugin |
-| Tier 3 | Tier 2 + **curated HTML artifact templates** with consistent grammar   | Rich interactive HTML / SVG   | This plugin |
+| Tier 3 | Tier 2 + **MCP-UI widgets** with Cloudscape components + write actions | Rich interactive HTML / SVG   | This plugin |
 
-**Tier 3, concretely:** every artifact in [`artifacts/`](./artifacts) is an HTML
-file with `{{PLACEHOLDER}}` tokens (e.g. `{{SLO_NAME}}`, `{{BURN_RATE}}`,
-`{{TRACE_WATERFALL_SVG}}`). At runtime, the model fills in those placeholders from
-the MCP query results and the rendered artifact appears in Cowork's side panel
-as a styled HTML view — sparklines, waterfall SVGs, and Cloudscape design tokens
-for visual consistency with the AWS console. In Markdown-only surfaces, the same
-artifact renders as Markdown (no HTML runtime, but the same structure and "Open in
-CloudWatch" deep links).
+**Tier 3, concretely:** every investigation produces a JSON manifest specifying
+widgets, template, and data bindings. The deterministic renderer (`render.js`)
+converts this manifest into interactive HTML using Cloudscape components — stat
+cards, sortable tables, time-series charts, trace waterfalls, and action forms.
+The `widget-catalog` skill guides the LLM in selecting the right widgets and
+template for each query. In Markdown-only surfaces, the same manifest renders as
+structured Markdown with "Open in CloudWatch" deep links.
 
-That's what makes the plugin's investigations look the same every time, no
-matter which workflow skill produced them: the visual grammar is encoded in
-templates, not regenerated by the model on each run.
+## What's new in v0.3.0
 
-## What's new in v0.2.x
+- **MCP-UI visual layer** — 9 widget types and 7 templates rendered via the
+  MCP-UI protocol with Cloudscape Design System components. Replaces the
+  previous `{{PLACEHOLDER}}` HTML template approach with a structured
+  manifest-to-renderer pipeline.
+- **Widget catalog skill** — master reference for LLM-driven widget and
+  template selection, including data shapes, density costs, MCP tool-to-widget
+  mapping, and a query pattern decision tree.
+- **Interactive write actions** — `action_form` widget for `PutMetricAlarm`
+  and `TagResource`, gated by the 5-tier safety model with structured
+  approval blocks and PreToolUse hook enforcement.
+- **`investigation_with_actions` template** — combines investigation evidence
+  with actionable write forms in a single view.
+- **Demo environment** — CloudFormation one-click deploy with Lambda, API
+  Gateway, ADOT, CloudWatch Alarms, SNS, and a load generator script. See
+  [demo/README.md](demo/README.md).
+- **Quick App compatibility** — same MCP servers and intelligence layer serve
+  both Claude Code plugin (local stdio) and Amazon Q Quick Apps (remote
+  HTTP/SSE). ~80% skill reuse. See [QUICK-APP-PLAN.md](QUICK-APP-PLAN.md).
+- **Color system** — 16-color visualization palette, status colors, and
+  semantic tokens aligned with Cloudscape design tokens.
+
+### Previous (v0.2.x)
 
 - **Phase 6 cascading dependency follow** in all three core workflow skills —
   when a dependency is the suspected root, the workflow recurses one level
@@ -689,6 +881,14 @@ When adding a new MCP tool dependency, also update
   of every action the plugin can take or recommend.
 - [SECURITY.md](SECURITY.md) — IAM policy examples, threat model,
   prompt-injection defenses, integrity, vulnerability reporting.
+- [WRITE-ACTION-WIDGETS.md](WRITE-ACTION-WIDGETS.md) — `action_form` widget
+  spec, supported write actions (PutMetricAlarm, TagResource), safety model
+  integration.
+- [QUICK-APP-PLAN.md](QUICK-APP-PLAN.md) — Amazon Q Quick App functional
+  parity matrix and migration plan.
+- [eval-analysis.pdf](eval-analysis.pdf) — evaluation analysis.
+- [template-design-analysis.pdf](template-design-analysis.pdf) — template
+  design analysis.
 
 ## Acknowledgments
 
