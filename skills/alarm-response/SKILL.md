@@ -138,6 +138,30 @@ For the affected service (resolved in Phase 1):
 Follow the CloudTrail data source priority: Lake event data store → CloudWatch Logs
 integration → Lookup Events API. Do not rely solely on Lookup Events for windows >7 days.
 
+#### Phase 4a — Deploy-event correlation table
+
+For every deploy-class CloudTrail event in the window, compute:
+
+| Field | How to derive |
+|---|---|
+| `event_time` | `EventTime` from CloudTrail |
+| `delta_minutes` | `(alarm_state_transition_time − event_time)` in minutes (signed: negative = deploy *after* alarm) |
+| `target_resource` | `Resources[0].ARN` or the function/service name from `RequestParameters` |
+| `principal` | `UserIdentity.PrincipalId` or `UserIdentity.UserName` |
+| `correlation_strength` | **High**: deploy ≤5 min before alarm AND target matches affected resource. **Medium**: deploy ≤15 min before alarm OR target matches but ≤30 min. **Low**: deploy in window but >15 min away or target doesn't match. **None**: no deploy in window. |
+
+Render this as a "Deploy correlation" subsection in the final artifact (or
+inline as evidence on the "bad deploy" hypothesis). The correlation strength
+directly feeds the hypothesis confidence:
+
+- `High` correlation → "bad deploy" hypothesis confidence = High
+- `Medium` correlation → "bad deploy" hypothesis confidence = Medium
+- `Low` / `None` → "bad deploy" hypothesis is downgraded or omitted
+
+Always cite the exact deploy event (event_name + target ARN + delta_minutes)
+in the artifact's evidence card. Don't say "recent deploy" — say
+"`UpdateFunctionCode` on `pet-clinic-api` 4 min before alarm transition."
+
 ### Phase 5 — Rank hypotheses and recommend remediation
 
 Produce 2–4 ranked hypotheses (use `top-suspected-cause` skill for the artifact). Each

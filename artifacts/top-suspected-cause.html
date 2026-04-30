@@ -12,9 +12,13 @@
     HERO_CONFIDENCE (Low|Medium|High) + HERO_CONFIDENCE_CLASS,
     HERO_NEXT_ACTION,
     HYP{1..4}_CLAIM, _ELABORATION, _CONFIDENCE, _CONFIDENCE_CLASS,
+    HYP{1..4}_TAB_LABEL (short noun phrase shown on the tab button — e.g. "Bad deploy"),
     HYP{1..4}_EVIDENCE_CARDS (rendered as evidence-card divs — see schema below),
     HYP{1..4}_WHY_CONFIDENCE, HYP{1..4}_NEXT_STEP_TEXT, _QUERY, _LINK,
-    HYP3_BLOCK_OPTIONAL, HYP4_BLOCK_OPTIONAL,
+    HYP3_TAB_BTN_OPTIONAL, HYP4_TAB_BTN_OPTIONAL — extra tab buttons, full <button> markup
+      matching the HYP1/HYP2 buttons (or empty string when hypothesis is absent),
+    HYP3_PANEL_OPTIONAL, HYP4_PANEL_OPTIONAL — extra tab panels wrapping the hypothesis
+      blocks in <div class="hyp-tab-panel" id="hyp3"|"hyp4">…</div> (or empty string),
     RULED_OUT_ITEMS (always present; "None — all retained" if empty),
     SOURCE_MCP_SERVERS, TIME_RANGE_START, TIME_RANGE_END, MCP_TOOLS_LIST,
     HYP_TOTAL_CONSIDERED, HYP_RANKED_COUNT, HYP_RULED_OUT_COUNT.
@@ -63,7 +67,7 @@
     font-size: 14px;
     line-height: 1.5;
   }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 24px 96px 24px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 24px 16px 24px; }
   .header {
     display: flex;
     align-items: flex-start;
@@ -170,12 +174,68 @@
   }
   .data-unavailable .lbl { color: var(--status-warning); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-right: 8px; }
 
-  .hypothesis {
+  /* Tabs (UX-Cloudscape) — switch between ranked hypotheses without scrolling. */
+  .hyp-tabs {
     background: var(--bg-surface);
     border: 1px solid var(--border);
-    border-left: 4px solid var(--status-info);
     border-radius: 8px;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .hyp-tab-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-surface-2);
+  }
+  .hyp-tab-btn {
+    flex: 1 1 auto;
+    min-width: 140px;
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 3px solid transparent;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .hyp-tab-btn:last-child { border-right: none; }
+  .hyp-tab-btn:hover { color: var(--text-primary); background: rgba(83, 159, 229, 0.06); }
+  .hyp-tab-btn.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--link);
+    background: var(--bg-surface);
+  }
+  .hyp-tab-btn .tab-rank { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .hyp-tab-btn .tab-conf {
+    margin-left: auto;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .hyp-tab-btn .tab-conf.high { background: rgba(255, 93, 100, 0.18); color: var(--status-error); }
+  .hyp-tab-btn .tab-conf.medium { background: rgba(255, 165, 82, 0.18); color: var(--status-warning); }
+  .hyp-tab-btn .tab-conf.low { background: rgba(149, 165, 184, 0.15); color: var(--text-secondary); }
+  .hyp-tab-panel { display: none; }
+  .hyp-tab-panel.active { display: block; }
+
+  .hypothesis {
+    background: var(--bg-surface);
+    border: none;
+    border-left: 4px solid var(--status-info);
+    border-radius: 0;
+    margin-bottom: 0;
     overflow: hidden;
   }
   .hypothesis.high { border-left-color: var(--status-error); }
@@ -431,6 +491,26 @@
     </div>
   </div>
 
+  <!-- HYPOTHESIS TABS — switch between ranked hypotheses (UX: avoid the long-scroll
+       stack of 4 vertical blocks). Each tab corresponds to one hypothesis; tab labels
+       carry the rank, claim summary, and confidence badge so users can pick at a glance. -->
+  <div class="hyp-tabs">
+    <div class="hyp-tab-bar" role="tablist">
+      <button class="hyp-tab-btn active" data-tab="hyp1" role="tab" aria-selected="true">
+        <span class="tab-rank">#1</span>
+        <span>{{HYP1_TAB_LABEL}}</span>
+        <span class="tab-conf {{HYP1_CONFIDENCE_CLASS}}">{{HYP1_CONFIDENCE}}</span>
+      </button>
+      <button class="hyp-tab-btn" data-tab="hyp2" role="tab" aria-selected="false">
+        <span class="tab-rank">#2</span>
+        <span>{{HYP2_TAB_LABEL}}</span>
+        <span class="tab-conf {{HYP2_CONFIDENCE_CLASS}}">{{HYP2_CONFIDENCE}}</span>
+      </button>
+      {{HYP3_TAB_BTN_OPTIONAL}}
+      {{HYP4_TAB_BTN_OPTIONAL}}
+    </div>
+
+    <div class="hyp-tab-panel active" id="hyp1" role="tabpanel">
   <!-- HYPOTHESIS TEMPLATE — repeat 2–4 times. Set class on .hypothesis to high|medium|low. -->
   <div class="hypothesis {{HYP1_CONFIDENCE_CLASS}}">
     <div class="hyp-header">
@@ -531,7 +611,9 @@
       </div>
     </div>
   </div>
+    </div><!-- /hyp1 panel -->
 
+    <div class="hyp-tab-panel" id="hyp2" role="tabpanel">
   <div class="hypothesis {{HYP2_CONFIDENCE_CLASS}}">
     <div class="hyp-header">
       <div class="rank-claim">
@@ -558,9 +640,31 @@
       </div>
     </div>
   </div>
+    </div><!-- /hyp2 panel -->
 
-  {{HYP3_BLOCK_OPTIONAL}}
-  {{HYP4_BLOCK_OPTIONAL}}
+    {{HYP3_PANEL_OPTIONAL}}
+    {{HYP4_PANEL_OPTIONAL}}
+  </div><!-- /hyp-tabs -->
+
+  <script>
+    // Tabs — toggle the .active class on tab button + panel pairs. Inert if JS disabled
+    // (panels remain visible per their initial CSS state — the first panel is shown).
+    (function () {
+      var tabs = document.querySelectorAll('.hyp-tab-btn');
+      tabs.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var target = btn.getAttribute('data-tab');
+          tabs.forEach(function (b) {
+            b.classList.toggle('active', b === btn);
+            b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+          });
+          document.querySelectorAll('.hyp-tab-panel').forEach(function (p) {
+            p.classList.toggle('active', p.id === target);
+          });
+        });
+      });
+    })();
+  </script>
 
   <!-- Considered and ruled out — first-class section (UX4). Always present. -->
   <div class="ruled-out-section">

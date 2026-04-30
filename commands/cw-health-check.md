@@ -37,12 +37,46 @@ The user invoked this with: `$ARGUMENTS`
      and stop.
 
 4. For each service in parallel (cap at 10 concurrent), gather:
+   - **Application Signals service health** — call `get_service` (or
+     equivalent) to pull the service-level health summary, key attributes
+     (Lambda function, ECS service, EKS pod), and operation count. This is
+     the canonical "is App Signals seeing this service" check. If
+     `get_service` returns `ResourceNotFoundException` or empty key
+     attributes, mark the service as `Status unknown — App Signals
+     instrumentation incomplete or delayed` and proceed with the fallback
+     in step 4a.
    - **RED metrics** — current 5-min request rate, error rate, p50/p90/p99
-     latency.
-   - **24h baseline** — same metrics from the same 5-min window 24h ago.
+     latency, sourced from `AWS/ApplicationSignals` namespace via
+     `get_metric_data`.
+   - **X-Ray trace error rate** — call `query_sampled_traces` (or
+     `get_trace_summaries` if available) for the last 5 min on this
+     service's name, compute `error_traces / total_traces`. This corroborates
+     the App Signals error-rate metric and surfaces sampling-bias gaps. If
+     X-Ray returns 0 traces while App Signals shows non-zero requests,
+     surface "X-Ray sampling rate may be too low" as a footnote on the
+     card.
+   - **24h baseline** — same metrics (App Signals + X-Ray trace error rate)
+     from the same 5-min window 24h ago.
    - **SLO state** — every SLO configured on this service, with target,
-     current attainment, and state (Healthy / Warning / Breach).
+     current attainment, and state (Healthy / Warning / Breach). Sourced via
+     `list_slos` + `get_slo`.
    - **Verdict** — derived per the rules below.
+
+4a. **Fallback to raw CloudWatch namespaces** when App Signals data is sparse
+    or `get_service` returned empty. For each App-Signals-incomplete service
+    whose key attributes can be inferred (function name, API name, cluster
+    name), pull RED metrics from the underlying namespace:
+    - **Lambda** → `AWS/Lambda` with `FunctionName` dimension: `Invocations`,
+      `Errors`, `Duration` (p50, p99), `Throttles`, `ConcurrentExecutions`.
+    - **API Gateway** → `AWS/ApiGateway` with `ApiName` (or `ApiId`):
+      `Count`, `4XXError`, `5XXError`, `Latency` (p50, p99), `IntegrationLatency`.
+    - **ECS** → `AWS/ECS` with `ClusterName` + `ServiceName`: `CPUUtilization`,
+      `MemoryUtilization`, plus task-count via `RunningTaskCount`.
+    - **EKS / EC2 / RDS** → analogous namespace + dimension mapping (see
+      `MCP-TOOL-CONTRACTS.md`).
+
+    Mark the verdict's confidence as `Medium (App Signals fallback)` when this
+    path is used.
 
 5. Render the dashboard using the canonical layout below. Each service is
    one card; cards are stacked, sorted by verdict severity (Unhealthy →
@@ -120,11 +154,11 @@ column shows `—` and a footnote: "No SLOs configured."
 **Fleet summary:** <N> services · 🟢 <H> healthy · 🟡 <D> degraded · 🔴 <U> unhealthy
 
 ---
-**Source:** `awslabs.cloudwatch-applicationsignals-mcp-server`, `awslabs.cloudwatch-mcp-server`
+**Source:** `awslabs.cloudwatch-applicationsignals-mcp-server`, `awslabs.cloudwatch-mcp-server` (App Signals + X-Ray)
 **Time range:** last 5 min vs same window 24h ago
 **Region:** <region> · **Account:** <account>
-**MCP tools called:** `list_services`, `get_service`, `list_slos`, `get_slo`
-**Confidence:** High (live data, no derivation)
+**MCP tools called:** `list_services`, `get_service`, `list_slos`, `get_slo`, `query_sampled_traces`, `get_metric_data`
+**Confidence:** High (live data, no derivation) — capped at Medium when AWS/Lambda or AWS/ApiGateway namespace fallback was used
 ```
 
 ## Rendering rules

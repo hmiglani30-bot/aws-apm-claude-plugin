@@ -28,9 +28,28 @@ table.
 
 ## 1. Widget Registry
 
-Nine widget types are available. Each has a density cost (how much visual
+Nine widget types are defined. Seven are implemented in `renderer/widgets/`
+and ship today; two are planned. Each has a density cost (how much visual
 space it consumes), a Cloudscape component mapping, and rules for when to
 use or avoid it.
+
+### Implementation status
+
+| Widget | Status | Source file |
+|---|---|---|
+| `stat_card` | ✅ available | `renderer/widgets/stat_card.js` |
+| `table` | ✅ available | `renderer/widgets/table.js` |
+| `sparkline` | ✅ available | `renderer/widgets/sparkline.js` |
+| `timeline` | ✅ available | `renderer/widgets/timeline.js` |
+| `trace_waterfall` | ✅ available | `renderer/widgets/trace_waterfall.js` |
+| `log_viewer` | ✅ available | `renderer/widgets/log_viewer.js` |
+| `change_event_list` | ✅ available | `renderer/widgets/change_event_list.js` |
+| `chart` | 🚧 planned | not yet implemented — emit a `sparkline` or `stat_card` instead |
+| `action_form` | 🚧 planned | not yet implemented — use `open-in-cloudwatch` deep links instead |
+
+Skills MUST NOT emit `chart` or `action_form` widgets in manifests until the
+corresponding source files appear in `renderer/widgets/`. Use the listed
+fallback widgets in the meantime.
 
 ### 1.1 `stat_card` -- Single Metric KPI Tile
 
@@ -199,7 +218,7 @@ Column `kind` values and their rendering:
 
 | Property | Value |
 |---|---|
-| **Component** | Planned -- renders as a vertical event list with severity-colored dots |
+| **Component** | `timeline.js` -- renders as a vertical event list with severity-colored dots |
 | **Density** | 2 (medium) |
 | **Cloudscape parts** | `SpaceBetween`, `StatusIndicator`, `Box`, `Link` |
 
@@ -243,7 +262,7 @@ Column `kind` values and their rendering:
 
 | Property | Value |
 |---|---|
-| **Component** | Planned -- horizontal span bars, nested by depth |
+| **Component** | `trace_waterfall.js` -- horizontal span bars, nested by depth |
 | **Density** | 3 (high -- takes the most space) |
 | **Cloudscape parts** | Custom SVG/CSS within `Container` |
 
@@ -289,7 +308,7 @@ Column `kind` values and their rendering:
 
 | Property | Value |
 |---|---|
-| **Component** | Planned -- severity-colored log lines in a monospace container |
+| **Component** | `log_viewer.js` -- severity-colored log lines in a monospace container |
 | **Density** | 2 (medium) |
 | **Cloudscape parts** | `Container`, `Box`, custom CSS for severity coloring |
 
@@ -331,7 +350,7 @@ Column `kind` values and their rendering:
 
 | Property | Value |
 |---|---|
-| **Component** | Planned -- compact event list with kind-colored icons |
+| **Component** | `change_event_list.js` -- compact event list with kind-colored icons |
 | **Density** | 1 (low) |
 | **Cloudscape parts** | `SpaceBetween`, `Box`, `Badge`, `Link` |
 
@@ -382,7 +401,7 @@ Column `kind` values and their rendering:
 
 | Property | Value |
 |---|---|
-| **Component** | Planned -- standalone mini time-series with current/min/max |
+| **Component** | `sparkline.js` -- standalone mini time-series with current/min/max |
 | **Density** | 1 (low) |
 | **Cloudscape parts** | Custom SVG within `Container`, `Box` |
 

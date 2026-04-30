@@ -125,7 +125,7 @@ say so explicitly rather than omitting the line.
    - Sample 2 raw log lines per pattern
 3. Render as patterns first, raw second (this is the canonical AWS APM logs UX).
 
-Example Logs Insights query:
+Example Logs Insights query (structured JSON logs):
 ```
 fields @timestamp, @message, level, errorType, exception
 | filter level = "ERROR"
@@ -133,6 +133,41 @@ fields @timestamp, @message, level, errorType, exception
 | sort occurrences desc
 | limit 5
 ```
+
+**If logs are unstructured (e.g., Lambda using `print()`, plain stdout, or no JSON
+formatter), use these alternative queries:**
+
+Detect error lines in unstructured logs:
+```
+fields @timestamp, @message
+| filter @message like /(?i)(error|exception|traceback|fault|failed)/
+| sort @timestamp desc
+| limit 50
+```
+
+Cluster by exception class without structured fields (greedy regex on common shapes):
+```
+fields @timestamp, @message
+| parse @message /(?<exc>[A-Z]\w+(Error|Exception))/
+| filter ispresent(exc)
+| stats count() as occurrences by exc
+| sort occurrences desc
+| limit 5
+```
+
+Pull stack-trace samples from Python / Java / Node logs:
+```
+fields @timestamp, @message
+| filter @message like /Traceback|at \w+\.\w+\(|^\s+at /
+| sort @timestamp desc
+| limit 5
+```
+
+**Two-stage strategy:** always try the structured query first. If it returns 0 rows
+(or `errorType` is null in every row), fall back to the unstructured queries above.
+For Lambda functions specifically, the conventional log group is
+`/aws/lambda/<function-name>` — use this as a fallback if Application Signals does
+not surface a log group for the service.
 
 ### Phase 3 — Pull failing traces
 
