@@ -23,6 +23,18 @@ silently erode trust — missing metadata footers, hypotheses without cited
 evidence, deep links pointing at "now," confidence claims that don't match the
 evidence base.
 
+## Context provider
+
+This validation skill reads context fields to verify they appear in the artifact's metadata footer:
+
+- `context.region` -- must appear in metadata footer
+- `context.account` -- must appear in metadata footer
+- `context.time_window.start` / `.end` -- must be explicit ISO timestamps in the artifact, not relative ("last hour")
+
+## MCP tool dependencies
+
+None -- this skill validates investigation output. It does not call MCP tools.
+
 ## When this activates
 
 - As the **final step** of every investigation skill (`slo-breach-investigation`,

@@ -13,7 +13,7 @@ description: >
   or any request to reformat investigation findings into a target audience's
   expected shape.
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Copy-to-Incident
@@ -27,10 +27,18 @@ During a live incident, the on-call engineer types the same facts into:
 - an exec summary for the leadership thread.
 
 Each of those audiences expects a different shape, length, and tone. This
-skill takes the data from a completed investigation (typically the
-`investigation-summary` artifact, but also Service Health Card / SLO Breach
-Explainer / Top Suspected Cause) and emits all five formats at once,
-ready to paste.
+skill takes the data from a completed investigation and emits all five
+formats at once, ready to paste.
+
+## Context provider
+
+Read these fields from the context provider (ARCHITECTURE.md context shape):
+
+- `context.service` -- service name for all outputs
+- `context.region` -- AWS region
+- `context.account` -- AWS account ID
+- `context.time_window.start` / `.end` -- breach window for timeline
+- `context.environment` -- prod / staging / dev
 
 ## When this activates
 
@@ -38,281 +46,216 @@ ready to paste.
 - An incident is in progress and the user asks for "a Slack update" or "a
   customer update."
 - An incident has resolved and the user asks for the postmortem skeleton.
-- An exec or stakeholder has pinged the user and they need a one-screen
-  summary.
 
-This skill should be invoked at the **end** of the workflow skills
+This skill is invoked at the **end** of the workflow skills
 (`slo-breach-investigation`, `latency-regression`, `error-spike-triage`,
-`alarm-response`) when the user signals they want to share findings, OR
-explicitly after `/cw-verify-recovery` when writing the postmortem.
+`alarm-response`) when the user signals they want to share findings.
 
 ## Required inputs
 
-Reuses data from the most recent investigation artifact in the session.
-Specifically pulls:
+Read from the context provider (ARCHITECTURE.md context shape):
+- `context.service` -- service name
+- `context.region` -- AWS region
+- `context.account` -- AWS account ID
+- `context.time_window.start` / `.end` -- breach window
 
-- Service name, region, account
-- Verdict line (the one-liner above the artifact)
-- Timeline: breach start, mitigation time, recovery time (if available)
-- Top hypothesis + confidence
-- Customer impact estimate (from blast radius — see workflow skills)
-- Owner / on-call contact (from `service-ownership` skill)
-- Deep links (from `open-in-cloudwatch` skill)
+Read from the investigation artifact rendered in this session:
+- Verdict line (the one-liner above the artifact -- extract verbatim)
+- Top hypothesis claim + confidence (from Top Suspected Cause #1)
+- Blast radius section (callers, severity label, estimated failed requests)
+- Owner + suggested page (from service-ownership skill output)
+- Deep links (from open-in-cloudwatch skill output)
 
-If the data isn't available in session, ask the user which investigation
-artifact to use as the source. Do not fabricate facts.
+If ANY of these are missing, render the corresponding field as
+`<fill in: [field name]>` rather than omitting or fabricating. Explicitly
+tell the user which fields need manual completion.
+
+#### Example data extraction
+
+```
+From investigation artifact:
+  verdict = "5xx rate up 14x since 14:20 UTC on POST /checkout"
+  top_hypothesis = "bad deploy at 14:18 UTC"
+  confidence = "High"
+  blast_radius.severity = "SEV2"
+  blast_radius.failed_requests = "~1,200"
+  owner = "@example/checkout-team"
+  oncall = "jane.doe@example.com"
+```
+
+## MCP tool dependencies
+
+None -- this skill does not call MCP tools. It reads data from the
+investigation artifacts already rendered in the current session.
 
 ## Outputs (five formats)
 
-Render all five in a single response, each in its own collapsible block,
-with a one-click "Copy this" header so the user can grab the right
-format without scrolling.
+Render all five in a single response. Each block MUST be self-contained
+and copy-pasteable. Use clear delimiters between formats.
+
+### Output format specification
+
+Each format uses these exact delimiters:
+
+```
+---BEGIN SLACK UPDATE---
+<content>
+---END SLACK UPDATE---
+
+---BEGIN IC SUMMARY---
+<content>
+---END IC SUMMARY---
+
+---BEGIN CUSTOMER UPDATE---
+<content>
+---END CUSTOMER UPDATE---
+
+---BEGIN POSTMORTEM SKELETON---
+<content>
+---END POSTMORTEM SKELETON---
+
+---BEGIN EXEC SUMMARY---
+<content>
+---END EXEC SUMMARY---
+```
 
 ### 1. Slack incident channel update
 
 Audience: engineers in the incident channel. Density: high. Tone: terse,
-factual. Length: ≤6 lines.
+factual. Length: 6 lines or fewer.
 
-```
-🔴 [INC-1234] checkout-availability SLO breaching
-• Started: 14:18 UTC · ~8 min ago
-• Symptom: 5xx rate 14× baseline on POST /checkout
-• Top hypothesis: bad deploy at 14:18 UTC (High confidence)
-• Owner: @example/checkout-team · oncall: @jane.doe
-• Action: rolling back deploy, ETA 2 min
-🔗 SLO Breach Explainer · 🔗 Top Suspected Cause
-```
+**Required fields** (every Slack update MUST include all of these):
+- Line 1: verdict color emoji + INC ID + service name
+- Line 2: started time and elapsed
+- Line 3: one-line symptom description
+- Line 4: top hypothesis with confidence
+- Line 5: owner / on-call handle
+- Line 6: current action being taken + two deep links
 
-Always include:
-- The verdict color emoji + INC ID + service name on line 1
-- Started time and elapsed
-- One-line symptom description
-- Top hypothesis with confidence
-- Owner / on-call handle (from `service-ownership`)
-- Current action being taken
-- Two deep links — usually the primary artifact and the trace / metric
-
-Do NOT include:
-- Full hypothesis ranking (Slack readers don't scroll)
-- Metadata footer (link to the artifact instead)
-- Speculation about secondary causes
+**Do NOT include:** full hypothesis ranking, metadata footer, speculation.
 
 ### 2. Incident commander summary
 
-Audience: incident commander running the response. Density: medium.
-Tone: structured. Length: ~10 lines.
+Audience: IC running the response. Density: medium. Tone: structured.
+Length: approximately 10 lines.
 
-```
-[INC-1234] checkout-availability — IC summary
-
-Status: 🔴 Active · Severity: SEV2 (estimated)
-Started: 14:18 UTC · Duration: 8 min
-
-What's happening:
-  - Symptom: 5xx rate up 14× on POST /checkout
-  - Customer impact: ~3.4% of checkout requests failing (est. 1,200 users)
-  - SLO at risk: checkout-availability burning at 28× normal
-
-What we know:
-  - Top hypothesis: deploy at 14:18 UTC (High confidence — code change
-    matched failed span exception class)
-  - Considered + ruled out: dependency degradation (payment-service is
-    healthy), capacity (no traffic spike)
-
-What we're doing:
-  - Rolling back deploy (ETA 2 min)
-  - On-call engineer: @jane.doe (checkout-team)
-
-What we need from IC:
-  - Approve customer-facing status update (draft below)
-  - Decide whether to page payment-team for awareness (no impact yet)
-```
-
-Include "What we need from IC" — the IC's job is to unblock decisions.
-List the pending ones explicitly.
+**Required sections:**
+- Status line (active/resolved + severity)
+- "What's happening" (symptom + customer impact + SLO state)
+- "What we know" (top hypothesis + what was ruled out)
+- "What we're doing" (current action + on-call)
+- "What we need from IC" (pending decisions -- always include this)
 
 ### 3. Customer-facing update
 
 Audience: end users / customers. Density: low. Tone: empathetic,
-non-technical. Length: 2–3 sentences.
+non-technical. Length: 2-3 sentences.
 
-**Default — no marketing speak, no minimization, no internal jargon.**
-
-```
-We're investigating elevated errors on checkout starting at 14:18 UTC.
-A subset of customers may experience failed checkout attempts. Our team
-is rolling back a recent change and expects recovery within 5 minutes.
-Updates: status.example.com.
-```
-
-Variations to also produce:
-
-- **Recovery posted update** — short, confirms recovery and apologizes:
-  > "Checkout has fully recovered as of 14:26 UTC. The issue affected
-  > approximately 6% of checkout attempts during the 8-minute window.
-  > We apologize for the disruption and are conducting a postmortem."
-- **Sustained issue update** — for incidents lasting >30 min:
-  > "We are continuing to investigate elevated errors on checkout. Our
-  > engineering team has identified the cause and is implementing a
-  > fix. We will update again at <next-time> UTC."
-
-Always:
-- Use UTC times (or the user's configured timezone if set in session).
-- Quantify impact ("a subset" / "approximately 6%") — do NOT say
-  "minimal impact" without a number.
-- Avoid finger-pointing at internal teams or vendors in customer copy.
+**Rules:**
+- Use UTC times
+- Quantify impact with a number ("approximately 6%"), never say "minimal impact" without data
+- Never name internal teams or vendors
+- Produce three variants: active, recovered, sustained (>30 min)
 
 ### 4. Postmortem skeleton
 
-Audience: postmortem doc that will be filled in over the next 24-48
-hours. Density: structured outline. Tone: factual.
+Audience: postmortem doc. Density: structured outline. Tone: factual.
 
-```markdown
-# Postmortem: [INC-1234] checkout-availability SLO breach
-
-**Date:** 2026-04-28
-**Duration:** 14:18–14:26 UTC (8 min)
-**Severity:** SEV2 (proposed)
-**Author:** <fill in>
-**Reviewed by:** <fill in>
-
-## Summary
-<2-3 sentence summary; pull from the verdict line + impact estimate>
-
-## Impact
-- Affected service: checkout-service
-- Affected region(s): us-east-1
-- Failed requests: ~1,200 (3.4% of checkout traffic)
-- SLO consumption: 12% of monthly error budget consumed in 8 min
-- Customer-facing: <description from the customer-facing update>
-
-## Timeline (UTC)
-- 14:18 — deploy `checkout-service@abc1234` lands; 5xx rate begins climbing
-- 14:20 — alarm `checkout-5xx-high` fires; on-call paged
-- 14:21 — investigation begun (slo-breach-investigation skill)
-- 14:24 — top hypothesis identified: bad deploy
-- 14:24 — IC approval to rollback
-- 14:26 — rollback complete; recovery confirmed (cw-verify-recovery)
-- 14:30 — incident declared resolved
-
-## Root cause
-<fill in based on top hypothesis from Top Suspected Cause artifact>
-
-## What went well
-- <fill in: alerting fired within 2 min of breach>
-- <fill in: investigation produced top hypothesis within 6 min>
-
-## What didn't go well
-- <fill in: the change passed CI but had no canary window>
-- <fill in: customer status page updated 4 min after detection>
-
-## Action items
-| # | Action | Owner | Due | Priority |
-|---|---|---|---|---|
-| 1 | <fill in> | <fill in> | <fill in> | <P0/P1/P2> |
-
-## Supporting artifacts
-- SLO Breach Explainer: <link>
-- Top Suspected Cause: <link>
-- Trace Waterfall Summary: <link>
-- Recovery verification: <link>
-```
-
-Pre-fill the timeline, impact, and supporting artifacts from the
-investigation data. Leave root cause / lessons learned / action items
-with `<fill in>` markers — those are human judgment calls.
+**Pre-fill** from investigation data: timeline, impact section, supporting artifact links.
+**Leave as `<fill in>`:** root cause narrative, what went well, what didn't go well, action items.
 
 ### 5. Executive summary
 
 Audience: VP / leadership thread. Density: very low. Tone: business
-impact first, technical detail last. Length: 3-5 lines + a bullet.
+impact first, technical detail last. Length: 3-5 lines.
 
+**Required structure:**
+- Lead with status (RESOLVED / ACTIVE / MONITORING)
+- Quantify customer + revenue impact
+- Name proximate cause in plain English (no exception class names)
+- End with what's next (postmortem, action item delivery)
+
+## Error handling
+
+| Condition | Behavior |
+|---|---|
+| No investigation artifact in session | Ask the user which investigation to use as source. Do not fabricate. |
+| Customer impact unknown (blast radius not computed) | Use `<fill in: customer impact>`. Surface warning that blast radius step should be run first. |
+| Top hypothesis confidence is Low | Soften customer-facing update: use "Investigating" instead of "Caused by." |
+| Incident still active (no recovery time) | Set recovery timeline entries to `<TBD>`. |
+| No incident ID known | Use placeholder `[INC-XXXX]` and prompt user to fill in. |
+| Owner / on-call unknown | Use `<fill in: owner>` and note that `service-ownership` skill should be run first. |
+
+## Few-shot examples
+
+### Example 1: Active SEV2 incident with full data
+
+**Input context:**
 ```
-**[INC-1234] checkout availability incident — RESOLVED**
-
-8-minute outage on checkout (14:18-14:26 UTC). ~1,200 customer checkouts
-failed (3.4% of window traffic, ~$45K est. revenue impact). Caused by a
-bad deploy that was rolled back as soon as the on-call engineer
-identified the change correlation. SLO budget hit but not exhausted;
-12% of monthly budget consumed.
-
-Postmortem in progress; action items will land in the team's planning
-doc by EOD Friday.
-```
-
-Always:
-- Lead with status (RESOLVED / ACTIVE / MONITORING).
-- Quantify customer + revenue impact if possible (use the blast radius
-  estimate from the workflow skill).
-- Name the proximate cause in plain English (no `NullPointerException`).
-- End with what's next (postmortem, action item delivery, etc.).
-
-## Output structure
-
-Render all 5 formats in a single response. Use clear section headers and
-ensure each block is self-contained and copy-pasteable. Do NOT mix
-formats or assume the reader will scroll between them.
-
-```markdown
-## 📋 Copy-to-Incident — [INC-1234] checkout-availability
-
-### 1. Slack incident channel update
-<copyable code block>
-
-### 2. Incident commander summary
-<copyable code block>
-
-### 3. Customer-facing update
-<copyable code block — variants for active / recovered / sustained>
-
-### 4. Postmortem skeleton
-<copyable code block>
-
-### 5. Executive summary
-<copyable code block>
-
----
-
-**Source artifact:** `investigation-summary.html` (or whichever)
-**Generated at:** <ISO ts UTC>
-**Investigation by:** <user / on-call>
+service = "checkout-service"
+region = "us-east-1"
+verdict = "5xx rate up 14x since 14:20 UTC on POST /checkout"
+top_hypothesis = "bad deploy at 14:18 UTC"
+confidence = "High"
+severity = "SEV2"
+failed_requests = "~1,200 (3.4% of checkout traffic)"
+owner = "@example/checkout-team"
+oncall = "jane.doe@example.com"
 ```
 
-## Confidence and edge cases
+**Slack update output:**
+```
+[red circle] [INC-1234] checkout-availability SLO breaching
+[bullet] Started: 14:18 UTC . ~8 min ago
+[bullet] Symptom: 5xx rate 14x baseline on POST /checkout
+[bullet] Top hypothesis: bad deploy at 14:18 UTC (High confidence)
+[bullet] Owner: @example/checkout-team . oncall: @jane.doe
+[bullet] Action: rolling back deploy, ETA 2 min
+[link] SLO Breach Explainer . [link] Top Suspected Cause
+```
 
-- **Customer impact unknown** — if blast radius wasn't computed, do NOT
-  fabricate a number. Use "<fill in: customer impact>" in the customer-
-  facing update and exec summary, and surface in the response that the
-  user should run the workflow skill's blast radius step before sharing.
-- **Top hypothesis confidence is Low** — soften the customer-facing
-  update accordingly. "Investigating" instead of "Caused by." Don't
-  publish a Low-confidence root cause externally.
-- **Incident still active** — postmortem skeleton's "Resolved" timeline
-  entry should be `<TBD>`. Recovery time should be `<TBD>`.
-- **No incident ID known** — placeholder `[INC-XXXX]` and prompt the
-  user to fill it in. Don't guess.
+### Example 2: Incident with incomplete data
+
+**Input context:**
+```
+service = "payment-service"
+region = "us-east-2"
+verdict = "p99 latency up 3x on GET /status"
+top_hypothesis = "downstream RDS connection pool exhaustion"
+confidence = "Medium"
+severity = "<fill in: severity>"
+failed_requests = "<fill in: customer impact>"
+owner = "<fill in: owner>"
+```
+
+**Exec summary output:**
+```
+**[INC-XXXX] payment-service latency incident -- ACTIVE**
+
+Latency regression on payment-service (p99 up 3x) since <fill in: start time> UTC.
+Customer impact: <fill in: customer impact -- run blast radius step>.
+Likely cause: downstream database connection issue (Medium confidence --
+further investigation in progress). Owner: <fill in: owner -- run
+service-ownership skill>.
+
+Next: investigating root cause; will update in 15 min.
+```
 
 ## Action safety
 
 Read-only and pure transformation. The skill consumes investigation data
 and emits formatted text. It does NOT:
-
-- Post to Slack channels.
-- Send emails.
-- Update status pages.
-- Create or modify postmortem docs in any system.
-- Page anyone.
+- Post to Slack channels
+- Send emails
+- Update status pages
+- Create or modify postmortem docs
+- Page anyone
 
 The user copies the output into wherever it belongs.
 
 ## What this skill does NOT do
 
-- Does not generate the investigation. Run `slo-breach-investigation` /
-  `latency-regression` / `error-spike-triage` / `alarm-response` first.
-- Does not write the actual postmortem narrative. The skeleton is a
-  scaffold; the postmortem author fills in the analysis.
-- Does not decide severity. SEV1/SEV2/SEV3 calls go through the
-  on-call engineer's runbook, not this skill — proposed severity is a
-  suggestion.
-- Does not translate to non-English languages. If the customer-facing
-  update needs translation, that's a separate workflow.
+- Does not generate the investigation. Run an investigation skill first.
+- Does not write the actual postmortem narrative.
+- Does not decide severity. Proposed severity is a suggestion.
+- Does not translate to non-English languages.

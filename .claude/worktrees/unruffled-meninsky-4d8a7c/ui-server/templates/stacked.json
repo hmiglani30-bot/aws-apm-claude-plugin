@@ -1,0 +1,8 @@
+{
+  "id": "stacked",
+  "layout": "SpaceBetween",
+  "description": "2-3 components vertically. For answers needing context (metric + table, chart + timeline).",
+  "slots": {
+    "components": { "maxComponents": 3, "allowedTypes": ["*"] }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "id": "status",
+  "layout": "ColumnLayout",
+  "description": "Side-by-side status panels. For comparing current vs target state, or healthy vs unhealthy services.",
+  "slots": {
+    "left": { "maxComponents": 2, "allowedTypes": ["stat_card", "table", "chart"] },
+    "right": { "maxComponents": 2, "allowedTypes": ["stat_card", "table", "chart"] }
+  }
+}

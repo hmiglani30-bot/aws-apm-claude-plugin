@@ -12,45 +12,59 @@ description: >
   or invoked automatically before any investigation skill starts and after
   it produces a final artifact.
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Incident Memory
 
 Persist what each investigation found so the next investigation can start
-from prior context instead of from zero. Lightweight, file-based, no DB —
+from prior context instead of from zero. Lightweight, file-based, no DB --
 JSON files under `.aws-apm/incidents/` in the working directory.
+
+## Context provider
+
+Read these fields from the context provider (ARCHITECTURE.md context shape):
+
+- `context.service` -- the Application Signals service name (used to glob incident files and write new ones)
+- `context.region` -- AWS region (stored in incident JSON)
+- `context.account` -- AWS account ID (stored in incident JSON)
+- `context.time_window.start` / `.end` -- breach window (stored as `incident_started_at`)
+- `context.environment` -- prod / staging / dev
 
 ## When this activates
 
 Two distinct phases:
 
-1. **Pre-investigation read** — Before `slo-breach-investigation`,
+1. **Pre-investigation read** -- Before `slo-breach-investigation`,
    `latency-regression`, or `error-spike-triage` begins its workflow, check
-   the incident directory for prior incidents on the same service. Surface
-   any matches inline so the model and user can spot recurrences.
+   the incident directory for prior incidents on the same service.
 
-2. **Post-investigation write** — After any of the three investigation skills
-   produces its final artifact (and after `investigation-validator` has
-   passed), write a structured incident summary file.
+2. **Post-investigation write** -- After any investigation skill produces
+   its final artifact (and after `investigation-validator` has passed),
+   write a structured incident summary file.
+
+## MCP tool dependencies
+
+None -- this skill uses local filesystem operations (Glob, Read, Write)
+not MCP tools. All data comes from the investigation artifacts already
+rendered in the session and from the context provider.
 
 ## Storage layout
 
 ```
 <repo-root>/.aws-apm/incidents/
-├── 2026-04-27_payment-service.json
-├── 2026-04-27_checkout-service.json
-├── 2026-04-26_payment-service.json
-└── ...
+  2026-04-27_payment-service.json
+  2026-04-27_checkout-service.json
+  2026-04-26_payment-service.json
 ```
 
 - Directory: `.aws-apm/incidents/` relative to the working directory. Create
   it if it does not exist (`mkdir -p`).
 - Filename: `<YYYY-MM-DD>_<service-name>.json` using the breach start date
-  in UTC. Service name is the Application Signals service name, lowercased,
-  with non-alphanumerics replaced by `-`.
+  in UTC. Service name is `context.service`, lowercased, with non-alphanumerics
+  replaced by `-`.
 - If multiple incidents on the same service on the same day, append
-  `_<HHMM>` to the filename (e.g. `2026-04-27_payment-service_1430.json`).
+  `_<HHMM>` to the filename.
 
 ## Incident summary schema
 
@@ -91,12 +105,7 @@ Every file is a single JSON object with these fields:
       "resource": "arn:aws:ecs:us-east-1:123456789012:service/payment-service"
     }
   ],
-  "resolution": {
-    "action": "Rollback via ECS UpdateService to prior task definition",
-    "by": "user",
-    "at": "2026-04-27T14:48:00Z",
-    "verified": true
-  },
+  "resolution": null,
   "artifact_paths": {
     "slo_breach_explainer": "rendered inline in Claude Code session 2026-04-27"
   },
@@ -110,46 +119,66 @@ Required fields: `schema_version`, `service`, `region`, `account`,
 
 ## Pre-investigation: read prior incidents
 
-Before any investigation workflow begins, run this lookup:
+### Step 1: Resolve and glob
 
-1. Resolve the service name (same name the investigation is about to use).
-2. Glob `.aws-apm/incidents/*_<service-name>.json` and read the 5 most
-   recent by `incident_started_at`.
-3. Render a "Prior incidents on this service" block at the top of the
-   investigation:
+Use the Glob tool to find prior incident files:
+
+```
+Glob pattern: .aws-apm/incidents/*_<service-name-lowercased>*.json
+```
+
+If the directory does not exist, output "No prior incidents recorded for
+this service (incident memory not yet enabled)." and continue.
+
+### Step 2: Read and sort
+
+Read each matched JSON file. Parse `incident_started_at` (ISO 8601).
+Sort descending. Take the 5 most recent.
+
+### Step 3: Recurrence detection
+
+For each prior incident, compare `root_cause.claim` against the current
+trigger:
+
+- Same exception class (e.g., both `NullPointerException`)? --> MATCH
+- Same operation (e.g., both `POST /checkout`)? --> MATCH
+- Same time-of-day pattern (+/- 2 hours)? --> WEAK MATCH
+
+If any MATCH found, render a CALLOUT:
+
+```
+Possible recurrence: incident on 2026-04-19 had the same
+NullPointerException on POST /checkout. Root cause was downstream RDS
+connection pool exhaustion (Medium confidence). Check whether the same
+pool is saturated now.
+```
+
+Do NOT skip the investigation -- recurrences can have different causes.
+
+### Step 4: Render prior incidents table
 
 ```markdown
-### 📂 Prior incidents on `<service>` (last 5)
+### Prior incidents on `<service>` (last 5)
 
 | Date | Trigger | Root cause | Confidence | Resolution |
 |---|---|---|---|---|
-| 2026-04-27 | SLO breach (checkout-availability) | Bad deploy — NullPointerException | High | Rollback |
-| 2026-04-19 | Error spike (5xx) | Downstream RDS connection pool exhaustion | Medium | Pool size increased |
-| ... |
+| 2026-04-27 | SLO breach | Bad deploy -- NullPointerException | High | Rollback |
+| 2026-04-19 | Error spike (5xx) | RDS connection pool exhaustion | Medium | Pool size increased |
 ```
 
-4. If any prior incident's `root_cause.claim` matches the current trigger
-   pattern (same exception class, same operation, same time-of-day), surface
-   it as a **"Possible recurrence"** callout above the investigation. Do
-   NOT skip the investigation — recurrences can have different root causes.
-
-5. If no prior incidents exist, render a one-liner: "No prior incidents
-   recorded for this service."
+If no prior incidents exist, render: "No prior incidents recorded for
+this service."
 
 ## Post-investigation: write the incident summary
-
-After the investigation produces its final artifact and
-`investigation-validator` passes:
 
 ### First-write opt-in (Sec5)
 
 Incident memory is **opt-in on first write**. Before creating
 `.aws-apm/incidents/` for the first time in this working directory,
-the model MUST surface this consent block and wait for explicit user
-approval:
+render this consent block and wait for explicit user approval:
 
 ```
-📒 Incident memory — opt-in required (first write)
+Incident memory -- opt-in required (first write)
 
 This is the first time this plugin is about to persist an incident
 summary in this working directory. Before any file is written, please
@@ -157,107 +186,151 @@ review:
 
 - Path: <absolute path>/.aws-apm/incidents/
 - Will be created if you approve
-- Stores: structured JSON per investigation (service name, region,
-  account, root-cause claim, key metrics, correlated CloudTrail events,
-  model-assigned tags). PII and raw log lines are redacted per the
-  redaction rules in the source skill.
-- Lifecycle: append-only, never modified by Claude after write. Pruning
-  is the user's responsibility.
-- Git: `.aws-apm/` is in `.gitignore` by default — incidents stay local
-  unless you explicitly opt in to committing them.
+- Stores: structured JSON per investigation
+- Lifecycle: append-only, never modified by Claude after write
+- Git: `.aws-apm/` is in `.gitignore` by default
 
 Type ENABLE INCIDENT MEMORY to allow this and all future writes in
-this directory. Any other reply skips persistence for this incident
-and you'll be re-asked next time.
+this directory. Any other reply skips persistence for this incident.
 ```
 
-How to detect "first write": the directory `.aws-apm/incidents/` does
-not yet exist (or exists but is empty). Once the user approves, write
-a sentinel file `.aws-apm/incidents/.opted-in` containing the ISO
-timestamp of approval — its presence is the durable consent record;
-do not re-prompt on subsequent writes in the same directory.
-
-If the user declines (any reply other than the exact phrase), skip
-this write entirely. Do not silently buffer the data, do not write a
-"declined" marker that could leak intent — just move on. Mention in
-the investigation summary that incident memory is disabled, so the
-on-call sees the trade-off explicitly.
+**How to detect "first write":** Check for `.aws-apm/incidents/.opted-in`
+sentinel file. If it exists, consent was already given. If not, prompt.
 
 ### Write procedure (after consent)
 
-1. Resolve the filename per the layout rules above.
-2. Build the JSON object. Fields the model already has from the
-   investigation:
-   - `service`, `region`, `account` — from the metadata footer
-   - `incident_started_at` — breach start time (SLO) or spike start (errors
-     / latency)
-   - `incident_detected_at` — when the user / alarm flagged it
-   - `investigation_completed_at` — now
-   - `severity` — derive: `critical` if SLO fast burn, `high` if SLO slow
-     burn or 5xx spike >2× baseline, `medium` otherwise
-   - `trigger` — one-line summary of why the investigation ran
-   - `root_cause.claim` — the #1 ranked hypothesis
-   - `root_cause.confidence` — the confidence assigned to that hypothesis
-   - `root_cause.evidence_sources` — which kinds of evidence backed it
-     (`metric`, `log`, `trace`, `cloudtrail`)
-   - `key_metrics` — pull from the artifact (peak vs baseline, burn rate,
-     error budget remaining)
-   - `impacted_operations` — top contributors from the investigation
-   - `correlated_changes` — CloudTrail events found
-   - `tags` — model-assigned categorical labels (e.g. `bad-deploy`,
-     `dependency-degradation`, `cold-start`, `secret-rotation`)
-3. `resolution` is left null at write time — the user will fill it in
-   later, or a follow-up `/cw-incident-resolve` command can update the
-   file. Do not block on resolution to write the summary.
-4. Write the JSON file. Use 2-space indentation, sorted keys, trailing
-   newline.
-5. Confirm the write inline:
-   ```markdown
-   📒 Incident summary saved: `.aws-apm/incidents/2026-04-27_payment-service.json`
-   ```
+#### Step 1: Resolve filename
+
+Compute filename per the layout rules: `<YYYY-MM-DD>_<service-name>.json`.
+If that filename already exists, append `_<HHMM>`.
+
+#### Step 2: Build the JSON object
+
+Extract fields from the investigation artifact and context provider:
+
+| Field | Source |
+|---|---|
+| `service` | `context.service` |
+| `region` | `context.region` |
+| `account` | `context.account` |
+| `incident_started_at` | `context.time_window.start` |
+| `incident_detected_at` | Alarm fire time or user report time |
+| `investigation_completed_at` | Current time (ISO 8601) |
+| `severity` | `critical` if SLO fast burn, `high` if SLO slow burn or 5xx >2x baseline, `medium` otherwise |
+| `trigger` | One-line summary from the verdict line |
+| `root_cause.claim` | #1 ranked hypothesis from Top Suspected Cause |
+| `root_cause.confidence` | Confidence assigned to that hypothesis |
+| `root_cause.evidence_sources` | Array of: `metric`, `log`, `trace`, `cloudtrail` as applicable |
+| `key_metrics` | Peak vs baseline values from the artifact |
+| `impacted_operations` | Top contributors list |
+| `correlated_changes` | CloudTrail events array |
+| `tags` | Model-assigned: `bad-deploy`, `dependency-degradation`, `cold-start`, etc. |
+
+#### Step 3: Write the file
+
+Use 2-space indentation, sorted keys, trailing newline. Write using the
+Write tool.
+
+#### Step 4: Confirm inline
+
+```markdown
+Incident summary saved: `.aws-apm/incidents/2026-04-27_payment-service.json`
+```
+
+## Error handling
+
+| Error | Detect | Behavior |
+|---|---|---|
+| Directory does not exist (pre-investigation) | Glob returns empty, no directory | Output "No prior incidents recorded" and continue. |
+| Directory does not exist (post-investigation) | First write, no `.opted-in` sentinel | Render consent block. Wait for ENABLE INCIDENT MEMORY. |
+| User declines consent | Any reply other than exact phrase | Skip write entirely. Do not write a declined marker. Note in investigation summary that memory is disabled. |
+| Target filename already exists | File with same date + service exists | Append `_<HHMM>` to filename and retry. |
+| Investigation-validator failed | Metadata footer incomplete | Do NOT write. Incomplete data would be misleading. |
+| User aborted investigation | No final artifact produced | Do NOT write. |
+| JSON file from older schema version | `schema_version` != "1" | Read tolerantly. Parse fields that exist, ignore unknown ones. Never upgrade old files in place. |
+
+## Few-shot examples
+
+### Example 1: Pre-investigation with recurrence detected
+
+**Context:** Investigating `checkout-service` for a NullPointerException spike.
+
+**Prior incident file found:** `2026-04-19_checkout-service.json`
+```json
+{
+  "schema_version": "1",
+  "service": "checkout-service",
+  "root_cause": {
+    "claim": "NullPointerException in CheckoutService.process due to RDS connection pool exhaustion",
+    "confidence": "medium",
+    "evidence_sources": ["metric", "trace"]
+  }
+}
+```
+
+**Output:**
+```markdown
+### Prior incidents on `checkout-service` (last 5)
+
+| Date | Trigger | Root cause | Confidence | Resolution |
+|---|---|---|---|---|
+| 2026-04-19 | Error spike (5xx) | NullPointerException -- RDS pool exhaustion | Medium | Pool size increased |
+
+> **Possible recurrence:** incident on 2026-04-19 had the same NullPointerException on POST /checkout. Root cause was downstream RDS connection pool exhaustion (Medium confidence). Check whether the same pool is saturated now.
+
+Proceeding with full investigation -- recurrences can have different root causes.
+```
+
+### Example 2: Post-investigation write
+
+**Context:** Investigation completed for `payment-service` SLO breach.
+
+**Written file:** `.aws-apm/incidents/2026-04-28_payment-service.json`
+```json
+{
+  "schema_version": "1",
+  "service": "payment-service",
+  "region": "us-east-1",
+  "account": "123456789012",
+  "incident_started_at": "2026-04-28T14:23:00Z",
+  "investigation_completed_at": "2026-04-28T14:48:00Z",
+  "severity": "high",
+  "investigation_type": "slo-breach-investigation",
+  "trigger": "payment-availability SLO at 99.4% (target 99.9%)",
+  "root_cause": {
+    "claim": "Bad deploy at 14:18 UTC introduced auth token validation failure",
+    "confidence": "high",
+    "evidence_sources": ["metric", "trace", "cloudtrail"]
+  },
+  "key_metrics": {
+    "error_rate_peak_pct": 3.8,
+    "error_rate_baseline_pct": 0.2,
+    "burn_rate_1h": 22.0,
+    "error_budget_remaining_pct": 18.0
+  },
+  "tags": ["bad-deploy", "slo-breach", "fast-burn"]
+}
+```
 
 ## Rules
 
-- **Opt-in on first write is mandatory.** Never create
-  `.aws-apm/incidents/` (or write to it for the first time in a
-  directory) without explicit user consent via the opt-in block above.
-  The presence of `.aws-apm/incidents/.opted-in` is the durable consent
-  record — do not assume consent from the directory existing for any
-  other reason.
-- **Never overwrite an existing incident file silently.** If the target
-  filename already exists, append `_<HHMM>` and try again.
-- **Never write incidents that lack a metadata footer in the source
-  artifact.** The footer is the source of truth for `region`, `account`,
-  `time window`. If `investigation-validator` failed and the footer is
-  incomplete, do not write — the file would be misleading.
-- **Do not write incidents for investigations the user aborted** (e.g. the
-  user said "stop, this isn't the right service"). Only write when the
-  investigation produced a final artifact.
-- **Do not include PII or sensitive data** — log lines may contain user
-  identifiers, request bodies, or secrets. The summary cites *patterns*
-  and *exception classes*, not raw log lines or trace payloads. Apply
-  the redaction rules from the source workflow skill (replace email /
-  user-id / customer-id / token / session / IP-in-user-context with
-  `<redacted-*>` placeholders) before writing.
-- **`.aws-apm/` is gitignored by default** in the plugin's `.gitignore`.
-  If the user wants to commit incident history (for shared on-call
-  context), they must explicitly remove the entry — surface this trade-off
-  once at opt-in time so it's a deliberate choice, not a default.
+- **Opt-in on first write is mandatory.** Never create `.aws-apm/incidents/`
+  without explicit user consent via the opt-in block.
+- **Never overwrite an existing incident file silently.**
+- **Never write incidents that lack a metadata footer in the source artifact.**
+- **Do not write incidents for investigations the user aborted.**
+- **Do not include PII or sensitive data.** Apply redaction rules from the
+  source workflow skill before writing.
+- **`.aws-apm/` is gitignored by default.**
 
 ## Schema evolution
 
 `schema_version` is `"1"` for now. When the schema changes, bump it and
-keep the reader tolerant of older versions on read. Never silently
-upgrade old files on the fly — that would obscure history.
+keep the reader tolerant of older versions on read.
 
 ## What this skill does NOT do
 
-- Does not implement a search UI — globbing the directory is sufficient
-  for the volumes expected (typically <100 incidents per service per year).
-- Does not aggregate incidents across services — that is the
-  `/cw-health-check` command's job, not this skill's.
-- Does not call out to external incident management systems (PagerDuty,
-  Incident.io). Integration with those is out of scope; this skill
-  produces a local file the user can pipe to whatever system they prefer.
-- Does not retroactively backfill older incidents from CloudTrail — only
-  records what the model investigated in the current session.
+- Does not implement a search UI.
+- Does not aggregate incidents across services.
+- Does not call external incident management systems.
+- Does not retroactively backfill older incidents from CloudTrail.

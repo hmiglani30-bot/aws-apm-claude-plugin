@@ -18,6 +18,22 @@ metadata:
 Verifies prerequisites and walks the user through any missing piece. Run this on first
 install, or when any other skill reports an MCP connection error.
 
+## Context provider
+
+This setup skill initializes the context provider. After setup completes, the following fields are populated:
+
+- `context.region` -- AWS region (derived from `~/.aws/config` or user input)
+- `context.account` -- AWS account ID (derived from credentials)
+- `context.data_sources_available` -- populated by verifying each MCP server connection
+
+## MCP tool dependencies
+
+Tests connectivity to all four MCP servers:
+- `awslabs.cloudwatch-mcp-server` -- `describe_alarms` (connectivity test)
+- `awslabs.cloudwatch-applicationsignals-mcp-server` -- `list_services` (connectivity test)
+- `awslabs.cloudtrail-mcp-server` -- `lookup_events` (connectivity test)
+- `awslabs.aws-documentation-mcp-server` -- `search_documentation` (connectivity test)
+
 ## Prerequisites checklist
 
 1. **uv / uvx installed** — the four MCP servers are launched via `uvx`. If not present,

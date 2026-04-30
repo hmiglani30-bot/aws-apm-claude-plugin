@@ -15,6 +15,20 @@ metadata:
 Every Tier 3 artifact embeds these. The framing (Q13 in the scope): *Claude is the smart
 front door to CloudWatch, not a replacement.*
 
+## Context provider
+
+Deep links are parameterized from context provider fields:
+
+- `context.service` -- substituted into service detail and operation detail URLs
+- `context.region` -- substituted into all URL templates as `<region>`
+- `context.slo` -- substituted into SLO detail URL as `<slo-id>`
+- `context.alarm` -- substituted into alarm detail URL as `<alarm-name>`
+- `context.time_window.start` / `.end` -- substituted as `<iso-start>` / `<iso-end>` in time-scoped URLs
+
+## MCP tool dependencies
+
+None -- this skill generates URLs from context data. It does not call MCP tools.
+
 ## URL templates
 
 All URLs assume the user's current AWS region (`AWS_REGION` env from `.mcp.json`). When

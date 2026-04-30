@@ -1,0 +1,9 @@
+{
+  "id": "overview",
+  "layout": "Grid+Container",
+  "description": "Metric cards in a row above a primary component. For dashboard-style answers.",
+  "slots": {
+    "cards": { "maxComponents": 6, "allowedTypes": ["stat_card"] },
+    "primary": { "maxComponents": 1, "allowedTypes": ["table", "timeline", "chart"] }
+  }
+}

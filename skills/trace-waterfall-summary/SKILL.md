@@ -15,6 +15,19 @@ metadata:
 
 Canonical view of a single slow trace, optimized for "where did the time go?"
 
+## Context provider
+
+This artifact skill receives its data from parent investigation skills. The following context fields are used in the metadata footer:
+
+- `context.service` -- the Application Signals service name
+- `context.region` -- AWS region (rendered in metadata footer)
+- `context.account` -- AWS account ID (rendered in metadata footer)
+- `context.time_window.start` / `.end` -- trace retrieval window
+
+## MCP tool dependencies
+
+None -- this is a rendering skill. Trace data is collected by the parent investigation skill (`latency-regression`, `slo-breach-investigation`).
+
 ## Required inputs
 
 - Trace ID

@@ -28,11 +28,25 @@ Workflow for finding *why* a service or operation got slower. Produces a
 If a *latency SLO is actively breaching*, prefer `slo-breach-investigation` — it is the
 strict superset.
 
-## Required MCP servers
+## Context provider
 
-- `awslabs.cloudwatch-applicationsignals-mcp-server` — service map, traces, operations
-- `awslabs.cloudwatch-mcp-server` — supporting metric math and logs
-- `awslabs.cloudtrail-mcp-server` — change correlation
+Read these fields from the context provider (ARCHITECTURE.md context shape):
+
+- `context.service` -- the Application Signals service name experiencing the latency regression
+- `context.operation` -- specific operation if known (e.g., `GET /api/checkout`)
+- `context.region` -- AWS region (pass to all MCP calls)
+- `context.account` -- AWS account ID (include in metadata footer)
+- `context.time_window.start` / `.end` -- regression window
+- `context.environment` -- prod / staging / dev
+- `context.data_sources_available.application_signals` -- MUST be true
+- `context.data_sources_available.xray` -- needed for trace sampling
+- `context.data_sources_available.cloudtrail` -- needed for change correlation
+
+## MCP tool dependencies
+
+- `awslabs.cloudwatch-applicationsignals-mcp-server` -- `list_service_operations`, `get_top_contributors`, `get_trace_summaries`, `batch_get_traces`
+- `awslabs.cloudwatch-mcp-server` -- `get_metric_data`, `start_query`, `get_query_results`
+- `awslabs.cloudtrail-mcp-server` -- `lookup_events`
 
 ## Presentation
 

@@ -15,6 +15,20 @@ metadata:
 This is a **canonical artifact** — same investigation produces the same shape every time.
 Do not reinvent the layout. Fill the known shape with MCP data.
 
+## Context provider
+
+This artifact skill receives its data from the parent `slo-breach-investigation` skill. The following context fields are used in the metadata footer:
+
+- `context.service` -- the Application Signals service name
+- `context.slo` -- SLO name or ID
+- `context.region` -- AWS region (rendered in metadata footer)
+- `context.account` -- AWS account ID (rendered in metadata footer)
+- `context.time_window.start` / `.end` -- breach window
+
+## MCP tool dependencies
+
+None -- this is a rendering skill. Data is collected by the parent `slo-breach-investigation` skill.
+
 ## Required inputs
 
 The parent skill (`slo-breach-investigation`) must have already collected:

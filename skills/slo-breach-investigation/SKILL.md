@@ -32,11 +32,25 @@ If it is unclear whether SLOs are configured, list SLOs first (Phase 1) before
 committing to this workflow. If no SLOs exist, hand off to `service-health-card` or
 `error-spike-triage`.
 
-## Required MCP servers
+## Context provider
 
-- `awslabs.cloudwatch-applicationsignals-mcp-server` — SLOs, services, operations, traces
-- `awslabs.cloudwatch-mcp-server` — supporting metrics and logs
-- `awslabs.cloudtrail-mcp-server` — recent deploys / IAM / config changes
+Read these fields from the context provider (ARCHITECTURE.md context shape):
+
+- `context.service` -- the Application Signals service name with the breaching SLO
+- `context.slo` -- SLO name or ID if known
+- `context.region` -- AWS region (pass to all MCP calls)
+- `context.account` -- AWS account ID (include in metadata footer)
+- `context.time_window.start` / `.end` -- breach window
+- `context.environment` -- prod / staging / dev
+- `context.data_sources_available.application_signals` -- MUST be true
+- `context.data_sources_available.xray` -- needed for trace sampling
+- `context.data_sources_available.cloudtrail` -- needed for change correlation
+
+## MCP tool dependencies
+
+- `awslabs.cloudwatch-applicationsignals-mcp-server` -- `list_slos`, `get_slo`, `list_service_operations`, `get_top_contributors`, `get_trace_summaries`, `batch_get_traces`
+- `awslabs.cloudwatch-mcp-server` -- `get_metric_data`, `start_query`, `get_query_results`
+- `awslabs.cloudtrail-mcp-server` -- `lookup_events`
 
 If any required MCP is not connected, run the `aws-apm-setup` skill before continuing.
 
