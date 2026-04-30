@@ -1,12 +1,14 @@
 // Hybrid renderer evaluation harness.
 //
-// Runs the 52 eval cases through the renderer and scores each on 6 dimensions:
+// Runs the eval cases through the renderer and scores each on 7 dimensions:
 //   1. Manifest validity   — passes JSON-Schema validation (ajv, the contract)
 //   2. Shell selection     — engine inferred the shell we expected
 //   3. Widget relevance    — required widgets present, forbidden absent
 //   4. Widget count        — within the per-prompt expected range
 //   5. Density budget      — densityUsed <= budget AND drawer overflow not excessive
 //   6. Rendering           — renderManifest produced valid HTML, no widget-error tags
+//   7. HTML quality        — escaping, status mapping, sortable a11y, link safety,
+//                            trace bar containment — battery of static HTML checks
 //
 // Output:
 //   evals/hybrid-renderer-eval-results.json — raw per-case results
@@ -157,6 +159,165 @@ function scoreRendering(html) {
   };
 }
 
+// HTML-quality checks. Each check returns null if it doesn't apply to this
+// artifact, an empty string on success, or an issue description on failure.
+// We run them all and aggregate, so one case can flag several real defects.
+
+function checkHtmlEscaping(html, manifest) {
+  // Look for executable-form attack shapes — patterns that only occur when
+  // user-supplied HTML survives unescaped. Plain text containing the string
+  // "javascript:alert" inside a log message is fine; an href="javascript:..."
+  // attribute is not.
+  const lower = html.toLowerCase();
+  const probes = [
+    // The renderer never emits a <script> tag itself, so any occurrence comes
+    // from un-escaped input.
+    { pattern: /<script\b/, label: "<script> tag" },
+    // The renderer never emits <img>; finding one means an attacker-shaped
+    // tag survived.
+    { pattern: /<img\b/, label: "<img> tag" },
+    // Inline event handler in an actual attribute position (preceded by a
+    // tag-opening or whitespace, followed by "=").
+    { pattern: /<[^>]*\son\w+\s*=/, label: "inline event handler" },
+    // javascript:/data: URI inside href/src — only dangerous in attributes.
+    { pattern: /(?:href|src)\s*=\s*["']?\s*(?:javascript|data):/, label: "javascript:/data: URI in href/src" },
+  ];
+  for (const { pattern, label } of probes) {
+    if (pattern.test(lower)) {
+      return `unescaped HTML detected: ${label}`;
+    }
+  }
+  return "";
+}
+
+function checkSortableAriaSort(html) {
+  // Every sortable th must declare aria-sort initially (typically "none") so
+  // assistive tech announces the column as sortable before any click.
+  const sortableThs = html.match(/<th[^>]*\bsortable\b[^>]*>/g) || [];
+  if (!sortableThs.length) return null; // not applicable
+  const missing = sortableThs.filter(t => !/\baria-sort=/.test(t));
+  if (missing.length) {
+    return `${missing.length}/${sortableThs.length} sortable <th> missing aria-sort`;
+  }
+  return "";
+}
+
+function checkSortableKeyboard(html) {
+  // Sortable headers must be keyboard-focusable. Without tabindex on a non-button
+  // element, sort is mouse-only.
+  const sortableThs = html.match(/<th[^>]*\bsortable\b[^>]*>/g) || [];
+  if (!sortableThs.length) return null;
+  const missing = sortableThs.filter(t => !/\btabindex=/.test(t));
+  if (missing.length) {
+    return `${missing.length}/${sortableThs.length} sortable <th> not keyboard-focusable (no tabindex)`;
+  }
+  return "";
+}
+
+function checkStatusCellMapping(html) {
+  // Status cells should use ok/warn/err for known severity values. Any cell that
+  // ended up with cell-status-neutral while the visible text is a known status
+  // means the type→class map missed it (e.g., "degraded" → neutral).
+  const re = /<span class="cell-status cell-status-(\w+)"><span class="dot"><\/span>([^<]+)<\/span>/g;
+  const knownGood = {
+    healthy: "ok", ok: "ok",
+    warning: "warn", warn: "warn", degraded: "warn",
+    error: "err", critical: "err", unhealthy: "err",
+  };
+  const issues = [];
+  let m;
+  let saw = false;
+  while ((m = re.exec(html)) !== null) {
+    saw = true;
+    const cls = m[1];
+    const text = m[2].trim().toLowerCase();
+    const want = knownGood[text];
+    if (want && cls !== want) {
+      issues.push(`"${text}" → cell-status-${cls} (expected cell-status-${want})`);
+    }
+  }
+  if (!saw) return null;
+  return issues.length ? issues.slice(0, 3).join("; ") : "";
+}
+
+function checkLinkSafety(html) {
+  // Every <a target="_blank"> must carry rel="noreferrer noopener" — opening
+  // an attacker-controlled URL without these leaks window.opener access and
+  // referrer to the destination.
+  const anchors = html.match(/<a [^>]*target="_blank"[^>]*>/g) || [];
+  if (!anchors.length) return null;
+  const bad = anchors.filter(a => {
+    const m = a.match(/\brel="([^"]*)"/);
+    if (!m) return true;
+    const rel = m[1];
+    return !rel.includes("noreferrer") || !rel.includes("noopener");
+  });
+  if (bad.length) {
+    return `${bad.length}/${anchors.length} target=_blank links missing rel=noreferrer noopener`;
+  }
+  return "";
+}
+
+function checkTraceBarContainment(html) {
+  // Every waterfall bar must satisfy left% + width% <= 100. Bars that overflow
+  // the track render outside the row — they look like the trace went past the
+  // total duration, which is wrong (and typically caused by start_ms outside
+  // [0, total_duration_ms]).
+  const re = /left:\s*([\d.]+)%; width:\s*([\d.]+)%/g;
+  const issues = [];
+  let m;
+  let saw = false;
+  while ((m = re.exec(html)) !== null) {
+    saw = true;
+    const sum = parseFloat(m[1]) + parseFloat(m[2]);
+    // 0.5% slack for floating-point noise
+    if (sum > 100.5) {
+      issues.push(`bar at left=${m[1]}% width=${m[2]}% overflows track (sum=${sum.toFixed(2)}%)`);
+    }
+  }
+  if (!saw) return null;
+  return issues.length ? issues.slice(0, 3).join("; ") : "";
+}
+
+function checkArtifactLandmark(html) {
+  // The top-level <article> should expose an accessible name so it can be
+  // announced as a region in screen-reader landmark navigation. Either an
+  // aria-labelledby pointing to the title, or an aria-label, satisfies this.
+  const article = html.match(/<article class="hr-artifact"[^>]*>/);
+  if (!article) return null;
+  const tag = article[0];
+  if (!/\baria-(labelledby|label)=/.test(tag)) {
+    return "<article> has no aria-label / aria-labelledby — not announced as a named region";
+  }
+  return "";
+}
+
+function scoreHtmlQuality(html, manifest) {
+  const checks = [
+    ["escaping", checkHtmlEscaping(html, manifest)],
+    ["aria_sort", checkSortableAriaSort(html)],
+    ["sort_keyboard", checkSortableKeyboard(html)],
+    ["status_map", checkStatusCellMapping(html)],
+    ["link_safety", checkLinkSafety(html)],
+    ["trace_bar_containment", checkTraceBarContainment(html)],
+    ["landmark", checkArtifactLandmark(html)],
+  ];
+  const issues = [];
+  const okSubchecks = [];
+  const skipped = [];
+  for (const [name, result] of checks) {
+    if (result === null) skipped.push(name);
+    else if (result === "") okSubchecks.push(name);
+    else issues.push(`${name}: ${result}`);
+  }
+  return {
+    pass: issues.length === 0,
+    note: issues.length
+      ? issues.join(" | ")
+      : `passed [${okSubchecks.join(",") || "none-applicable"}]${skipped.length ? `, skipped [${skipped.join(",")}]` : ""}`,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Run a single case end-to-end.
 // ---------------------------------------------------------------------------
@@ -169,7 +330,7 @@ function runCase(testCase, validateSchema) {
     prompt,
     expected,
     scores: {},
-    summary: { passed: 0, failed: 0, total: 6 },
+    summary: { passed: 0, failed: 0, total: 7 },
     error: null,
   };
 
@@ -229,6 +390,7 @@ function runCase(testCase, validateSchema) {
     result.error = (result.error ? result.error + " | " : "") + `renderManifest threw: ${err.message}`;
   }
   result.scores.rendering = scoreRendering(html);
+  result.scores.html_quality = scoreHtmlQuality(html, manifest);
 
   // Summary
   for (const s of Object.values(result.scores)) {
@@ -242,7 +404,7 @@ function runCase(testCase, validateSchema) {
 // ---------------------------------------------------------------------------
 
 function aggregate(results) {
-  const dims = ["manifest_validity", "shell_selection", "widget_relevance", "widget_count", "density_budget", "rendering"];
+  const dims = ["manifest_validity", "shell_selection", "widget_relevance", "widget_count", "density_budget", "rendering", "html_quality"];
   const overall = { total_cases: results.length, all_dim_pass: 0, per_dim: {} };
   for (const d of dims) overall.per_dim[d] = { pass: 0, fail: 0 };
   const byCategory = {};
@@ -290,7 +452,7 @@ async function main() {
   );
 
   // Console summary
-  const dims = ["manifest_validity", "shell_selection", "widget_relevance", "widget_count", "density_budget", "rendering"];
+  const dims = ["manifest_validity", "shell_selection", "widget_relevance", "widget_count", "density_budget", "rendering", "html_quality"];
   console.log(`\nHybrid renderer eval — ${results.length} prompts`);
   console.log(`  All-dimensions pass: ${summary.overall.all_dim_pass}/${results.length} (${((summary.overall.all_dim_pass / results.length) * 100).toFixed(1)}%)`);
   for (const d of dims) {

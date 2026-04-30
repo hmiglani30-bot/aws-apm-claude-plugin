@@ -17,9 +17,13 @@ function renderCell(value, kind) {
       }
       return `<a href="${esc(value)}" target="_blank" rel="noreferrer noopener">${esc(value)}</a>`;
     case "status": {
-      const map = { healthy: "ok", ok: "ok", warning: "warn", warn: "warn", error: "err", critical: "err", unhealthy: "err" };
+      const map = {
+        healthy: "ok", ok: "ok",
+        warning: "warn", warn: "warn", degraded: "warn",
+        error: "err", critical: "err", unhealthy: "err",
+      };
       const cls = map[String(value).toLowerCase()] || "neutral";
-      return `<span class="cell-status cell-status-${cls}"><span class="dot"></span>${esc(value)}</span>`;
+      return `<span class="cell-status cell-status-${cls}" aria-label="Status: ${esc(value)}"><span class="dot" aria-hidden="true"></span>${esc(value)}</span>`;
     }
     default:
       return esc(value);
@@ -36,7 +40,9 @@ export function render(data, hints = {}) {
 
   const head = cols.map((c, i) => {
     const align = c.align ? `align-${c.align}` : "";
-    const sortAttr = sortable ? `data-sort-key="${esc(c.key)}" data-sort-kind="${esc(c.kind || "text")}"` : "";
+    const sortAttr = sortable
+      ? `data-sort-key="${esc(c.key)}" data-sort-kind="${esc(c.kind || "text")}" tabindex="0" role="button" aria-sort="none" aria-label="Sort by ${esc(c.label)}"`
+      : "";
     return `<th class="${align} ${sortable ? "sortable" : ""}" ${sortAttr}>${esc(c.label)}${sortable ? `<span class="sort-indicator" aria-hidden="true"></span>` : ""}</th>`;
   }).join("");
 

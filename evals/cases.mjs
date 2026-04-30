@@ -15,6 +15,7 @@ export const CATEGORIES = {
   "slo-service-health": "SLO / service health",
   "cloudtrail-security":  "CloudTrail / security",
   "mixed-complex":        "Mixed / complex",
+  "quality-regression":   "HTML quality / a11y / safety",
 };
 
 // ---------------------------------------------------------------------------
@@ -1621,9 +1622,207 @@ C.push({
   },
 });
 
+// ---------- Category 6: HTML quality / a11y / safety regression ----------
+//
+// These cases are constructed specifically to exercise rendering paths that
+// the original 52 prompts didn't pin down: status-cell mapping for every
+// known severity, sortable-header accessibility, link safety, trace-bar
+// containment when start_ms is at the edge of total_duration_ms, and
+// HTML-escaping of attacker-shaped strings. They share the existing six
+// score dimensions plus html_quality.
+
+C.push({
+  id: "qa-01",
+  category: "quality-regression",
+  prompt: "[regression] Mixed status cells incl. degraded must color-code correctly",
+  expected: {
+    shell: ["investigation", "single-focus"],
+    mustInclude: ["table"],
+    widgetCount: [2, 6],
+  },
+  manifest: {
+    version: "1.0",
+    metadata: {
+      title: "Service health — mixed statuses",
+      severity: "warning",
+      query_intent: "service-overview",
+      service: "platform",
+      region: "us-east-1",
+    },
+    widgets: [
+      stat(1, "Services tracked", 5, "", { status: "neutral" }),
+      tab(2, "Service health", [
+        { key: "svc", label: "Service", kind: "code" },
+        COL_HEALTH,
+      ], [
+        { svc: "api",             health: "healthy" },
+        { svc: "checkout-api",    health: "degraded" },   // bug case: must map to warn, not neutral
+        { svc: "payment-service", health: "warning" },
+        { svc: "order-service",   health: "unhealthy" },
+        { svc: "search-svc",      health: "ok" },
+      ]),
+    ],
+  },
+});
+
+C.push({
+  id: "qa-02",
+  category: "quality-regression",
+  prompt: "[regression] Sortable table must announce sort state and be keyboard-focusable",
+  expected: {
+    shell: ["investigation", "single-focus"],
+    mustInclude: ["table"],
+    widgetCount: [2, 6],
+  },
+  manifest: {
+    version: "1.0",
+    metadata: {
+      title: "Top operations by error rate",
+      severity: "warning",
+      query_intent: "operations-leaderboard",
+      service: "api",
+    },
+    widgets: [
+      stat(1, "Total errors / min", 412, "", { status: "unhealthy" }),
+      tab(2, "Operations (sortable)", [
+        COL_OP, COL_ERR, COL_P99, COL_HEALTH,
+      ], [
+        { op: "POST /orders",  errors: 162, p99: 940, health: "unhealthy" },
+        { op: "GET /users/:id", errors: 98, p99: 410, health: "warning"   },
+        { op: "POST /login",    errors: 52, p99: 290, health: "warning"   },
+      ], { searchable: true, sortable: true }),
+    ],
+  },
+});
+
+C.push({
+  id: "qa-03",
+  category: "quality-regression",
+  prompt: "[regression] Trace span at the edge of total duration must not overflow the track",
+  expected: {
+    shell: "single-focus",
+    mustInclude: ["trace_waterfall"],
+    widgetCount: [2, 4],
+  },
+  manifest: {
+    version: "1.0",
+    metadata: {
+      title: "Edge-case trace — late span",
+      severity: "info",
+      query_intent: "latency-investigation",
+      service: "api",
+    },
+    widgets: [
+      stat(1, "Total duration", 100, "ms", { status: "neutral" }),
+      trace(2, "trace-edge-001", 100, [
+        { name: "GET /api/edge",        service: "api",          start_ms: 0,   duration_ms: 100, depth: 0, status: "ok" },
+        // Span anchored at the very end of the window — naive math puts the
+        // bar past 100% if widthPct is min-clamped without re-bounding
+        // against the right edge of the track.
+        { name: "afterthought metric",  service: "metrics-svc",  start_ms: 100, duration_ms: 0,   depth: 1, status: "ok" },
+        // Span that runs past the reported total_duration_ms (clock skew
+        // between services can produce this in real traces).
+        { name: "downstream straggler", service: "billing",      start_ms: 80,  duration_ms: 80,  depth: 1, status: "error" },
+      ]),
+    ],
+  },
+});
+
+C.push({
+  id: "qa-04",
+  category: "quality-regression",
+  prompt: "[regression] HTML-shaped strings in titles and log lines must be escaped",
+  expected: {
+    shell: ["investigation", "single-focus"],
+    mustInclude: ["log_viewer"],
+    mustIncludeAny: ["stat_card", "sparkline"],
+    widgetCount: [2, 6],
+  },
+  manifest: {
+    version: "1.0",
+    metadata: {
+      // The skill never produces HTML in these fields, but log lines and
+      // exception messages routinely contain "<" / ">" / quotes coming from
+      // user input or stack traces. The renderer must escape, not interpret.
+      title: "XSS regression — <script>alert('x')</script>",
+      subtitle: "user input <img src=x onerror=alert(1)> in title path",
+      severity: "warning",
+      query_intent: "xss-regression",
+      service: "search-svc",
+    },
+    widgets: [
+      stat(1, "Suspicious <events>", 3, "</span>", { status: "warning" }),
+      logs(2, "<b>Recent</b> errors", "/aws/ecs/<svc>", [
+        { timestamp: "12:00:01", severity: "error", message: "java.lang.RuntimeException: bad input <script>alert(1)</script>" },
+        { timestamp: "12:00:02", severity: "warn",  message: "javascript:alert('still escaped') in user-supplied URL" },
+        { timestamp: "12:00:03", severity: "error", message: "exception thrown: <img src=x onerror=alert(2)>" },
+      ]),
+    ],
+  },
+});
+
+C.push({
+  id: "qa-05",
+  category: "quality-regression",
+  prompt: "[regression] All target=_blank links must carry rel=noreferrer noopener",
+  expected: {
+    shell: "investigation",
+    mustIncludeAny: ["timeline", "change_event_list", "table"],
+    widgetCount: [2, 6],
+  },
+  manifest: {
+    version: "1.0",
+    metadata: {
+      title: "Link safety — every link surface",
+      severity: "info",
+      query_intent: "link-safety-regression",
+      service: "platform",
+    },
+    widgets: [
+      tl(1, "Timeline with links", [
+        { timestamp: "12:00 UTC", title: "Deploy started",  severity: "info",    link: "https://console.aws.amazon.com/ecs/home" },
+        { timestamp: "12:05 UTC", title: "Alarm fired",     severity: "warning", link: "https://console.aws.amazon.com/cloudwatch/home" },
+      ]),
+      tab(2, "Operations with deep-link column", [
+        { key: "op",   label: "Operation", kind: "code" },
+        { key: "logs", label: "Logs",      kind: "link" },
+      ], [
+        { op: "POST /orders", logs: { href: "https://console.aws.amazon.com/cloudwatch/home?logs=orders", label: "open" } },
+        { op: "GET /users",   logs: "https://console.aws.amazon.com/cloudwatch/home?logs=users" },
+      ]),
+      changes(3, "Recent changes with CloudTrail links", [
+        { timestamp: "11:55 UTC", title: "ECS UpdateService", kind: "deploy", link: "https://console.aws.amazon.com/cloudtrail/home?event=evt-001" },
+      ]),
+    ],
+  },
+});
+
+C.push({
+  id: "qa-06",
+  category: "quality-regression",
+  prompt: "[regression] Artifact root must expose an accessible name for landmark navigation",
+  expected: {
+    shell: ["investigation", "single-focus", "dashboard"],
+    mustIncludeAny: ["stat_card", "sparkline", "table"],
+    widgetCount: [1, 4],
+  },
+  manifest: {
+    version: "1.0",
+    metadata: {
+      title: "Accessible-name regression",
+      severity: "info",
+      query_intent: "a11y-landmark-regression",
+    },
+    widgets: [
+      stat(1, "Lonely metric", 42, "ok"),
+    ],
+  },
+});
+
 // Sanity check
-if (C.length !== 52) {
-  throw new Error(`Expected 52 cases, got ${C.length}`);
+const EXPECTED_CASES = 58;
+if (C.length !== EXPECTED_CASES) {
+  throw new Error(`Expected ${EXPECTED_CASES} cases, got ${C.length}`);
 }
 
 export const CASES = C;

@@ -16,8 +16,15 @@ export function render(data, hints = {}) {
   const spans = Array.isArray(data.spans) ? data.spans : [];
 
   const rows = spans.map((s, i) => {
-    const startPct = Math.max(0, Math.min(100, (s.start_ms / total) * 100));
-    const widthPct = Math.max(0.4, Math.min(100 - startPct, (s.duration_ms / total) * 100));
+    // Clamp start to leave room for the minimum-visible bar so a span that
+    // begins at (or past) the right edge of the trace doesn't render outside
+    // the track. 99.6% + 0.4% min-width = 100%.
+    const MIN_BAR_PCT = 0.4;
+    const rawStart = (s.start_ms / total) * 100;
+    const startPct = Math.max(0, Math.min(100 - MIN_BAR_PCT, rawStart));
+    const remaining = Math.max(MIN_BAR_PCT, 100 - startPct);
+    const rawWidth = (s.duration_ms / total) * 100;
+    const widthPct = Math.max(MIN_BAR_PCT, Math.min(remaining, rawWidth));
     const depth = Math.min(s.depth || 0, 8);
     const indent = depth * 14;
     return `<div class="waterfall-row">
