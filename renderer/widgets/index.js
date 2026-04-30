@@ -5,6 +5,7 @@ import * as table from "./table.js";
 import * as trace_waterfall from "./trace_waterfall.js";
 import * as log_viewer from "./log_viewer.js";
 import * as change_event_list from "./change_event_list.js";
+import * as action_form from "./action_form.js";
 
 export const widgets = {
   stat_card,
@@ -14,6 +15,7 @@ export const widgets = {
   trace_waterfall,
   log_viewer,
   change_event_list,
+  action_form,
 };
 
 export const widgetTypes = Object.keys(widgets);

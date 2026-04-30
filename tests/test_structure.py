@@ -38,7 +38,9 @@ EXPECTED_SKILLS = {
     "copy-to-incident",
     "observability-gap-analysis",
     "alerting-design",
+    "create-alarm",
     "hybrid-renderer",
+    "widget-catalog",
 }
 
 EXPECTED_COMMANDS = {
@@ -53,6 +55,7 @@ EXPECTED_COMMANDS = {
     "cw-verify-recovery.md",
     "cw-obs-gaps.md",
     "cw-alert-design.md",
+    "cw-create-alarm.md",
     "cw-trail-view.md",
 }
 

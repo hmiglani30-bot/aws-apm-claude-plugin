@@ -13,6 +13,7 @@ import { esc } from "./widgets/_util.js";
 const ALLOWED_TYPES = new Set([
   "stat_card", "sparkline", "timeline", "table",
   "trace_waterfall", "log_viewer", "change_event_list",
+  "action_form",
 ]);
 const ALLOWED_SEVERITY = new Set(["critical", "warning", "info"]);
 

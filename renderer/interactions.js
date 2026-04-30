@@ -62,6 +62,41 @@ function bindSearch(rootEl, tableId) {
   });
 }
 
+function bindCopyButtons(rootEl) {
+  const buttons = rootEl.querySelectorAll(".af-copy-btn[data-copy-target]");
+  buttons.forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const targetId = btn.getAttribute("data-copy-target");
+      const target = rootEl.querySelector(`#${CSS.escape(targetId)}`);
+      if (!target) return;
+      const text = target.textContent || "";
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+        }
+        const original = btn.textContent;
+        btn.textContent = "Copied";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.classList.remove("copied");
+        }, 1500);
+      } catch {
+        // Silent — fall back to user manually selecting the <pre>.
+      }
+    });
+  });
+}
+
 export function bindInteractions(rootEl) {
   if (!rootEl) return;
   const tables = rootEl.querySelectorAll(".widget-table");
@@ -70,4 +105,5 @@ export function bindInteractions(rootEl) {
     const id = t.getAttribute("data-table-id");
     if (id) bindSearch(rootEl, id);
   });
+  bindCopyButtons(rootEl);
 }

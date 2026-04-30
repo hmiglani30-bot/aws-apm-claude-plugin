@@ -412,6 +412,124 @@
 .change-link:hover { text-decoration: underline; }
 .change-empty { color: var(--text-secondary); font-style: italic; padding: 14px 0; }
 
+/* ---------- action_form ---------------------------------------------- */
+.widget-action-form { padding: 0; }
+.widget-action-form .widget-header { padding: 12px 14px; margin-bottom: 0; }
+.af-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+.af-description { color: var(--text-secondary); font-size: 13px; margin: 0; }
+
+.af-context {
+  display: flex; flex-wrap: wrap; gap: 8px 16px;
+  padding: 8px 10px; border-radius: 6px;
+  background: var(--bg-surface-2); border: 1px solid var(--border);
+  font-size: 12px;
+}
+.af-ctx-item { display: inline-flex; gap: 6px; align-items: baseline; }
+.af-ctx-lbl { color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-size: 10px; font-weight: 700; }
+.af-context code { background: var(--bg-page); padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+
+.af-safety {
+  border: 1px solid var(--border-strong);
+  border-left: 3px solid var(--status-warning);
+  background: rgba(255,165,82,0.06);
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 6px;
+  font-size: 12px;
+}
+.af-safety-header { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.af-safety-meta { display: flex; flex-wrap: wrap; gap: 12px; color: var(--text-secondary); }
+.af-meta-lbl { color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-size: 10px; font-weight: 700; margin-right: 4px; }
+.af-safety-row { color: var(--text-secondary); }
+.af-safety-note { color: var(--text-primary); font-style: italic; }
+.af-tier-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+}
+.af-tier-low { background: rgba(83,159,229,0.15); color: var(--status-info); border: 1px solid rgba(83,159,229,0.35); }
+.af-tier-4   { background: rgba(255,165,82,0.18); color: var(--status-warning); border: 1px solid rgba(255,165,82,0.4); }
+.af-tier-5   { background: rgba(255,93,100,0.18); color: var(--status-error); border: 1px solid rgba(255,93,100,0.4); }
+
+.af-form { display: flex; flex-direction: column; gap: 12px; }
+.af-fields {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px 14px;
+  margin: 0;
+  display: grid; gap: 12px;
+}
+.af-legend {
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+  padding: 0 6px;
+}
+.af-field { display: flex; flex-direction: column; gap: 4px; }
+.af-field-label { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+.af-required { color: var(--status-error); margin-left: 2px; }
+.af-field-control { display: flex; align-items: center; gap: 6px; }
+.af-control {
+  flex: 1; min-width: 0;
+  background: var(--bg-page); color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 6px 8px; font-size: 13px; font-family: inherit;
+  font-variant-numeric: tabular-nums;
+}
+.af-control:focus { outline: none; border-color: var(--link); }
+.af-textarea { resize: vertical; min-height: 56px; font-family: "SF Mono", "Monaco", Menlo, monospace; font-size: 12px; }
+.af-select { appearance: auto; }
+.af-field-unit { color: var(--text-secondary); font-size: 12px; }
+.af-field-help { color: var(--text-muted); font-size: 11px; }
+.af-field-source { color: var(--text-secondary); font-size: 11px; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+.af-source-label {
+  display: inline-block; padding: 1px 6px; border-radius: 3px;
+  background: rgba(106,175,63,0.15); color: var(--status-success);
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.af-empty { color: var(--text-secondary); font-style: italic; padding: 14px; }
+
+.af-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.af-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 4px;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  text-decoration: none; cursor: pointer; border: 1px solid transparent;
+}
+.af-btn-primary  { background: var(--link); color: var(--bg-page); }
+.af-btn-primary:hover { background: var(--link-hover); }
+.af-btn-secondary {
+  background: transparent; color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+.af-btn-secondary:hover { background: var(--bg-surface-2); }
+
+.af-cli {
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg-page); overflow: hidden;
+}
+.af-cli-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; background: var(--bg-surface-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px; font-weight: 600;
+}
+.af-copy-btn {
+  background: transparent; color: var(--link);
+  border: 1px solid var(--border-strong); border-radius: 3px;
+  padding: 3px 10px; font-size: 11px; font-family: inherit; font-weight: 600;
+  cursor: pointer;
+}
+.af-copy-btn:hover { background: var(--bg-surface); color: var(--link-hover); }
+.af-copy-btn.copied { color: var(--status-success); border-color: var(--status-success); }
+.af-cli-block {
+  margin: 0; padding: 12px;
+  font-family: "SF Mono", "Monaco", Menlo, monospace;
+  font-size: 12px; line-height: 1.55;
+  color: var(--text-primary);
+  white-space: pre-wrap; word-break: break-word;
+  overflow-x: auto;
+}
+
 /* ---------- Responsive — narrow panel reflow ------------------------- */
 /*
   Container queries: react to the artifact's own width, not the viewport. This
@@ -432,6 +550,8 @@
   .log-line { grid-template-columns: 120px 50px 1fr; font-size: 11px; }
   .timeline-time { min-width: 90px; }
   .table-search { width: 110px; }
+  .af-fields { padding: 8px 10px 12px; }
+  .af-context { gap: 6px 12px; }
 }
 @container hr (max-width: 380px) {
   .hr-shell-investigation .hr-shell-header,

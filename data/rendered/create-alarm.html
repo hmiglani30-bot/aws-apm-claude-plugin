@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Create Alarm — rendered preview</title>
+<link rel="stylesheet" href="../../renderer/styles.css" />
+<style>body { background:#0a121c; margin:0; padding:24px; font-family:"Open Sans","Segoe UI",sans-serif; } .frame { max-width:900px; margin:0 auto; }</style>
+</head>
+<body>
+<div class="frame">
+<article class="hr-artifact" data-shell="single-focus" data-density="3/6">
+  <div class="hr-meta-bar sev-info">
+  <div class="hr-meta-titles">
+    <h1 class="hr-title">Create Alarm — checkout-api Errors</h1>
+    <div class="hr-subtitle">Recommended threshold: 5 errors/min (rule: 2× p95 baseline, window 7d)</div>
+  </div>
+  <div class="hr-meta-tags">
+    <span class="hr-sev-badge sev-info">info</span>
+    <span class="hr-meta-context">checkout-api · us-east-1 · prod</span>
+    <span class="hr-meta-time">2026-04-30T18:24:00Z</span>
+  </div>
+</div>
+  
+  <section class="hr-shell hr-shell-single-focus" data-shell="single-focus">
+  <header class="hr-shell-header" data-slot="header"><div class="widget widget-action-form emph-primary" data-action-id="create_metric_alarm">
+  <div class="widget-header">
+    <span>Create CloudWatch Alarm — checkout-api Errors</span>
+    <span class="widget-meta"><code>create_metric_alarm</code></span>
+  </div>
+  <div class="af-body">
+    <p class="af-description">Errors spiked 14× over baseline at 14:18 UTC. This alarm pages on the same condition. Threshold derived from 7d baseline (p95 = 2.4 errors/min) using the count-metric default rule (2× baseline, floored at 5).</p>
+    <div class="af-context"><span class="af-ctx-item"><span class="af-ctx-lbl">Account</span><code>123456789012</code></span><span class="af-ctx-item"><span class="af-ctx-lbl">Region</span><code>us-east-1</code></span><span class="af-ctx-item"><span class="af-ctx-lbl">Service</span><code>checkout-api</code></span><span class="af-ctx-item"><span class="af-ctx-lbl">Env</span><code>prod</code></span></div>
+    <div class="af-safety">
+    <div class="af-safety-header"><span class="af-tier-badge af-tier-4" title="See ACTION-SAFETY-MODEL.md">Tier 4</span><div class="af-safety-meta"><span><span class="af-meta-lbl">Blast radius</span> single alarm; no impact on metric data</span><span><span class="af-meta-lbl">Reversible</span> yes</span><span><span class="af-meta-lbl">MCP tool</span> <code>mcp__awslabs__cloudwatch_mcp_server__PutMetricAlarm</code></span></div></div>
+    <div class="af-safety-row"><span class="af-meta-lbl">Rollback</span> DeleteAlarms with alarm name (console deep link in this artifact)</div>
+    <div class="af-safety-row"><span class="af-meta-lbl">Detect side effects</span> Watch the alarm&#39;s state-history page after applying</div>
+    <div class="af-safety-note">Tier 4 write — reviewed, but not yet applied. Click the console button or paste the CLI to apply.</div>
+  </div>
+    <form id="af-1-6ca22" class="af-form" novalidate onsubmit="return false;">
+      <fieldset class="af-fields">
+        <legend class="af-legend">Configuration</legend>
+        <div class="af-field">
+    <label for="af-1-6ca22-AlarmName" class="af-field-label">
+      Alarm name <span class="af-required" aria-hidden="true">*</span>
+    </label>
+    <div class="af-field-control"><input type="text" id="af-1-6ca22-AlarmName" name="AlarmName"
+      value="checkout-api-Lambda-Errors-Sum-Critical" required pattern="^[A-Za-z0-9_\-\.]+$" maxlength="255"
+      class="af-control af-input" data-field-key="AlarmName" /></div>
+    <div class="af-field-source"><span class="af-source-label">Recommended</span> · naming convention</div>
+    
+  </div><div class="af-field">
+    <label for="af-1-6ca22-Namespace" class="af-field-label">
+      Namespace <span class="af-required" aria-hidden="true">*</span>
+    </label>
+    <div class="af-field-control"><input type="text" id="af-1-6ca22-Namespace" name="Namespace"
+      value="AWS/Lambda" required 
+      class="af-control af-input" data-field-key="Namespace" /></div>
+    <div class="af-field-source"><span class="af-source-label">Recommended</span> · metric metadata</div>
+    
+  </div><div class="af-field">
+    <label for="af-1-6ca22-MetricName" class="af-field-label">
+      Metric name <span class="af-required" aria-hidden="true">*</span>
+    </label>
+    <div class="af-field-control"><input type="text" id="af-1-6ca22-MetricName" name="MetricName"
+      value="Errors" required 
+      class="af-control af-input" data-field-key="MetricName" /></div>
+    <div class="af-field-source"><span class="af-source-label">Recommended</span> · metric metadata</div>
+    
+  </div><div class="af-field">
+    <label for="af-1-6ca22-Statistic" class="af-field-label">
+      Statistic 
+    </label>
+    <div class="af-field-control"><select id="af-1-6ca22-Statistic" name="Statistic"  class="af-control af-select" data-field-key="Statistic">
+      <option value="Sum" selected>Sum</option><option value="Average" >Average</option><option value="Minimum" >Minimum</option><option value="Maximum" >Maximum</option><option value="p90" >p90</option><option value="p95" >p95</option><option value="p99" >p99</option>
+    </select></div>
+    <div class="af-field-source"><span class="af-source-label">Recommended</span> · metric class default</div>
+    
+  </div><div class="af-field">
+    <label for="af-1-6ca22-Period" class="af-field-label">
+      Period 
+    </label>
+    <div class="af-field-control"><input type="number" id="af-1-6ca22-Period" name="Period"
+      value="60"  min="10" step="10"
+      class="af-control af-input" data-field-key="Period" /><span class="af-field-unit">seconds</span></div>
+    <div class="af-field-source"><span class="af-source-label">Recommended</span> · metric class default</div>
+    
+  </div><div class="af-field">
+    <label for="af-1-6ca22-EvaluationPeriods" class="af-field-label">
+      Evaluation periods 
+    </label>
+    <div class="af-field-control"><input type="number" id="af-1-6ca22-EvaluationPeriods" name="EvaluationPeriods"
+      value="5"  min="1" max="1440"
+      class="af-control af-input" data-field-key="EvaluationPeriods" /></div>
+    <div class="af-field-source"><span class="af-source-label">Recommended</span> · metric class default</div>
+    
+  </div><div class="af-field">
+    <label for="af-1-6ca22-DatapointsToAlarm" class="af-field-label">
+      Datapoints to alarm 
+    </label>
+    <div class="af-field-control"><input type="number" id="af-1-6ca22-DatapointsToAlarm" name="DatapointsToAlarm"
+      value="5"  min="1" max="1440"
+      class="af-control af-input" data-field-key="DatapointsToAlarm" /></div>
+    <div class="af-field-source"><span class="af-source-label">Recommended</span> · metric class default</div>
+    
+  </div><div class="af-field">
+    <label for="af-1-6ca22-ComparisonOperator" class="af-field-label">
+      Comparison operator 
+    </label>
+    <div class="af-field-control"><select id="af-1-6ca22-ComparisonOperator" name="ComparisonOperator"  class="af-control af-select" data-field-key="ComparisonOperator">
+      <option value="GreaterThanThreshold" selected>&gt; (Greater than)</option><option value="GreaterThanOrEqualToThreshold" >≥ (Greater than or equal)</option><option value="LessThanThreshold" >&lt; (Less than)</option><option value="LessThanOrEqualToThreshold" >≤ (Less than or equal)</option>
+    </select></div>
+    <div class="af-field-source"><span class="af-source-label">Recommended</span> · metric class default</div>
+    
+  </div><div class="af-field">
+    <label for="af-1-6ca22-Threshold" class="af-field-label">
+      Threshold 
+    </label>
+    <div class="af-field-control"><input type="number" id="af-1-6ca22-Threshold" name="Threshold"
+      value="5"  
+      class="af-control af-input" data-field-key="Threshold" /><span class="af-field-unit">errors/min</span></div>
+    <div class="af-field-source"><span class="af-source-label">Recommended</span> · rule: 2× baseline_p95 (=2.4 → 5, floor)</div>
+    <div class="af-field-help">7d baseline p95 = 2.4 errors/min; the count-metric rule rounds 2× up to floor of 5 to avoid pager noise on single-error blips.</div>
+  </div><div class="af-field">
+    <label for="af-1-6ca22-TreatMissingData" class="af-field-label">
+      Treat missing data as 
+    </label>
+    <div class="af-field-control"><select id="af-1-6ca22-TreatMissingData" name="TreatMissingData"  class="af-control af-select" data-field-key="TreatMissingData">
+      <option value="notBreaching" selected>notBreaching</option><option value="breaching" >breaching</option><option value="ignore" >ignore</option><option value="missing" >missing</option>
+    </select></div>
+    <div class="af-field-source"><span class="af-source-label">Recommended</span> · metric class default</div>
+    
+  </div><div class="af-field">
+    <label for="af-1-6ca22-Dimensions" class="af-field-label">
+      Dimensions 
+    </label>
+    <div class="af-field-control"><textarea id="af-1-6ca22-Dimensions" name="Dimensions"   rows="3" class="af-control af-textarea" data-field-key="Dimensions">Name=FunctionName,Value=checkout-api</textarea></div>
+    <div class="af-field-source"><span class="af-source-label">Recommended</span> · service binding</div>
+    <div class="af-field-help">One Name=…,Value=… per line.</div>
+  </div><div class="af-field">
+    <label for="af-1-6ca22-AlarmActions" class="af-field-label">
+      ALARM action (SNS topic ARN) 
+    </label>
+    <div class="af-field-control"><input type="text" id="af-1-6ca22-AlarmActions" name="AlarmActions"
+      value="arn:aws:sns:us-east-1:123456789012:critical-alerts"  
+      class="af-control af-input" data-field-key="AlarmActions" /></div>
+    <div class="af-field-source"><span class="af-source-label">Recommended</span> · tier routing</div>
+    <div class="af-field-help">Pick the topic that matches the severity tier (paging vs ticket vs log).</div>
+  </div><div class="af-field">
+    <label for="af-1-6ca22-OKActions" class="af-field-label">
+      OK action (SNS topic ARN) 
+    </label>
+    <div class="af-field-control"><input type="text" id="af-1-6ca22-OKActions" name="OKActions"
+      value="arn:aws:sns:us-east-1:123456789012:critical-alerts"  
+      class="af-control af-input" data-field-key="OKActions" /></div>
+    <div class="af-field-source"><span class="af-source-label">Recommended</span> · recommended for paging tier</div>
+    
+  </div>
+      </fieldset>
+      <div class="af-actions"><a class="af-btn af-btn-primary" href="https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#alarmsV2:create" target="_blank" rel="noreferrer noopener">Open Create Alarm in CloudWatch console</a><button type="reset" class="af-btn af-btn-secondary">Reset to recommended</button></div>
+    </form>
+    <div class="af-cli">
+    <div class="af-cli-header">
+      <span>Copy CLI command</span>
+      <button type="button" class="af-copy-btn" data-copy-target="af-1-6ca22-cli" aria-label="Copy command to clipboard">Copy</button>
+    </div>
+    <pre id="af-1-6ca22-cli" class="af-cli-block"><code>aws cloudwatch put-metric-alarm \
+  --alarm-name &quot;checkout-api-Lambda-Errors-Sum-Critical&quot; \
+  --namespace &quot;AWS/Lambda&quot; \
+  --metric-name &quot;Errors&quot; \
+  --statistic &quot;Sum&quot; \
+  --period 60 \
+  --evaluation-periods 5 \
+  --datapoints-to-alarm 5 \
+  --threshold 5 \
+  --comparison-operator &quot;GreaterThanThreshold&quot; \
+  --treat-missing-data &quot;notBreaching&quot; \
+  --dimensions &quot;Name=FunctionName,Value=checkout-api&quot; \
+  --alarm-actions &quot;arn:aws:sns:us-east-1:123456789012:critical-alerts&quot; \
+  --ok-actions &quot;arn:aws:sns:us-east-1:123456789012:critical-alerts&quot; \
+  --region us-east-1</code></pre>
+  </div>
+  </div>
+</div></header>
+  <main class="hr-shell-primary" data-slot="primary"></main>
+  
+</section>
+
+</article>
+</div>
+<script type="module">
+import { bindInteractions } from "../../renderer/interactions.js";
+bindInteractions(document.querySelector(".frame"));
+</script>
+</body>
+</html>
