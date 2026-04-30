@@ -92,6 +92,39 @@ How to surface progress to the on-call engineer while the investigation runs:
 The classification drives urgency. Fast burn → page-worthy, mitigate first, RCA later.
 Slow burn → investigate first, mitigate based on root cause.
 
+#### Burn rate math (canonical)
+
+Use this formula whenever Application Signals does not provide burn rate
+directly (e.g. when computing from raw CloudWatch metrics in degraded
+mode, or cross-checking a reported value):
+
+```
+burn_rate = (1 - current_attainment_in_window) / (1 - slo_target)
+```
+
+Where `current_attainment_in_window` is the SLO's good-event ratio over
+the chosen lookback (1h, 6h, or 24h). A `burn_rate` of 1.0 means the SLO
+is consuming budget at exactly the rate the budget allows; 14.4 means
+consuming 14.4× faster than the budget can sustain.
+
+Time-to-budget-exhaustion projection from a stable burn rate:
+
+```
+hours_until_exhausted = (budget_remaining_pct / 100) * window_hours / burn_rate
+```
+
+For a 30-day SLO with 50% budget remaining at 14.4× burn:
+`(0.50 * 720) / 14.4 ≈ 25 hours`. Surface this number in the artifact —
+"~25 hours until budget exhausted at current burn rate" reads more
+viscerally than "burn rate 14.4×".
+
+**Multi-window alerting (Google SRE workbook recommendation):** report all
+three of 1h, 6h, 24h burn rates. Page on "1h ≥ 14.4× AND 5m ≥ 14.4×"
+(catches incidents fast); ticket on "6h ≥ 6× AND 30m ≥ 6×" (catches
+slower incidents); status-only on "24h ≥ 1× AND 6h ≥ 1×" (catches
+chronic budget loss). The plugin's verdict mapping uses these
+thresholds.
+
 ### Phase 2 — Localize the impact
 
 For the breaching SLO, identify *which operations are responsible*:

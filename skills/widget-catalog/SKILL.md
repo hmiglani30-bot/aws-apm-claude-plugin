@@ -28,15 +28,21 @@ table.
 
 ## 1. Widget Registry
 
-Nine widget types are available. Each has a density cost (how much visual
-space it consumes), a Cloudscape component mapping, and rules for when to
-use or avoid it.
+Nine widget types are defined. Seven are **implemented** in
+`renderer/widgets/` and ready to use today: `stat_card`, `table`,
+`timeline`, `trace_waterfall`, `log_viewer`, `change_event_list`,
+`sparkline`. Two are **planned** (`chart`, `action_form`) — emit them only
+if you have a fallback path. Each entry below tags its current
+implementation status.
+
+Each widget has a density cost (how much visual space it consumes), a
+Cloudscape component mapping, and rules for when to use or avoid it.
 
 ### 1.1 `stat_card` -- Single Metric KPI Tile
 
 | Property | Value |
 |---|---|
-| **Component** | `StatCard.jsx` -- Cloudscape `Container` + `Header` + `StatusIndicator` + `Badge` |
+| **Component** | **Implemented** in `renderer/widgets/stat_card.js` -- Cloudscape-styled tile with `StatusIndicator` + optional `Badge` |
 | **Density** | 1 (low -- fits many in a grid) |
 | **Cloudscape parts** | `Container`, `Header`, `Box`, `SpaceBetween`, `StatusIndicator`, `Badge` |
 
@@ -85,7 +91,7 @@ use or avoid it.
 
 | Property | Value |
 |---|---|
-| **Component** | `Table.jsx` -- Cloudscape `Table` + `TextFilter` + `Pagination` + `Header` |
+| **Component** | **Implemented** in `renderer/widgets/table.js` -- Cloudscape-styled `Table` with `TextFilter` and `Pagination` patterns |
 | **Density** | 2 (medium) |
 | **Cloudscape parts** | `Table`, `TextFilter`, `Pagination`, `Header`, `Box`, `StatusIndicator` |
 
@@ -140,7 +146,7 @@ Column `kind` values and their rendering:
 
 | Property | Value |
 |---|---|
-| **Component** | Planned -- renders via Cloudscape `LineChart` or `AreaChart` |
+| **Component** | **Planned** (not yet in `renderer/widgets/`) -- will render via Cloudscape `LineChart` or `AreaChart`. For now, fall back to `sparkline` for single-series time data. |
 | **Density** | 2 (medium) |
 | **Cloudscape parts** | `LineChart`, `AreaChart`, `Header`, `Box` |
 
@@ -199,7 +205,7 @@ Column `kind` values and their rendering:
 
 | Property | Value |
 |---|---|
-| **Component** | Planned -- renders as a vertical event list with severity-colored dots |
+| **Component** | **Implemented** in `renderer/widgets/timeline.js` -- renders as a vertical event list with severity-colored dots |
 | **Density** | 2 (medium) |
 | **Cloudscape parts** | `SpaceBetween`, `StatusIndicator`, `Box`, `Link` |
 
@@ -243,7 +249,7 @@ Column `kind` values and their rendering:
 
 | Property | Value |
 |---|---|
-| **Component** | Planned -- horizontal span bars, nested by depth |
+| **Component** | **Implemented** in `renderer/widgets/trace_waterfall.js` -- horizontal span bars, nested by depth |
 | **Density** | 3 (high -- takes the most space) |
 | **Cloudscape parts** | Custom SVG/CSS within `Container` |
 
@@ -289,7 +295,7 @@ Column `kind` values and their rendering:
 
 | Property | Value |
 |---|---|
-| **Component** | Planned -- severity-colored log lines in a monospace container |
+| **Component** | **Implemented** in `renderer/widgets/log_viewer.js` -- severity-colored log lines in a monospace container |
 | **Density** | 2 (medium) |
 | **Cloudscape parts** | `Container`, `Box`, custom CSS for severity coloring |
 
@@ -331,7 +337,7 @@ Column `kind` values and their rendering:
 
 | Property | Value |
 |---|---|
-| **Component** | Planned -- compact event list with kind-colored icons |
+| **Component** | **Implemented** in `renderer/widgets/change_event_list.js` -- compact event list with kind-colored icons |
 | **Density** | 1 (low) |
 | **Cloudscape parts** | `SpaceBetween`, `Box`, `Badge`, `Link` |
 
@@ -382,7 +388,7 @@ Column `kind` values and their rendering:
 
 | Property | Value |
 |---|---|
-| **Component** | Planned -- standalone mini time-series with current/min/max |
+| **Component** | **Implemented** in `renderer/widgets/sparkline.js` -- standalone mini time-series with current/min/max |
 | **Density** | 1 (low) |
 | **Cloudscape parts** | Custom SVG within `Container`, `Box` |
 
@@ -420,7 +426,7 @@ Column `kind` values and their rendering:
 
 | Property | Value |
 |---|---|
-| **Component** | `ActionForm.jsx` (planned) -- Cloudscape `Form` + `FormField` + safety badge |
+| **Component** | **Planned** (not yet in `renderer/widgets/`) -- will render via Cloudscape `Form` + `FormField` + safety badge. Until shipped, use the `confirm-write.sh` text-based confirmation block instead. |
 | **Density** | 3 (high -- interactive, takes significant space) |
 | **Cloudscape parts** | `Form`, `FormField`, `Input`, `Select`, `Button`, `Badge`, `StatusIndicator`, `Header`, `Container`, `Link`, `Divider` |
 

@@ -114,8 +114,10 @@ For the affected service (resolved in Phase 1):
 1. **For latency alarms**: search slow traces (duration > current p99) in the alarm
    window. Pick 3–5 representative traces using the `trace-waterfall-summary` shape.
 2. **For error alarms**: search failed traces (status = error) in the alarm window, and
-   query Logs Insights for the same window grouping by `errorType` /
-   `exception.type` — patterns first, raw second.
+   query Logs Insights for the same window. Use the **two-stage query strategy** from
+   `error-spike-triage` Phase 2: try a structured `filter level = "ERROR" | stats count() by errorType`
+   query first, then fall back to `filter @message like /(?i)(error|exception|traceback|fault|fail|panic)/`
+   with a `parse @message` regex for unstructured logs (`print()` / stdout). Patterns first, raw second.
 3. **For resource alarms**: pull supporting metrics (e.g. for CPU, also pull request
    rate, task count, autoscaling events; for queue depth, also pull producer / consumer
    rate).
@@ -123,17 +125,49 @@ For the affected service (resolved in Phase 1):
    - Top contributor (operation, exception class, or instance)
    - One-line observation tying the trace / log back to the alarm metric
 
-### Phase 4 — Check CloudTrail for recent config / deploy changes
+### Phase 4 — Correlate alarm trigger time with deployments and changes
 
-1. Query CloudTrail for the alarm window ± 30 minutes (centered on the state transition):
-   - Deploys (`UpdateService`, `UpdateFunctionCode`, `RegisterTaskDefinition`)
-   - Config changes (`PutScalingPolicy`, `ModifyDBInstance`, `UpdateAlias`,
-     `PutMetricAlarm` itself — sometimes a recent threshold change is the cause)
-   - IAM changes (`AttachRolePolicy`, `PutRolePolicy`)
-   - Networking (`AuthorizeSecurityGroupIngress`, `ModifyVpcAttribute`)
-2. Rank changes by proximity to the alarm transition time and by whether they touched
-   the affected service / resource.
-3. Highlight any change in a service that appears on the trace path from Phase 3.
+This phase is **mandatory**, not optional. The single most common cause of a
+fired alarm is a deploy that landed in the prior 30 minutes. Skipping this
+phase produces investigations that miss the obvious answer.
+
+1. **Capture the alarm state-transition timestamp** from `describe_alarm_history`
+   — the moment the alarm flipped to `ALARM`. Time-window this phase around
+   that exact instant, NOT the time the user invoked the command.
+
+2. **Query CloudTrail for `[transition_time - 30min, transition_time + 5min]`**.
+   The asymmetric window catches the most-likely cause (something deployed
+   *before* the alarm fired) without burning budget on after-the-fact
+   remediation events. Categorize each event:
+
+   - **Deploys** — `UpdateFunctionCode`, `UpdateAlias`, `PublishVersion`
+     (Lambda); `UpdateService`, `RegisterTaskDefinition`, `UpdateTaskSet`
+     (ECS); `CreateDeployment`, `UpdateDeploymentGroup` (CodeDeploy);
+     `UpdateStack`, `CreateChangeSet` (CloudFormation); `PutObject` on
+     a CDK / Terraform state bucket.
+   - **Config changes** — `PutScalingPolicy`, `ModifyDBInstance`,
+     `PutParameter` (SSM), `UpdateSecret` (Secrets Manager), `PutMetricAlarm`
+     (sometimes a recent threshold change is the cause, not a service
+     regression).
+   - **IAM changes** — `AttachRolePolicy`, `PutRolePolicy`, `CreateAccessKey`,
+     role-trust-policy edits. Auth-error spikes correlate strongly here.
+   - **Networking** — `AuthorizeSecurityGroupIngress`,
+     `RevokeSecurityGroupEgress`, `ModifyVpcAttribute`, route-table edits.
+
+3. **Rank changes by Δt to the alarm transition time.** Events within
+   ±5 min of the transition are first-class evidence; events 5–30 min
+   prior are second-class; events outside the window are excluded.
+   Render as: `<event_name> by <principal> at <ts> (<Δt> before alarm)`.
+
+4. **Highlight any change in a service that appears on the trace path
+   from Phase 3.** A `UpdateService` on the same ECS service whose tasks
+   show the failed spans is much stronger evidence than a deploy on an
+   unrelated service.
+
+5. **Empty CloudTrail result is meaningful evidence, not a gap.** Render
+   it explicitly: "No CloudTrail changes in the alarm window ± 30 min —
+   rules out 'bad deploy' as a hypothesis." This raises the prior on
+   downstream-dependency / capacity hypotheses.
 
 Follow the CloudTrail data source priority: Lake event data store → CloudWatch Logs
 integration → Lookup Events API. Do not rely solely on Lookup Events for windows >7 days.

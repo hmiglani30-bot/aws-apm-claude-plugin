@@ -284,6 +284,7 @@ The model invokes these based on what the user describes — no command needed.
 | `/cw-obs-gaps [path] [language]` | Codebase observability gap analysis → Observability Gap Report (logging / metrics / tracing / error-handling / health-check coverage; multi-language) |
 | `/cw-alert-design [service-or-namespace] [window]` | Alerting design → Alerting Plan (existing-alarm audit, coverage matrix, recommended thresholds, composite-alarm patterns, IaC snippets) |
 | `/cw-trail-view [time-range] [service-filter] [event-type]` | View recent CloudTrail events as a hybrid-renderer manifest — layout (timeline / audit table / dashboard) is selected from the prompt intent |
+| `/cw-dashboard <dashboard-name> [time-range]` | Read an existing CloudWatch dashboard, fetch live metric / alarm / log values for each widget, and render an interpreted summary |
 | `/cw-set-context` | Pick the AWS profile and region the plugin operates against |
 | `/cw-doctor` | End-to-end diagnostic: MCP servers, AWS identity, region, Application Signals, logs, traces, CloudTrail |
 | `/cw-verify-recovery <service>` | Verify a service has recovered after a mitigation (SLO burn stopped, p99 returned, errors normalized, alarms back to OK) |
@@ -679,6 +680,7 @@ aws-apm-claude-plugin/
 │   ├── cw-obs-gaps.md
 │   ├── cw-alert-design.md
 │   ├── cw-trail-view.md
+│   ├── cw-dashboard.md
 │   ├── cw-set-context.md
 │   ├── cw-doctor.md
 │   └── cw-verify-recovery.md

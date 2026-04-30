@@ -44,6 +44,43 @@ None -- this is a rendering skill. Data is collected by the parent investigation
 If SLO state isn't available because no SLOs are configured, render an explicit
 "No SLOs configured" note rather than omitting the section.
 
+## Data-source order
+
+Pull RED metrics in this order — fall through to the next source if the
+prior one returns no data. The card must show *which* source was used.
+
+1. **Application Signals** (preferred) — `list_services` →
+   `get_service_detail` for the matched service. Provides RED with
+   normalized error/fault distinction, dependency map, and SLO context in
+   one shape.
+2. **X-Ray trace summaries** — `query_sampled_traces` /
+   `get_trace_summaries` over the same window. Compute error rate from
+   `http_status >= 500` plus `error/fault` flags, p99 from `duration_ms`.
+   This catches services that route requests but lack ADOT instrumentation
+   for App Signals SLIs. Surface the trace-error rate even when App
+   Signals data is present — it's a useful cross-check.
+3. **Raw CloudWatch namespace metrics** (degraded mode) — when 1 and 2
+   return no data. Map service type → namespace and dimension:
+
+   | Service type | Namespace | Dimension |
+   |---|---|---|
+   | Lambda | `AWS/Lambda` | `FunctionName` |
+   | API Gateway HTTP | `AWS/ApiGateway` (v2) | `ApiId`, `Stage` |
+   | API Gateway REST | `AWS/ApiGateway` | `ApiName`, `Stage` |
+   | ECS service | `AWS/ECS` | `ClusterName`, `ServiceName` |
+   | ALB target group | `AWS/ApplicationELB` | `TargetGroup`, `LoadBalancer` |
+   | App Runner | `AWS/AppRunner` | `ServiceName` |
+
+   Pull `Invocations`/`RequestCount`, `Errors`/`5XXError`,
+   `Duration`/`Latency` (with `Statistic=p99`) for the window. Note in the
+   metadata footer: "Falling back to raw CloudWatch — Application Signals
+   not available for this service."
+
+Always cross-check Application Signals' error rate with X-Ray's
+trace-error rate. A divergence (App Signals shows healthy, X-Ray shows
+errors) is meaningful evidence of incomplete instrumentation; surface it
+in the verdict reasoning rather than picking one silently.
+
 ## Canonical layout
 
 ```markdown
@@ -62,12 +99,28 @@ If SLO state isn't available because no SLOs are configured, render an explicit
 | p99 latency | <ms> | <ms> | <±%> |
 
 ### SLO status
-| SLO | Target | Current | Budget remaining | State |
-|---|---|---|---|---|
-| <slo> | <target>% | <current>% | <budget>% | <Healthy / Warning / Breach> |
+| SLO | Target | Current | Budget remaining | Burn (1h / 6h / 24h) | State |
+|---|---|---|---|---|---|
+| <slo> | <target>% | <current>% | <budget>% | <1h>× / <6h>× / <24h>× | <Healthy / Warning / Breach> |
 
 > If no SLOs: "No SLOs configured for this service. Recommend: define availability +
 > latency SLOs via Application Signals."
+
+Burn rate convention (matches `slo-breach-investigation`): 1.0× = exactly meeting
+the budget, 14.4× over 1h depletes a 30-day budget in ~50 minutes. Surface a Warning
+state when 1h burn ≥ 14× even if the SLO has not yet breached — the budget will be
+exhausted before the breach alarm fires.
+
+### X-Ray cross-check
+| Source | Error rate | p99 | Sample count |
+|---|---|---|---|
+| Application Signals | <%> | <ms> | <n> |
+| X-Ray trace summaries | <%> | <ms> | <n> |
+
+> If both sources are within 10% of each other, render this section as a single
+> "Sources agree" line. If they disagree by >10% on either column, render the table
+> and add a one-liner: "Trace data disagrees with App Signals — likely instrumentation
+> gap on `<operation>`. Run `/cw-investigate-errors <service>` to drill in."
 
 ### Top dependencies
 | Dependency | Calls/min | p99 | Errors |

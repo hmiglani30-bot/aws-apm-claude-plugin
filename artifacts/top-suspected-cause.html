@@ -14,7 +14,15 @@
     HYP{1..4}_CLAIM, _ELABORATION, _CONFIDENCE, _CONFIDENCE_CLASS,
     HYP{1..4}_EVIDENCE_CARDS (rendered as evidence-card divs — see schema below),
     HYP{1..4}_WHY_CONFIDENCE, HYP{1..4}_NEXT_STEP_TEXT, _QUERY, _LINK,
+    HYP3_TAB_LABEL_OPTIONAL, HYP4_TAB_LABEL_OPTIONAL,
     HYP3_BLOCK_OPTIONAL, HYP4_BLOCK_OPTIONAL,
+
+  Hypotheses now render in a CSS-only Tabs container (Cloudscape Tabs pattern) so users
+  can switch between hypotheses without scrolling. #1 is selected by default. The tablist
+  shows rank + claim + confidence per tab; the panel shows the full evidence grid.
+  When emitting only 2 hypotheses, leave HYP3/HYP4 placeholders empty AND remove the
+  matching <input type="radio" id="hyp-tab-3"> / id="hyp-tab-4" elements so the
+  unused tab labels don't render. Same for the empty .hyp-tabpanel divs.
     RULED_OUT_ITEMS (always present; "None — all retained" if empty),
     SOURCE_MCP_SERVERS, TIME_RANGE_START, TIME_RANGE_END, MCP_TOOLS_LIST,
     HYP_TOTAL_CONSIDERED, HYP_RANKED_COUNT, HYP_RULED_OUT_COUNT.
@@ -63,7 +71,7 @@
     font-size: 14px;
     line-height: 1.5;
   }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 24px 96px 24px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 24px 32px 24px; }
   .header {
     display: flex;
     align-items: flex-start;
@@ -181,6 +189,81 @@
   .hypothesis.high { border-left-color: var(--status-error); }
   .hypothesis.medium { border-left-color: var(--status-warning); }
   .hypothesis.low { border-left-color: var(--text-secondary); }
+
+  /* Tabs — Cloudscape-style segmented hypothesis navigation. */
+  .hyp-tabs {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .hyp-tabs > input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .hyp-tablist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-surface-2);
+  }
+  .hyp-tablabel {
+    flex: 1 1 0;
+    min-width: 200px;
+    padding: 12px 16px;
+    cursor: pointer;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    user-select: none;
+    background: var(--bg-surface-2);
+    color: var(--text-secondary);
+    transition: background 120ms, color 120ms;
+    border-bottom: 3px solid transparent;
+  }
+  .hyp-tablabel:last-of-type { border-right: none; }
+  .hyp-tablabel:hover { background: rgba(83, 159, 229, 0.08); color: var(--text-primary); }
+  .hyp-tablabel .tab-rank { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; opacity: 0.85; }
+  .hyp-tablabel .tab-claim { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .hyp-tablabel .tab-conf {
+    align-self: flex-start;
+    margin-top: 2px;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+  }
+  .hyp-tablabel .tab-conf.high { color: var(--status-error); background: rgba(255, 93, 100, 0.12); }
+  .hyp-tablabel .tab-conf.medium { color: var(--status-warning); background: rgba(255, 165, 82, 0.12); }
+  .hyp-tablabel .tab-conf.low { color: var(--text-secondary); background: rgba(149, 165, 184, 0.12); }
+  .hyp-tabpanel { display: none; padding: 18px; }
+  .hyp-tabpanel .hypothesis { margin-bottom: 0; border: none; border-left: 4px solid var(--border); border-radius: 4px; }
+  .hyp-tabpanel .hypothesis.high { border-left-color: var(--status-error); }
+  .hyp-tabpanel .hypothesis.medium { border-left-color: var(--status-warning); }
+  .hyp-tabpanel .hypothesis.low { border-left-color: var(--text-secondary); }
+  /* Active state — selected tab gets bottom-bar accent and panel shows. */
+  #hyp-tab-1:checked ~ .hyp-tablist label[for="hyp-tab-1"],
+  #hyp-tab-2:checked ~ .hyp-tablist label[for="hyp-tab-2"],
+  #hyp-tab-3:checked ~ .hyp-tablist label[for="hyp-tab-3"],
+  #hyp-tab-4:checked ~ .hyp-tablist label[for="hyp-tab-4"] {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border-bottom-color: var(--link);
+  }
+  #hyp-tab-1:checked ~ #hyp-panel-1,
+  #hyp-tab-2:checked ~ #hyp-panel-2,
+  #hyp-tab-3:checked ~ #hyp-panel-3,
+  #hyp-tab-4:checked ~ #hyp-panel-4 { display: block; }
+  /* Keyboard focus indicator for screen readers and keyboard users. */
+  .hyp-tabs > input[type="radio"]:focus-visible + .hyp-tablist label[for] { outline: 2px solid var(--link); outline-offset: -2px; }
 
   .hyp-header {
     display: flex;
@@ -431,7 +514,30 @@
     </div>
   </div>
 
-  <!-- HYPOTHESIS TEMPLATE — repeat 2–4 times. Set class on .hypothesis to high|medium|low. -->
+  <!-- HYPOTHESIS TABS — Cloudscape Tabs pattern. Up to 4 hypotheses; #1 is selected by default.
+       Hypotheses 3 and 4 are optional — if you do not have them, omit both the tab label and
+       the matching panel and remove their <input type="radio"> elements. CSS-only tabs:
+       no JavaScript required, accessible to keyboard users via the radio inputs. -->
+  <div class="hyp-tabs" role="tablist" aria-label="Hypotheses, ranked by evidence">
+    <input type="radio" name="hyp-tab" id="hyp-tab-1" checked />
+    <input type="radio" name="hyp-tab" id="hyp-tab-2" />
+    <input type="radio" name="hyp-tab" id="hyp-tab-3" />
+    <input type="radio" name="hyp-tab" id="hyp-tab-4" />
+    <div class="hyp-tablist">
+      <label class="hyp-tablabel" for="hyp-tab-1" role="tab">
+        <span class="tab-rank">#1 · most likely</span>
+        <span class="tab-claim">{{HYP1_CLAIM}}</span>
+        <span class="tab-conf {{HYP1_CONFIDENCE_CLASS}}">{{HYP1_CONFIDENCE}}</span>
+      </label>
+      <label class="hyp-tablabel" for="hyp-tab-2" role="tab">
+        <span class="tab-rank">#2</span>
+        <span class="tab-claim">{{HYP2_CLAIM}}</span>
+        <span class="tab-conf {{HYP2_CONFIDENCE_CLASS}}">{{HYP2_CONFIDENCE}}</span>
+      </label>
+      {{HYP3_TAB_LABEL_OPTIONAL}}
+      {{HYP4_TAB_LABEL_OPTIONAL}}
+    </div>
+    <div class="hyp-tabpanel" id="hyp-panel-1" role="tabpanel" aria-labelledby="hyp-tab-1">
   <div class="hypothesis {{HYP1_CONFIDENCE_CLASS}}">
     <div class="hyp-header">
       <div class="rank-claim">
@@ -531,7 +637,9 @@
       </div>
     </div>
   </div>
+    </div>
 
+    <div class="hyp-tabpanel" id="hyp-panel-2" role="tabpanel" aria-labelledby="hyp-tab-2">
   <div class="hypothesis {{HYP2_CONFIDENCE_CLASS}}">
     <div class="hyp-header">
       <div class="rank-claim">
@@ -558,9 +666,19 @@
       </div>
     </div>
   </div>
+    </div>
 
-  {{HYP3_BLOCK_OPTIONAL}}
-  {{HYP4_BLOCK_OPTIONAL}}
+    <!-- Optional hypothesis 3 panel. If omitted, also remove #hyp-tab-3 input above. -->
+    <div class="hyp-tabpanel" id="hyp-panel-3" role="tabpanel" aria-labelledby="hyp-tab-3">
+      {{HYP3_BLOCK_OPTIONAL}}
+    </div>
+
+    <!-- Optional hypothesis 4 panel. If omitted, also remove #hyp-tab-4 input above. -->
+    <div class="hyp-tabpanel" id="hyp-panel-4" role="tabpanel" aria-labelledby="hyp-tab-4">
+      {{HYP4_BLOCK_OPTIONAL}}
+    </div>
+  </div>
+  <!-- /HYPOTHESIS TABS -->
 
   <!-- Considered and ruled out — first-class section (UX4). Always present. -->
   <div class="ruled-out-section">

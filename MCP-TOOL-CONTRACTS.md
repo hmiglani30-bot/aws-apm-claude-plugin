@@ -98,6 +98,32 @@ assume newer MCP behavior than the contract describes.
 | **Pagination** | Yes. |
 | **Permissions** | `cloudwatch:DescribeAlarms` |
 
+## Dashboard retrieval (CloudWatch)
+
+### `list_dashboards`
+
+| | |
+|---|---|
+| **Name** | `awslabs.cloudwatch-mcp-server.list_dashboards` (or equivalent — may not be present in all MCP server versions) |
+| **Input** | optional `dashboard_name_prefix` |
+| **Output** | Array of `{dashboard_name, dashboard_arn, last_modified}`. |
+| **Failure modes** | (a) Tool not present in MCP server → skill MUST detect and instruct user to use the AWS CLI / console fallback. (b) Empty array if no dashboards exist. |
+| **Pagination** | Yes (`next_token`). |
+| **Permissions** | `cloudwatch:ListDashboards` |
+
+### `get_dashboard`
+
+| | |
+|---|---|
+| **Name** | `awslabs.cloudwatch-mcp-server.get_dashboard` (or equivalent — may not be present) |
+| **Input** | `dashboard_name` |
+| **Output** | `{dashboard_name, dashboard_arn, dashboard_body}` where `dashboard_body` is a JSON string per the [CloudWatch dashboard body schema](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/CloudWatch-Dashboard-Body-Structure.html) — top-level `widgets[]` array, each with `type` (`metric`, `text`, `log`, `alarm`), `properties`, `width`, `height`, `x`, `y`. |
+| **Failure modes** | (a) Tool not present → fall back: have the user run `aws cloudwatch get-dashboard --dashboard-name <name>` and paste the JSON. (b) Dashboard not found → structured error. (c) Body is a JSON string the skill MUST parse defensively (some dashboards contain non-standard fields). |
+| **Pagination** | No. |
+| **Permissions** | `cloudwatch:GetDashboard` |
+
+If neither tool is present in the deployed MCP server, the `cw-dashboard` command's skill MUST fall back to asking the user to paste the dashboard JSON, rather than fabricating data.
+
 ## Log retrieval (CloudWatch Logs Insights)
 
 ### `start_query` / `get_query_results`

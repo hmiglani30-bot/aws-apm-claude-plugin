@@ -125,7 +125,9 @@ say so explicitly rather than omitting the line.
    - Sample 2 raw log lines per pattern
 3. Render as patterns first, raw second (this is the canonical AWS APM logs UX).
 
-Example Logs Insights query:
+**Two-stage query strategy** — try the structured query first, then fall back if it returns zero rows.
+
+Stage 1 — Structured logs (JSON / EMF / `@aws.cloudwatch.logs.json`). Works when the app emits JSON with `level` / `errorType` / `exception` fields:
 ```
 fields @timestamp, @message, level, errorType, exception
 | filter level = "ERROR"
@@ -133,6 +135,25 @@ fields @timestamp, @message, level, errorType, exception
 | sort occurrences desc
 | limit 5
 ```
+
+Stage 2 — Unstructured logs (plain `print()` / `console.log` / stdout / stderr). Use this when Stage 1 returns 0 rows — common for Lambdas that don't ship a JSON logger:
+```
+fields @timestamp, @message
+| filter @message like /(?i)(error|exception|traceback|fault|fail|panic)/
+| parse @message /(?<errorClass>[A-Z][A-Za-z0-9_]*(?:Error|Exception))/
+| stats count() as occurrences by errorClass
+| sort occurrences desc
+| limit 5
+```
+
+Always run Stage 1 first. If `GetQueryResults` returns 0 rows or the query produces an "unknown field" error, immediately re-run with Stage 2. Surface which stage produced the result in the artifact (e.g., "Patterns extracted from unstructured logs via regex parse — consider migrating to a structured logger for higher fidelity").
+
+**Log group discovery fallback:** if Application Signals does not return a log group for the service, try the conventional path:
+- Lambda: `/aws/lambda/<function-name>`
+- ECS / Fargate: `/aws/ecs/<cluster>/<service>` or `/<service>` (custom)
+- API Gateway: `API-Gateway-Execution-Logs_<api-id>/<stage>`
+- App Runner: `/aws/apprunner/<service>/<id>/application`
+Use `describe_log_groups` with a name prefix to confirm before querying.
 
 ### Phase 3 — Pull failing traces
 
