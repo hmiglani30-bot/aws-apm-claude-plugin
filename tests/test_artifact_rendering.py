@@ -61,6 +61,18 @@ REQUIRED_SECTION_MARKERS = {
         "CloudWatch Console",
         "MCP tools",
     ),
+    "alerting-plan.html": (
+        "Confidence",            # confidence label in the metadata footer
+        "CloudWatch Console",    # deep-link block
+        "MCP tools",             # MCP-tools-called field in footer
+        "Time window",           # window covered by the plan
+    ),
+    "observability-gap-report.html": (
+        "CloudWatch Console",    # deep-link block (citation)
+        "Path analyzed",         # footer field
+        "AWS docs MCP",          # source-of-truth attribution in footer
+        "Generated",             # generated-at timestamp in footer
+    ),
 }
 
 
