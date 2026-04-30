@@ -12,7 +12,7 @@ description: >
   "CODEOWNERS for this service", "PagerDuty for service",
   or any request that needs to map a service or resource to a human / team.
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Service Ownership Resolution
@@ -22,6 +22,16 @@ sources teams typically register ownership in. The output is a
 **"Likely owner"** line and a **"Suggested page"** target that get embedded
 in the metadata footer of investigation artifacts (Service Health Card, SLO
 Breach Explainer, Top Suspected Cause, Trace Waterfall Summary).
+
+## Context provider
+
+Read these fields from the context provider (ARCHITECTURE.md context shape):
+
+- `context.service` -- the Application Signals service name to resolve ownership for
+- `context.region` -- AWS region (pass to all MCP calls)
+- `context.account` -- AWS account ID (include in output metadata)
+- `context.environment` -- prod / staging / dev (affects which ownership tags to prioritize)
+- `context.data_sources_available` -- check before calling each source
 
 ## When this activates
 
@@ -38,6 +48,11 @@ Breach Explainer, Top Suspected Cause, Trace Waterfall Summary).
 - A service name OR a resource ARN OR an Application Signals service
   identifier.
 
+## MCP tool dependencies
+
+- `awslabs.cloudwatch-applicationsignals-mcp-server` -- `list_services` (to resolve service name to resource ARN)
+- `awslabs.cloudwatch-mcp-server` -- `list_tags_for_resource` (to read AWS resource tags)
+
 ## Sources, in priority order
 
 The skill walks each source until it has high-confidence ownership, OR
@@ -47,15 +62,31 @@ still surfaced as cross-references.
 
 ### 1. AWS resource tags
 
-Check tags on the underlying resource (ECS service, Lambda function, EKS
-deployment, etc.):
-- `Owner` / `owner`
-- `Team` / `team`
-- `CostCenter` / `cost-center`
-- `oncall` / `pagerduty-service` / `slack-channel`
+#### MCP tool call sequence
 
-Tag conventions vary across orgs. Capture every key that looks
-ownership-shaped, normalize to lowercase, and keep the raw values.
+1. Call `list_services` with `region=context.region` to find the service by name. Extract `key_attributes` for the resource ARN.
+2. Call `list_tags_for_resource` with `resource_arn=<extracted ARN>` to retrieve all tags.
+3. Scan for tags matching (case-insensitive): `Owner`, `Team`, `CostCenter`, `oncall`, `pagerduty-service`, `slack-channel`.
+
+If no ownership tags found, record "AWS tags: no ownership tags" and continue to source 2.
+
+#### Example MCP call sequence
+
+```
+Step 1: list_services(region="us-east-2") -> find service by name -> extract key_attributes for resource ARN
+Step 2: list_tags_for_resource(resource_arn="arn:aws:ecs:us-east-1:123456:service/checkout-api") -> scan for ownership tags
+Step 3: Filter tags matching Owner, Team, CostCenter, oncall, pagerduty-service, slack-channel
+```
+
+#### Example output
+
+```
+AWS tags on arn:aws:ecs:us-east-1:123456:service/checkout-api:
+  Owner = checkout-platform
+  oncall = checkout-team
+  slack-channel = #checkout-oncall
+Confidence contribution: +1 source (tags present and consistent)
+```
 
 ### 2. AWS Service Catalog
 
@@ -77,10 +108,9 @@ known.
 ### 4. GitHub teams
 
 If a CODEOWNERS team is found, optionally resolve its membership (only if
-the user has provided GitHub access — do not assume). Surface the team
+the user has provided GitHub access -- do not assume). Surface the team
 name + a count of members + the team's URL. Do not paste the full member
-list into the artifact unless the user asks; that's information density
-that doesn't pay rent in a triage artifact.
+list into the artifact unless the user asks.
 
 ### 5. PagerDuty escalation policy
 
@@ -91,8 +121,7 @@ Surface:
 - The escalation steps (1st level, 2nd level)
 
 If the user does not have a PagerDuty integration configured, skip this
-source silently (don't fail the skill on missing integrations) but note
-"PagerDuty not configured" in the source list.
+source silently but note "PagerDuty not configured" in the source list.
 
 ### 6. Slack channel configuration
 
@@ -108,96 +137,89 @@ Surface the canonical channel handle (e.g. `#checkout-oncall`).
 Render the resolution as a compact block embeddable into investigation
 artifacts. There are two output modes:
 
-### Mode A — Inline (default)
+### Mode A -- Inline (default)
 
-For embedding into an existing artifact's metadata footer or a "Who to
-escalate" block:
+For embedding into an existing artifact's metadata footer:
 
 ```markdown
-**Likely owner:** `@example/checkout-team` (CODEOWNERS) · also tagged
+**Likely owner:** `@example/checkout-team` (CODEOWNERS) . also tagged
 `Owner=checkout-platform`
-**Suggested page:** PagerDuty `checkout-availability` policy · current
-on-call: `<user>` · Slack: `#checkout-oncall`
-**Sources consulted:** AWS tags ✅ · Service Catalog ⚠️ (no record) ·
-CODEOWNERS ✅ · GitHub team ✅ · PagerDuty ✅ · Slack ✅
+**Suggested page:** PagerDuty `checkout-availability` policy . current
+on-call: `<user>` . Slack: `#checkout-oncall`
+**Sources consulted:** AWS tags (check) . Service Catalog (warning) (no record) .
+CODEOWNERS (check) . GitHub team (check) . PagerDuty (check) . Slack (check)
 **Confidence:** High (3 sources agree)
 ```
 
-### Mode B — Standalone
+### Mode B -- Standalone
 
 When invoked directly as "who owns service X," produce a fuller artifact
 with each source's findings as its own subsection. Include conflict
-resolution if any source disagrees:
-
-```markdown
-## 👤 Service Ownership: `checkout-service`
-
-**Likely owner:** `@example/checkout-team`
-**Suggested page:** PagerDuty `checkout-availability` policy
-**Confidence:** High
-
-### Source-by-source
-
-#### AWS tags
-- `Owner = checkout-platform`
-- `oncall = checkout-team`
-- `slack-channel = #checkout-oncall`
-
-#### Service Catalog
-No record found. (Service may have been provisioned outside Service
-Catalog, e.g. via Terraform.)
-
-#### CODEOWNERS
-- `/services/checkout/` → `@example/checkout-team`
-
-#### GitHub team
-- `@example/checkout-team` — 8 members · https://github.com/orgs/example/teams/checkout-team
-
-#### PagerDuty
-- Escalation policy: `checkout-availability`
-- Current on-call: `jane.doe@example.com`
-- 2nd-level: `@example/checkout-team` rotation
-
-#### Slack
-- `#checkout-oncall` (from AWS tag)
-
-### Conflicts
-None — all sources point to the checkout-team.
-
----
-
-**Sources consulted:** 5/6 — Service Catalog returned no record.
-**Confidence:** High — 3 independent sources agree on `@example/checkout-team`.
-```
+resolution if any source disagrees.
 
 ## Confidence rule
 
-- **High** — ≥2 independent sources agree (e.g. CODEOWNERS + AWS tag, or
+- **High** -- 2 or more independent sources agree (e.g. CODEOWNERS + AWS tag, or
   PagerDuty + Service Catalog).
-- **Medium** — exactly 1 source has a clear answer; other sources are
+- **Medium** -- exactly 1 source has a clear answer; other sources are
   silent.
-- **Low** — no source has a clear answer; the best guess is from naming
+- **Low** -- no source has a clear answer; the best guess is from naming
   convention or a single weakly-trusted tag (e.g. `costcenter` only).
-- **Unknown** — no source returned ownership info. Surface the gap and
+- **Unknown** -- no source returned ownership info. Surface the gap and
   suggest the user add ownership tags or a CODEOWNERS entry. Do NOT
   guess from a service name; it's better to say "unknown" than to
   misdirect the page.
 
+## Error handling
+
+| Error | Detect | Behavior |
+|---|---|---|
+| `list_services` returns empty | No services in region | Surface "No Application Signals services in `<region>`. Confirm region or run `aws-apm-setup`." |
+| `list_tags_for_resource` AccessDenied | IAM permission missing | Note "AWS tags: AccessDenied -- cannot read tags. Ask admin for `tag:GetResources` permission." Skip to source 2. |
+| `list_tags_for_resource` returns empty | Resource exists but no tags | Record "AWS tags: no tags on resource." Continue to source 2. |
+| Multiple services match name | Ambiguous input | List all matches with ARNs. Ask the user to pick one. Do NOT guess. |
+| PagerDuty integration not configured | No PagerDuty MCP or API error | Skip silently. Note "PagerDuty not configured" in sources list. |
+| GitHub access not available | No GitHub token or API error | Skip silently. Note "GitHub teams: no access" in sources list. |
+| All sources return empty | No ownership data anywhere | Set confidence to Unknown. Render explicit recommendation to add ownership tags. |
+
+## Few-shot examples
+
+### Example 1: Service with rich ownership data
+
+**Input:** "Who owns checkout-api?"
+
+**Output:**
+```markdown
+**Likely owner:** `@example/checkout-team` (CODEOWNERS) . also tagged `Owner=checkout-platform`
+**Suggested page:** PagerDuty `checkout-availability` policy . current on-call: `jane.doe@example.com` . Slack: `#checkout-oncall`
+**Sources consulted:** AWS tags (check) . Service Catalog (warning)(no record) . CODEOWNERS (check) . GitHub team (check)(8 members) . PagerDuty (check) . Slack (check)
+**Confidence:** High (3 sources agree on checkout-team)
+```
+
+### Example 2: Service with no ownership data
+
+**Input:** "Who owns legacy-batch-processor?"
+
+**Output:**
+```markdown
+**Likely owner:** Unknown
+**Suggested page:** Unknown -- no escalation target found
+**Sources consulted:** AWS tags (x)(no ownership tags) . Service Catalog (x)(no record) . CODEOWNERS (x)(no repo associated) . GitHub team (x)(skipped) . PagerDuty (x)(no matching service) . Slack (x)(no channel found)
+**Confidence:** Unknown -- no source returned ownership data
+
+**Recommendation:** Add an `Owner` tag to the resource at `arn:aws:ecs:us-east-1:123456:service/legacy-batch-processor` and create a CODEOWNERS entry in the service repo. Without ownership metadata, escalation during incidents is manual.
+```
+
 ## Embedding into other skills
 
 The investigation skills (`slo-breach-investigation`, `latency-regression`,
-`error-spike-triage`, `alarm-response`, `service-health-card`) should
-invoke this skill once per investigation, after the affected service has
+`error-spike-triage`, `alarm-response`, `service-health-card`) invoke
+this skill once per investigation, after the affected service has
 been identified, and embed the Mode A output in:
 
 - The Service Health Card metadata footer
 - The SLO Breach Explainer "Who to escalate" block
-- The Top Suspected Cause "Suggested next action" — if the action is
-  "page the team that owns service X," include the page target inline.
-
-The investigation-summary artifact has a placeholder for the owner block
-— populate it from this skill's output rather than leaving the
-placeholder blank.
+- The Top Suspected Cause "Suggested next action"
 
 ## Action safety
 
@@ -206,23 +228,20 @@ Read-only across all sources. The skill reads:
 - Service Catalog provisioned products (read-only AWS APIs)
 - The local repo's CODEOWNERS file
 - GitHub teams (read-only GitHub API, only if user has provided access)
-- PagerDuty escalation policies (read-only PagerDuty API, only if user
-  has integration configured)
-- Slack channel handles (read from runbook docs only — does not call
-  Slack APIs)
+- PagerDuty escalation policies (read-only PagerDuty API, only if configured)
+- Slack channel handles (read from runbook docs only)
 
 It does NOT page anyone, post anywhere, or modify ownership records.
-"Suggested page" is exactly that — a suggestion the user must act on
-manually.
+
+## Empty states
+
+- **No services in region** -- "No Application Signals services in `<region>`. Confirm region or run `aws-apm-setup`."
+- **No ownership data from any source** -- Set confidence to Unknown. List all sources checked with their empty result. Recommend adding `Owner` tag.
+- **Conflicting ownership across sources** -- Surface the conflict explicitly. Use the higher-priority source as the "Likely owner" but show the disagreement.
 
 ## What this skill does NOT do
 
-- Does not auto-page. "Suggested page" surfaces the target; the on-call
-  engineer initiates the page through PagerDuty / Opsgenie / their own
-  workflow.
-- Does not auto-DM Slack channels or PR-comment GitHub teams.
-- Does not enforce ownership conventions. If your org tags
-  inconsistently, this skill surfaces the inconsistency, but doesn't
-  fix it.
-- Does not store or cache ownership data. Every invocation re-reads the
-  sources. (Cache is the ownership system's job, not this skill's.)
+- Does not auto-page or DM anyone.
+- Does not modify ownership records or tags.
+- Does not enforce ownership conventions.
+- Does not store or cache ownership data.

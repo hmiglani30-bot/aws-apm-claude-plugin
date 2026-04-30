@@ -40,11 +40,20 @@ If the user is responding to an *active* alarm, prefer
 `alarm-response` — that's the incident-time workflow, this is the
 design-time workflow.
 
-## Required MCP servers
+## Context provider
 
-- `awslabs.cloudwatch-mcp-server` — alarms, metrics, recommendations
-- `awslabs.aws-documentation-mcp-server` — alarm best-practice citations
-  (per-service recommended alarms, anomaly detection guidance)
+Read these fields from the context provider (ARCHITECTURE.md context shape):
+
+- `context.region` -- AWS region (pass to all MCP calls)
+- `context.account` -- AWS account ID (include in report header)
+- `context.service` -- target service if scoped to one service (optional; if absent, audit all alarms in region)
+- `context.environment` -- prod / staging / dev (affects threshold recommendations)
+- `context.data_sources_available.cloudwatch_metrics` -- MUST be true
+
+## MCP tool dependencies
+
+- `awslabs.cloudwatch-mcp-server` -- `describe_alarms`, `get_metric_data`, `list_metrics`
+- `awslabs.aws-documentation-mcp-server` -- `search_documentation` (alarm best-practice citations)
 
 The Application Signals and CloudTrail MCP servers are **not required**.
 This is a design workflow, not an incident workflow.

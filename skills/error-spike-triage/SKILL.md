@@ -28,11 +28,24 @@ service. Produces a **Service Health Card** + **Top Suspected Cause** artifact.
 If an availability SLO is breaching as a result, prefer
 `slo-breach-investigation` — it includes this workflow.
 
-## Required MCP servers
+## Context provider
 
-- `awslabs.cloudwatch-applicationsignals-mcp-server` — services, operations, traces
-- `awslabs.cloudwatch-mcp-server` — Logs Insights for pattern detection
-- `awslabs.cloudtrail-mcp-server` — change correlation
+Read these fields from the context provider (ARCHITECTURE.md context shape):
+
+- `context.service` -- the Application Signals service name experiencing the error spike
+- `context.region` -- AWS region (pass to all MCP calls)
+- `context.account` -- AWS account ID (include in metadata footer)
+- `context.time_window.start` / `.end` -- error spike window
+- `context.environment` -- prod / staging / dev
+- `context.data_sources_available.application_signals` -- MUST be true
+- `context.data_sources_available.cloudwatch_logs` -- needed for Logs Insights pattern detection
+- `context.data_sources_available.cloudtrail` -- needed for change correlation
+
+## MCP tool dependencies
+
+- `awslabs.cloudwatch-applicationsignals-mcp-server` -- `list_service_operations`, `get_top_contributors`, `get_trace_summaries`, `batch_get_traces`
+- `awslabs.cloudwatch-mcp-server` -- `get_metric_data`, `start_query`, `get_query_results`
+- `awslabs.cloudtrail-mcp-server` -- `lookup_events`
 
 ## Presentation
 

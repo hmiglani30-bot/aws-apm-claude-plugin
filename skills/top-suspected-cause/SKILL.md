@@ -16,6 +16,19 @@ metadata:
 Ranked hypotheses with explicit evidence and confidence. Designed to be **falsifiable** —
 each hypothesis includes a concrete next step the user can run to verify or rule it out.
 
+## Context provider
+
+This artifact skill receives its data from parent investigation skills. The following context fields are used in the metadata footer:
+
+- `context.service` -- the Application Signals service name
+- `context.region` -- AWS region (rendered in metadata footer)
+- `context.account` -- AWS account ID (rendered in metadata footer)
+- `context.time_window.start` / `.end` -- investigation window
+
+## MCP tool dependencies
+
+None -- this is a rendering skill. Data is collected by the parent investigation skill (`slo-breach-investigation`, `latency-regression`, `error-spike-triage`, `alarm-response`).
+
 ## Required inputs
 
 For each hypothesis (target 2–4 total):

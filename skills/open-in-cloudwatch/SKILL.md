@@ -15,6 +15,20 @@ metadata:
 Every Tier 3 artifact embeds these. The framing (Q13 in the scope): *Claude is the smart
 front door to CloudWatch, not a replacement.*
 
+## Context provider
+
+Deep links are parameterized from context provider fields:
+
+- `context.service` -- substituted into service detail and operation detail URLs
+- `context.region` -- substituted into all URL templates as `<region>`
+- `context.slo` -- substituted into SLO detail URL as `<slo-id>`
+- `context.alarm` -- substituted into alarm detail URL as `<alarm-name>`
+- `context.time_window.start` / `.end` -- substituted as `<iso-start>` / `<iso-end>` in time-scoped URLs
+
+## MCP tool dependencies
+
+None -- this skill generates URLs from context data. It does not call MCP tools.
+
 ## URL templates
 
 All URLs assume the user's current AWS region (`AWS_REGION` env from `.mcp.json`). When
@@ -77,6 +91,27 @@ https://<region>.console.aws.amazon.com/cloudwatch/home?region=<region>#containe
 ```
 https://<region>.console.aws.amazon.com/cloudwatch/home?region=<region>#database-insights:resource/<resource-id>
 ```
+
+### Application Signals — enablement / overview page
+```
+https://<region>.console.aws.amazon.com/cloudwatch/home?region=<region>#application-signals:
+```
+Use this when the user needs to enable App Signals for their account, or to see the
+top-level overview of all instrumented services.
+
+### Application Signals — service detail (parameterized)
+```
+https://<region>.console.aws.amazon.com/cloudwatch/home?region=<region>#application-signals:services/<service-name>
+```
+Substitutes `context.service` for `<service-name>`. Shows latency, error rate,
+throughput, operations, and dependencies for a single service.
+
+### Application Signals — SLO creation page
+```
+https://<region>.console.aws.amazon.com/cloudwatch/home?region=<region>#application-signals:slo/create
+```
+Deep link to the SLO creation wizard. Use when the plugin's guided SLO workflow
+needs to hand off to the console for the actual create action.
 
 ## Rendering rules
 

@@ -26,6 +26,18 @@ LLM (you)               renderer (deterministic)
 
 No LLM in the rendering loop. The renderer is a pure function.
 
+## Context provider
+
+The manifest metadata fields map to context provider fields:
+
+- `context.service` -- mapped to `metadata.service`
+- `context.region` -- mapped to `metadata.region`
+- `context.environment` -- mapped to `metadata.environment`
+
+## MCP tool dependencies
+
+None -- this skill produces a JSON manifest from data already collected by investigation skills. The renderer is a deterministic pure function.
+
 ## Output contract
 
 Emit a single JSON object validated by `schemas/manifest.schema.json`:

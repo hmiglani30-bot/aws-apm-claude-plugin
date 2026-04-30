@@ -38,15 +38,20 @@ snippet for every gap.
 This skill **only reads source files**. It does not edit code, run code,
 or call any AWS account API. Output is advisory.
 
-## Required MCP servers
+## Context provider
 
-- `awslabs.aws-documentation-mcp-server` — citations for AWS best
-  practices (CloudWatch Agent, EMF, Application Signals, X-Ray SDK).
-  Optional but strongly recommended; without it, recommendations cite
-  general patterns rather than canonical AWS docs.
+Read these fields from the context provider (ARCHITECTURE.md context shape):
+
+- `context.service` -- the service name whose codebase is being analyzed (optional; defaults to current working directory)
+- `context.region` -- AWS region (used for documentation citations)
+- `context.environment` -- prod / staging / dev (affects severity of gaps)
+
+## MCP tool dependencies
+
+- `awslabs.aws-documentation-mcp-server` -- `search_documentation` (citations for AWS best practices: CloudWatch Agent, EMF, Application Signals, X-Ray SDK). Optional but strongly recommended; without it, recommendations cite general patterns rather than canonical AWS docs.
 
 The CloudWatch / Application Signals / CloudTrail MCP servers are **not**
-required — the analysis runs entirely on the local codebase.
+required -- the analysis runs entirely on the local codebase.
 
 ## Presentation
 

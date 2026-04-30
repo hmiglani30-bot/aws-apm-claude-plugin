@@ -15,6 +15,20 @@ metadata:
 
 Canonical "is this service OK right now?" view.
 
+## Context provider
+
+This artifact skill receives its data from parent investigation skills. The following context fields are used in the metadata footer:
+
+- `context.service` -- the Application Signals service name
+- `context.region` -- AWS region (rendered in metadata footer)
+- `context.account` -- AWS account ID (rendered in metadata footer)
+- `context.environment` -- prod / staging / dev
+- `context.time_window.start` / `.end` -- time window for baseline comparison
+
+## MCP tool dependencies
+
+None -- this is a rendering skill. Data is collected by the parent investigation skill (`error-spike-triage`, `latency-regression`, `alarm-response`).
+
 ## Required inputs
 
 - Service name

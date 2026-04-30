@@ -31,11 +31,24 @@ Triggers on any of:
 If the alarm is on a metric that maps to an SLO that is *also* breaching, prefer
 `slo-breach-investigation` — it is the strict superset for SLO-driven pages.
 
-## Required MCP servers
+## Context provider
 
-- `awslabs.cloudwatch-mcp-server` — alarm metadata, metrics, logs
-- `awslabs.cloudwatch-applicationsignals-mcp-server` — service map, traces, operations
-- `awslabs.cloudtrail-mcp-server` — recent deploys / IAM / config changes
+Read these fields from the context provider (ARCHITECTURE.md context shape):
+
+- `context.alarm` -- alarm name or ARN (primary input)
+- `context.region` -- AWS region (pass to all MCP calls)
+- `context.account` -- AWS account ID (include in metadata footer)
+- `context.service` -- resolved from alarm dimensions (may be null initially)
+- `context.time_window.start` / `.end` -- alarm state transition window
+- `context.data_sources_available.cloudwatch_metrics` -- MUST be true
+- `context.data_sources_available.application_signals` -- needed for service correlation
+- `context.data_sources_available.cloudtrail` -- needed for change correlation
+
+## MCP tool dependencies
+
+- `awslabs.cloudwatch-mcp-server` -- `describe_alarms`, `get_metric_data`, `start_query`, `get_query_results`
+- `awslabs.cloudwatch-applicationsignals-mcp-server` -- `list_services`, `list_service_operations`, `get_top_contributors`
+- `awslabs.cloudtrail-mcp-server` -- `lookup_events`
 
 If any required MCP is not connected, run the `aws-apm-setup` skill before continuing.
 
