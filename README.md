@@ -235,7 +235,7 @@ PR — is **roadmap**:
 | `/cw-suggest-fix <hypothesis>` | Given a Top Suspected Cause, draft a code change |
 | `/cw-explain-this-span <span-id>` | Annotate a span with what its source-of-truth code does |
 
-These are intentionally not in v0.3.x — they require source-tree integration
+These are intentionally not in v0.3.0 — they require source-tree integration
 the SRE workflows don't. Today, expect this plugin to be **strong on the SRE
 side and partial on the developer side**.
 
@@ -313,8 +313,11 @@ verify the model's reasoning before acting.
 - **Alerting Plan** — existing-alarm inventory, noise audit, per-service coverage matrix, recommended alarms with thresholds and IaC snippets, composite-alarm and anomaly-detection candidates
 - **Open in CloudWatch** — deep links into the AWS console with service / operation / time range / filters preserved
 
-Artifacts render as interactive **MCP-UI widgets** with Cloudscape components
-in Cowork and as Markdown elsewhere.
+Tier 3 components render as rich **HTML artifacts** in Cowork (sparklines,
+waterfall SVGs, Cloudscape design tokens) and as Markdown elsewhere. Beyond
+the seven fixed HTML templates above, the **`hybrid-renderer`** path lets a
+skill emit a JSON manifest that the deterministic renderer (`renderer/`)
+turns into a custom artifact — see [Hybrid renderer](#hybrid-renderer).
 
 ### Quality + safety primitives
 
@@ -656,7 +659,7 @@ aws-apm-claude-plugin/
 │   ├── trace-to-code/               # Map trace span to source code
 │   ├── copy-to-incident/            # Reformat artifact for Slack / postmortem / status page
 │   ├── hybrid-renderer/             # JSON manifest grammar for the deterministic HTML renderer
-│   ├── widget-catalog/              # Master catalog of widgets, templates, rendering rules
+│   ├── widget-catalog/              # LLM steering for widget / template / shell selection
 │   └── aws-apm-setup/               # Prerequisite walkthrough
 ├── artifacts/                # 7 HTML artifact templates with {{PLACEHOLDERS}}
 │   ├── slo-breach-explainer.html
@@ -679,30 +682,46 @@ aws-apm-claude-plugin/
 │   ├── cw-set-context.md
 │   ├── cw-doctor.md
 │   └── cw-verify-recovery.md
-├── demo/                     # Demo environment
-│   ├── demo-stack.yaml       # CloudFormation template (Lambda + APIGW + ADOT + Alarms + SNS)
-│   ├── generate-load.sh      # Load generator script
-│   └── README.md             # Demo instructions and cost breakdown
-├── renderer/                 # Hybrid-renderer pipeline (manifest → HTML)
-│   ├── render.js             # Entry: preloadShells + renderManifest
-│   ├── engine.js             # validateManifest, planLayout, fillShell, renderShellHeader
-│   ├── widgets/              # 8 widget renderers (stat_card, table, timeline, log_viewer, …)
-│   ├── shells/               # 3 shell templates (single-focus, investigation, dashboard)
-│   ├── styles.css            # Embedded styles for standalone outputs
-│   └── interactions.js       # Drawer toggle and other client-side hooks
-├── render-standalone.mjs     # CLI: manifest JSON in → standalone HTML out
+├── renderer/                 # Deterministic JSON-manifest → HTML renderer
+│   ├── render.js             # Pure function: manifest in → HTML out
+│   ├── engine.js             # Shell selection, slotting, density budget, overflow
+│   ├── cache.js              # Render-result memoization
+│   ├── interactions.js       # Lightweight client-side widget interactions
+│   ├── styles.css            # Cloudscape-token-based widget styles
+│   ├── test-harness.html     # Browser-visible eval harness
+│   ├── widgets/              # 7 widget types (stat_card, sparkline, timeline,
+│   │                         #   table, trace_waterfall, log_viewer,
+│   │                         #   change_event_list)
+│   └── shells/               # 3 shells (single-focus, investigation, dashboard)
 ├── schemas/
-│   └── manifest.schema.json  # JSON Schema enforced by validateManifest
-├── data/                     # End-to-end test corpus (see "End-to-end test infrastructure")
-│   ├── build-manifests.mjs   # Live AWS JSON → widget manifest transform
-│   ├── {health,alarms,dashboard,logs,trail}.json  # Captured live AWS output
-│   ├── manifests/            # 5 schema-conformant widget manifests
-│   ├── rendered/             # 5 HTML artifacts produced by render-standalone.mjs
-│   └── e2e-report.md         # Pipeline audit: layers exercised, derivations, hardcoding check
+│   └── manifest.schema.json  # JSON-Schema contract for hybrid-renderer manifests
+├── evals/                    # 52-prompt evaluation suite for the renderer
+│   ├── cases.mjs             # Prompts + reference manifests + per-case expectations
+│   ├── run-evals.mjs         # Harness; emits JSON results
+│   ├── build-scorecard.mjs   # JSON → human-readable HTML scorecard
+│   ├── hybrid-renderer-eval-results.json
+│   ├── hybrid-renderer-eval-results.html
+│   └── README.md             # 6 scoring dimensions, run instructions
+├── data/                     # Hybrid-renderer E2E inputs and rendered outputs
+│   ├── alarms.json, dashboard.json, health.json, logs.json, trail.json
+│   ├── build-manifests.mjs   # Builds manifests/ from the JSON inputs
+│   ├── manifests/            # Generated manifests for E2E render
+│   ├── rendered/             # Generated HTML output for visual diffing
+│   └── e2e-report.md         # E2E run summary
 ├── hooks/
 │   ├── hooks.json            # PreToolUse confirmation gate on write actions
 │   └── scripts/confirm-write.sh
-├── tests/test_structure.py   # Stdlib-only structural tests
+├── tests/                    # 5 stdlib-only test modules
+│   ├── test_structure.py
+│   ├── test_behavioral.py
+│   ├── test_golden_outputs.py
+│   ├── test_artifact_rendering.py
+│   └── test_error_taxonomy.py
+├── docs/
+│   ├── debugging.md
+│   └── hybrid-renderer-eval-scorecard.pdf
+├── .github/workflows/test.yml  # CI: 5 unittest modules + JSON / placeholder / shellcheck / markdown / link checks
+├── package.json              # ajv + ajv-formats devDeps for the renderer evals
 ├── ARCHITECTURE.md           # Layering, context provider, time-window invariant, change providers, multi-account roadmap, data sovereignty, schema governance
 ├── MCP-TOOL-CONTRACTS.md     # Required MCP tool contracts (input/output/failures/pagination/permissions)
 ├── ACTION-SAFETY-MODEL.md    # 5-tier action model (read-only → suggested → console-deep-linked → MCP-with-approval → disallowed)
@@ -758,82 +777,93 @@ structured Markdown with "Open in CloudWatch" deep links.
 
 ## End-to-end test infrastructure
 
-The `data/` directory contains a recorded end-to-end run of the
-hybrid-renderer pipeline against live AWS data. It exists so the renderer's
-contract — *live AWS JSON in, validated and layout-planned HTML out* — can be
-re-verified at any time without standing up a service.
+## Hybrid renderer
 
-### What's in `data/`
+For investigations that don't fit one of the seven fixed Tier 3 templates
+(e.g. ad-hoc CloudTrail audits via `/cw-trail-view`, mixed dashboards, custom
+combinations), the plugin ships a **deterministic JSON-manifest renderer**
+under [`renderer/`](./renderer).
 
-| Path | What it is |
+```
+LLM (skill-following)              renderer/render.js (deterministic)
+  picks WHICH widgets   ─────────► picks WHERE they go
+  fills the data                   shell, slots, density budget, overflow
+```
+
+The split keeps the LLM out of the rendering loop:
+
+- The LLM emits a JSON manifest validated against
+  [`schemas/manifest.schema.json`](./schemas/manifest.schema.json) — a
+  small, stable contract.
+- `render.js` is a pure function: manifest in → HTML out. No LLM call,
+  no string-templating in the model, no markup drift between runs.
+- The [`widget-catalog`](./skills/widget-catalog) skill steers the LLM's
+  widget / shell choices so the manifest stays inside the visual grammar.
+
+**Widgets (7):** `stat_card`, `sparkline`, `timeline`, `table`,
+`trace_waterfall`, `log_viewer`, `change_event_list`.
+
+**Shells (3):** `single-focus`, `investigation`, `dashboard` — the renderer
+selects one based on the manifest's `query_intent` and widget mix.
+
+The renderer is the path used by `/cw-trail-view` and any future
+investigation that wants a custom layout without authoring a new HTML
+template.
+
+### Renderer evals
+
+The renderer is covered by a **52-prompt evaluation suite** at
+[`evals/`](./evals). Each case is hand-authored to mimic what a
+skill-following LLM would emit for that prompt and is scored on six
+dimensions:
+
+| Dimension | What it checks |
 |---|---|
-| `data/{health,alarms,dashboard,logs,trail}.json` | Live AWS API output captured from the `plugin1989` CloudFormation stack (`pet-clinic-api` Lambda, us-east-1) |
-| `data/build-manifests.mjs` | Deterministic JSON-only transform: reads `data/*.json`, emits `data/manifests/*.manifest.json`. No HTML strings, no fixtures |
-| `data/manifests/` | 5 schema-conformant widget manifests (one per source JSON), each validated by `schemas/manifest.schema.json` |
-| `data/rendered/` | 5 standalone HTML artifacts produced by `render-standalone.mjs` running the actual renderer |
-| `data/e2e-report.md` | Test report — pipeline layers exercised, widget types covered, derived-value spot checks, hardcoded-HTML audit |
+| **Manifest validity** | Passes JSON-Schema validation against `schemas/manifest.schema.json` |
+| **Shell selection** | Engine inferred a shell appropriate to the prompt |
+| **Widget relevance** | Required widgets present, forbidden widgets absent |
+| **Widget count** | Within a per-prompt expected range |
+| **Density budget** | `densityUsed <= budget` and overflow drawer ≤ 50% of widgets |
+| **Rendering** | `renderManifest` produced clean HTML (correct root, no widget-error tags, balanced markup) |
 
-### Pipeline
-
-```
-live AWS data (data/*.json)
-      │
-      │  data/build-manifests.mjs        (JSON-only transform)
-      ▼
-widget manifests (data/manifests/*.manifest.json)
-      │
-      │  render-standalone.mjs           (CLI wrapper)
-      ▼
-renderer/render.js                       (preloadShells + renderManifest)
-      │
-      │  validateManifest → planLayout (shell + density budget + slot capacity)
-      │   → fillShell (renderer/shells/*.html)
-      │   → render each widget (renderer/widgets/*.js)
-      │   → renderDrawer (overflow) → renderShellHeader (severity, title, meta)
-      ▼
-data/rendered/*.html                     (full HTML doc, embedded CSS + JS)
-```
-
-Every layer above ran during the recorded E2E. No layer was bypassed, mocked,
-or stubbed; full audit in [`data/e2e-report.md`](data/e2e-report.md).
-
-### Reproducing
+Latest results — **52/52 cases passing on all 6 dimensions** (10 error
+investigation, 10 latency / performance, 10 SLO / service health, 10
+CloudTrail / security, 12 mixed / complex). Raw results in
+[`evals/hybrid-renderer-eval-results.json`](./evals/hybrid-renderer-eval-results.json);
+human-readable scorecard in
+[`evals/hybrid-renderer-eval-results.html`](./evals/hybrid-renderer-eval-results.html)
+and as a PDF at
+[`docs/hybrid-renderer-eval-scorecard.pdf`](./docs/hybrid-renderer-eval-scorecard.pdf).
 
 ```bash
-node data/build-manifests.mjs
-for n in health alarms dashboard logs trail; do
-  node render-standalone.mjs data/manifests/$n.manifest.json data/rendered/$n.html
-done
+npm install              # ajv + ajv-formats
+npm run eval             # node evals/run-evals.mjs — JSON + console summary
+node evals/build-scorecard.mjs
 ```
 
 ## What's new in v0.3.0
 
-- **MCP-UI visual layer** — 9 widget types and 7 templates rendered via the
-  MCP-UI protocol with Cloudscape Design System components. Replaces the
-  previous `{{PLACEHOLDER}}` HTML template approach with a structured
-  manifest-to-renderer pipeline.
-- **Hybrid-renderer E2E test corpus** — `data/` ships 5 live-AWS JSON
-  fixtures, the deterministic `build-manifests.mjs` transform, 5
-  schema-conformant manifests, 5 rendered HTML artifacts, and an audit report
-  proving the renderer pipeline runs end-to-end with zero hardcoded HTML.
-- **Widget catalog skill** — master reference for LLM-driven widget and
-  template selection, including data shapes, density costs, MCP tool-to-widget
-  mapping, and a query pattern decision tree.
-- **Interactive write actions** — `action_form` widget for `PutMetricAlarm`
-  and `TagResource`, gated by the 5-tier safety model with structured
-  approval blocks and PreToolUse hook enforcement.
-- **`investigation_with_actions` template** — combines investigation evidence
-  with actionable write forms in a single view.
-- **Demo environment** — CloudFormation one-click deploy with Lambda, API
-  Gateway, ADOT, CloudWatch Alarms, SNS, and a load generator script. See
-  [demo/README.md](demo/README.md).
-- **Quick App compatibility** — same MCP servers and intelligence layer serve
-  both Claude Code plugin (local stdio) and Amazon Q Quick Apps (remote
-  HTTP/SSE). ~80% skill reuse. See [QUICK-APP-PLAN.md](QUICK-APP-PLAN.md).
-- **Color system** — 16-color visualization palette, status colors, and
-  semantic tokens aligned with Cloudscape design tokens.
+- **Hybrid renderer** — a deterministic JSON-manifest → HTML pipeline under
+  [`renderer/`](./renderer) (pure-function `render.js`, engine, cache,
+  styles, 7 widget types, 3 shells) plus a JSON-Schema contract at
+  [`schemas/manifest.schema.json`](./schemas/manifest.schema.json). Lets a
+  skill produce custom artifacts without hand-authoring HTML.
+- **`widget-catalog` skill** — master reference the LLM loads when picking
+  widgets, shells, and templates so the manifest stays inside the visual
+  grammar. Brings the skill count to 20.
+- **`/cw-trail-view` command** — recent CloudTrail events rendered through
+  the hybrid renderer (timeline / audit table / dashboard, picked from
+  prompt intent).
+- **Renderer eval suite** — [`evals/`](./evals) ships 52 prompts × 6 scoring
+  dimensions (manifest validity, shell selection, widget relevance, widget
+  count, density budget, rendering); latest run is 52 / 52 on every
+  dimension. Run with `npm install && npm run eval`. See
+  [Renderer evals](#renderer-evals).
+- **Hybrid-renderer E2E corpus** — [`data/`](./data) holds JSON inputs,
+  generated manifests, rendered HTML, and an E2E report so renderer changes
+  can be visually diffed without round-tripping through a live MCP call.
 
-### Previous (v0.2.x)
+### Carried forward from v0.2.x
 
 - **Phase 6 cascading dependency follow** in all three core workflow skills —
   when a dependency is the suspected root, the workflow recurses one level
@@ -851,7 +881,7 @@ done
 - **Quality bar primitives** — `investigation-validator` runs a 6-check
   self-audit on every artifact before it's shown; `incident-memory` persists
   summaries and surfaces recurrences.
-- **Tier 3 HTML templates** — five HTML artifact templates with placeholder
+- **Tier 3 HTML templates** — seven HTML artifact templates with placeholder
   substitution, Cloudscape design tokens, and "Open in CloudWatch" deep-link
   buttons.
 - **Expanded write-safety hook matcher** — covers `Create`, `Remove`,
@@ -918,14 +948,27 @@ match the postmortem?" That's the bar.
 ```bash
 git clone https://github.com/hmiglani30/aws-apm-claude-plugin
 cd aws-apm-claude-plugin
-python -m unittest tests.test_structure -v
+
+# Stdlib-only Python tests (5 modules, mirror the CI matrix):
+python -m unittest tests.test_structure tests.test_behavioral \
+  tests.test_golden_outputs tests.test_artifact_rendering \
+  tests.test_error_taxonomy -v
+
+# Renderer evals (Node — needs `npm install` first for ajv + ajv-formats):
+npm install
+npm run eval
 ```
 
-The structural tests verify: manifest validity, version sync, all expected
-skills / commands / MCP servers / artifacts present, frontmatter completeness,
-hook script executability, Phase 6 presence in workflow skills, Tier 3 skills
-referencing their HTML templates, and Cloudscape token / placeholder presence
-in templates.
+The Python tests cover: manifest validity, version sync across
+`plugin.json` / `marketplace.json`, all expected skills / commands /
+MCP servers / artifacts present, frontmatter completeness, hook script
+executability, Phase 6 presence in workflow skills, Tier 3 skills
+referencing their HTML templates, Cloudscape token / placeholder presence
+in templates, behavioral expectations, golden artifact outputs, and error
+taxonomy completeness.
+
+The renderer evals cover the hybrid renderer end-to-end against 52
+prompts × 6 scoring dimensions — see [Renderer evals](#renderer-evals).
 
 When adding a new skill:
 
