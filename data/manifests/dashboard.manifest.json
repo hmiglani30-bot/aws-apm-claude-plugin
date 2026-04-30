@@ -1,0 +1,193 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "title": "Dashboard: pet-clinic-dashboard",
+    "subtitle": "7 widgets (6 metric, 1 text)",
+    "severity": "info",
+    "query_intent": "dashboard-summary",
+    "region": "us-east-1",
+    "generated_at": "2026-04-30T05:50:35Z"
+  },
+  "widgets": [
+    {
+      "type": "stat_card",
+      "priority": 1,
+      "data": {
+        "label": "Dashboard size",
+        "value": 2129,
+        "unit": "bytes",
+        "baseline_label": "pet-clinic-dashboard",
+        "status": "neutral"
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 2,
+      "data": {
+        "label": "Invocations",
+        "value": "AWS/Lambda/Invocations",
+        "unit": "8×6",
+        "baseline_label": "period=60s",
+        "status": "neutral"
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 3,
+      "data": {
+        "label": "Errors",
+        "value": "AWS/Lambda/Errors",
+        "unit": "8×6",
+        "baseline_label": "period=60s",
+        "status": "neutral"
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 4,
+      "data": {
+        "label": "Duration (Avg / p99)",
+        "value": "AWS/Lambda/Duration",
+        "unit": "8×6",
+        "baseline_label": "period=60s",
+        "status": "neutral"
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 5,
+      "data": {
+        "label": "Error Rate (%)",
+        "value": "expression/computed",
+        "unit": "8×6",
+        "baseline_label": "period=60s",
+        "status": "neutral"
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 6,
+      "data": {
+        "label": "Concurrent Executions",
+        "value": "AWS/Lambda/ConcurrentExecutions",
+        "unit": "8×6",
+        "baseline_label": "period=60s",
+        "status": "neutral"
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 7,
+      "data": {
+        "label": "Throttles",
+        "value": "AWS/Lambda/Throttles",
+        "unit": "8×6",
+        "baseline_label": "period=60s",
+        "status": "neutral"
+      }
+    },
+    {
+      "type": "table",
+      "priority": 100,
+      "data": {
+        "label": "Dashboard widgets layout",
+        "columns": [
+          {
+            "key": "type",
+            "label": "Type",
+            "kind": "code"
+          },
+          {
+            "key": "title",
+            "label": "Title",
+            "kind": "text"
+          },
+          {
+            "key": "x",
+            "label": "x",
+            "kind": "number",
+            "align": "right"
+          },
+          {
+            "key": "y",
+            "label": "y",
+            "kind": "number",
+            "align": "right"
+          },
+          {
+            "key": "w",
+            "label": "w",
+            "kind": "number",
+            "align": "right"
+          },
+          {
+            "key": "h",
+            "label": "h",
+            "kind": "number",
+            "align": "right"
+          }
+        ],
+        "rows": [
+          {
+            "type": "text",
+            "title": "# Pet Clinic API — Operational Dashboard",
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 1
+          },
+          {
+            "type": "metric",
+            "title": "Invocations",
+            "x": 0,
+            "y": 1,
+            "w": 8,
+            "h": 6
+          },
+          {
+            "type": "metric",
+            "title": "Errors",
+            "x": 8,
+            "y": 1,
+            "w": 8,
+            "h": 6
+          },
+          {
+            "type": "metric",
+            "title": "Duration (Avg / p99)",
+            "x": 16,
+            "y": 1,
+            "w": 8,
+            "h": 6
+          },
+          {
+            "type": "metric",
+            "title": "Error Rate (%)",
+            "x": 0,
+            "y": 7,
+            "w": 8,
+            "h": 6
+          },
+          {
+            "type": "metric",
+            "title": "Concurrent Executions",
+            "x": 8,
+            "y": 7,
+            "w": 8,
+            "h": 6
+          },
+          {
+            "type": "metric",
+            "title": "Throttles",
+            "x": 16,
+            "y": 7,
+            "w": 8,
+            "h": 6
+          }
+        ],
+        "searchable": true,
+        "sortable": true
+      }
+    }
+  ]
+}

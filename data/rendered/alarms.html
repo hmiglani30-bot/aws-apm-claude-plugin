@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Alarms — us-east-1</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #0a1018;
+      min-height: 100vh;
+    }
+    /* ============================================================================
+   Hybrid Renderer — base styles.
+   Cloudscape-style dark theme; matches the existing aws-apm artifact palette.
+   Container queries used so the same artifact reflows correctly inside any
+   panel width (Cowork side panel, full window, narrow sidebar, etc.).
+   ============================================================================ */
+
+.hr-artifact {
+  --bg-page: #0f1b2a;
+  --bg-surface: #192534;
+  --bg-surface-2: #1f2d3d;
+  --bg-surface-3: #243446;
+  --border: #2a3a4f;
+  --border-strong: #3b4d65;
+  --text-primary: #e9ebed;
+  --text-secondary: #95a5b8;
+  --text-muted: #6c7c91;
+  --link: #539fe5;
+  --link-hover: #89bdee;
+  --status-error: #ff5d64;
+  --status-warning: #ffa552;
+  --status-success: #6aaf3f;
+  --status-info: #539fe5;
+
+  display: block;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: "Open Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 20px;
+  border-radius: 10px;
+  container-type: inline-size;
+  container-name: hr;
+}
+
+.hr-artifact *, .hr-artifact *::before, .hr-artifact *::after { box-sizing: border-box; }
+
+/* ---------- Meta bar (severity title strip) ----------------------------- */
+.hr-meta-bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--status-info);
+  margin-bottom: 14px;
+}
+.hr-meta-bar.sev-critical { border-left-color: var(--status-error); }
+.hr-meta-bar.sev-warning  { border-left-color: var(--status-warning); }
+.hr-meta-bar.sev-info     { border-left-color: var(--status-info); }
+
+.hr-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+}
+.hr-subtitle { color: var(--text-secondary); font-size: 13px; }
+.hr-meta-tags { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12px; }
+.hr-sev-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.hr-sev-badge.sev-critical { background: rgba(255,93,100,0.15); color: var(--status-error); border: 1px solid rgba(255,93,100,0.4); }
+.hr-sev-badge.sev-warning  { background: rgba(255,165,82,0.15); color: var(--status-warning); border: 1px solid rgba(255,165,82,0.4); }
+.hr-sev-badge.sev-info     { background: rgba(83,159,229,0.15); color: var(--status-info); border: 1px solid rgba(83,159,229,0.4); }
+.hr-meta-context, .hr-meta-time { color: var(--text-secondary); }
+
+.hr-overflow-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  font-style: italic;
+}
+
+/* ---------- Shell skeleton -------------------------------------------- */
+.hr-shell { display: grid; gap: 14px; }
+.hr-shell-header { display: grid; gap: 12px; }
+.hr-shell-primary { display: grid; gap: 14px; }
+.hr-shell-context { display: grid; gap: 12px; }
+.hr-shell-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+/* Single-focus: one big primary widget. */
+.hr-shell-single-focus .hr-shell-primary { grid-template-columns: 1fr; }
+
+/* Investigation: header is summary tiles row, primary stacks vertically below,
+   context is a sidebar on wide panels and stacks underneath on narrow ones. */
+.hr-shell-investigation { grid-template-columns: 1fr; }
+.hr-shell-investigation .hr-shell-header { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+@container hr (min-width: 900px) {
+  .hr-shell-investigation {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-areas: "header header" "primary context";
+  }
+  .hr-shell-investigation > .hr-shell-header { grid-area: header; }
+  .hr-shell-investigation > .hr-shell-primary { grid-area: primary; }
+  .hr-shell-investigation > .hr-shell-context { grid-area: context; }
+}
+
+/* Dashboard: header tiles + grid. */
+.hr-shell-dashboard .hr-shell-header { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+/* ---------- Drawer ---------------------------------------------------- */
+.hr-drawer {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+.hr-drawer-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--link);
+  user-select: none;
+}
+.hr-drawer-summary::-webkit-details-marker { display: none; }
+.hr-drawer-summary:hover { background: var(--bg-surface-2); }
+.hr-drawer-chevron { transition: transform 0.15s ease; }
+.hr-drawer[open] .hr-drawer-chevron { transform: rotate(180deg); }
+.hr-drawer-body {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-page);
+}
+
+/* ---------- Generic widget chrome ------------------------------------ */
+.widget {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  min-width: 0; /* let grid items shrink instead of overflowing */
+}
+.widget.emph-primary { border-color: var(--border-strong); }
+.widget.emph-tertiary { background: var(--bg-surface-2); }
+
+.widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.widget-meta { font-size: 12px; color: var(--text-secondary); font-weight: 400; }
+.widget-error {
+  border-color: var(--status-error);
+  color: var(--status-error);
+  font-size: 13px;
+}
+
+/* ---------- stat_card ------------------------------------------------- */
+.widget-stat-card { display: flex; flex-direction: column; gap: 6px; }
+.stat-card-label {
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.stat-card-value {
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.stat-card-value .value-unit {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+.stat-card-baseline { color: var(--text-secondary); font-size: 12px; }
+.stat-card-trend { font-size: 12px; font-weight: 600; display: inline-flex; gap: 4px; align-items: center; }
+.trend-up-bad, .trend-down-bad { color: var(--status-error); }
+.trend-up-good, .trend-down-good { color: var(--status-success); }
+.trend-flat-neutral, .trend-up-neutral, .trend-down-neutral, .trend-neutral { color: var(--text-secondary); }
+
+.widget-stat-card.status-healthy { border-left: 4px solid var(--status-success); padding-left: 12px; }
+.widget-stat-card.status-degraded { border-left: 4px solid var(--status-warning); padding-left: 12px; }
+.widget-stat-card.status-warning { border-left: 4px solid var(--status-warning); padding-left: 12px; }
+.widget-stat-card.status-unhealthy { border-left: 4px solid var(--status-error); padding-left: 12px; }
+
+/* ---------- sparkline ------------------------------------------------- */
+.sparkline { width: 100%; height: 32px; display: block; }
+.widget-sparkline .sparkline { height: 56px; }
+.sparkline-header { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.sparkline-meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; }
+.sparkline-meta-item { display: inline-flex; gap: 4px; align-items: baseline; font-size: 12px; }
+.sparkline-meta-item .lbl { color: var(--text-secondary); text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; }
+.sparkline-meta-item .val { font-variant-numeric: tabular-nums; }
+
+/* ---------- timeline -------------------------------------------------- */
+.timeline { list-style: none; margin: 0; padding: 0; position: relative; }
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--border);
+}
+.timeline-item {
+  position: relative;
+  padding: 6px 0 10px 28px;
+}
+.timeline-dot {
+  position: absolute;
+  left: 3px;
+  top: 10px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  box-shadow: 0 0 0 2px var(--bg-surface);
+}
+.timeline-item.sev-critical .timeline-dot { background: var(--status-error); box-shadow: 0 0 8px var(--status-error), 0 0 0 2px var(--bg-surface); }
+.timeline-item.sev-warning .timeline-dot  { background: var(--status-warning); }
+.timeline-item.sev-info .timeline-dot     { background: var(--status-info); }
+.timeline-item.sev-success .timeline-dot  { background: var(--status-success); }
+.timeline-row { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.timeline-time { color: var(--text-secondary); font-size: 12px; font-variant-numeric: tabular-nums; min-width: 110px; }
+.timeline-title { font-weight: 600; }
+.timeline-desc { color: var(--text-secondary); font-size: 12px; margin-top: 2px; }
+.timeline-link { display: inline-block; margin-top: 4px; font-size: 12px; color: var(--link); text-decoration: none; }
+.timeline-link:hover { text-decoration: underline; }
+
+/* ---------- table ----------------------------------------------------- */
+.widget-table { padding: 0; }
+.widget-table .widget-header { padding: 12px 14px; margin-bottom: 0; }
+.table-search {
+  background: var(--bg-page);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+  padding: 4px 8px;
+  width: 180px;
+  max-width: 50%;
+}
+.table-search:focus { outline: none; border-color: var(--link); }
+.table-scroll { max-height: 360px; overflow: auto; }
+.widget-table table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.widget-table th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-surface-2);
+  text-align: left;
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  z-index: 1;
+}
+.widget-table th.sortable { cursor: pointer; user-select: none; }
+.widget-table th.sortable:hover { color: var(--text-primary); }
+.widget-table th .sort-indicator::after { content: "⇅"; opacity: 0.4; margin-left: 6px; font-size: 10px; }
+.widget-table th[aria-sort="ascending"] .sort-indicator::after { content: "▲"; opacity: 0.9; }
+.widget-table th[aria-sort="descending"] .sort-indicator::after { content: "▼"; opacity: 0.9; }
+.widget-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+.widget-table tr:last-child td { border-bottom: none; }
+.widget-table .align-right { text-align: right; }
+.widget-table .align-center { text-align: center; }
+.widget-table .empty-row { color: var(--text-secondary); font-style: italic; padding: 20px; text-align: center; }
+.cell-empty { color: var(--text-muted); }
+.cell-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
+.cell-status .dot { width: 6px; height: 6px; border-radius: 50%; }
+.cell-status-ok    { color: var(--status-success); } .cell-status-ok .dot { background: var(--status-success); }
+.cell-status-warn  { color: var(--status-warning); } .cell-status-warn .dot { background: var(--status-warning); }
+.cell-status-err   { color: var(--status-error); }   .cell-status-err .dot { background: var(--status-error); }
+.cell-status-neutral { color: var(--text-secondary); } .cell-status-neutral .dot { background: var(--text-secondary); }
+
+/* ---------- trace_waterfall ------------------------------------------ */
+.widget-waterfall { padding: 0; }
+.widget-waterfall .widget-header { padding: 12px 14px; margin-bottom: 0; }
+.waterfall-grid { padding: 8px 0 14px 0; max-height: 480px; overflow: auto; }
+.waterfall-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 30%) 1fr 70px;
+  gap: 10px;
+  padding: 4px 14px;
+  align-items: center;
+  font-size: 12px;
+}
+.waterfall-row:hover { background: var(--bg-surface-2); }
+.waterfall-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.waterfall-name { font-weight: 500; }
+.waterfall-service { color: var(--text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+.waterfall-track {
+  position: relative;
+  height: 14px;
+  background: var(--bg-surface-2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.waterfall-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  background: var(--status-info);
+  min-width: 2px;
+}
+.waterfall-bar.bar-error { background: var(--status-error); }
+.waterfall-bar.bar-warning { background: var(--status-warning); }
+.waterfall-bar.bar-ok { background: var(--status-info); }
+.waterfall-duration { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+.waterfall-duration .unit { color: var(--text-muted); font-size: 10px; }
+
+/* ---------- log_viewer ----------------------------------------------- */
+.widget-log-viewer { padding: 0; }
+.widget-log-viewer .widget-header { padding: 12px 14px; margin-bottom: 0; }
+.log-scroll {
+  max-height: 360px;
+  overflow: auto;
+  font-family: "SF Mono", "Monaco", Menlo, monospace;
+  font-size: 12px;
+  background: var(--bg-page);
+  padding: 8px 10px;
+  border-top: 1px solid var(--border);
+}
+.log-line {
+  display: grid;
+  grid-template-columns: 170px 60px 1fr;
+  gap: 10px;
+  padding: 2px 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.log-ts { color: var(--text-muted); }
+.log-sev {
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 700;
+  align-self: start;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+.log-error .log-sev { color: var(--status-error); background: rgba(255,93,100,0.12); }
+.log-warn  .log-sev { color: var(--status-warning); background: rgba(255,165,82,0.12); }
+.log-info  .log-sev { color: var(--status-info); background: rgba(83,159,229,0.12); }
+.log-debug .log-sev { color: var(--text-secondary); background: rgba(149,165,184,0.10); }
+.log-error .log-msg { color: var(--text-primary); }
+.log-empty { color: var(--text-secondary); font-style: italic; padding: 20px; text-align: center; }
+
+/* ---------- change_event_list ---------------------------------------- */
+.change-list { list-style: none; margin: 0; padding: 0; }
+.change-item {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
+  align-items: start;
+}
+.change-list .change-item:last-child { border-bottom: none; }
+.change-kind {
+  width: 24px; height: 24px;
+  background: var(--bg-surface-2);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+.change-row { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.change-time { color: var(--text-secondary); font-size: 11px; min-width: 110px; font-variant-numeric: tabular-nums; }
+.change-title { font-weight: 500; font-size: 13px; }
+.change-meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.change-link { color: var(--link); text-decoration: none; }
+.change-link:hover { text-decoration: underline; }
+.change-empty { color: var(--text-secondary); font-style: italic; padding: 14px 0; }
+
+/* ---------- Responsive — narrow panel reflow ------------------------- */
+/*
+  Container queries: react to the artifact's own width, not the viewport. This
+  lets the same artifact look right inside a Cowork side panel, a full Code
+  pane, or any embed.
+*/
+@container hr (max-width: 600px) {
+  .hr-artifact { padding: 14px; font-size: 13px; }
+  .hr-meta-bar { flex-direction: column; align-items: stretch; }
+  .hr-shell-investigation { grid-template-columns: 1fr; }
+  .hr-shell-grid { grid-template-columns: 1fr; }
+  .hr-shell-investigation .hr-shell-header,
+  .hr-shell-dashboard .hr-shell-header { grid-template-columns: 1fr 1fr; }
+  /* Tighter density budget on narrow: hide tertiary widgets, drawer absorbs them. */
+  .hr-shell .widget.emph-tertiary { display: none; }
+  .stat-card-value { font-size: 18px; }
+  .waterfall-row { grid-template-columns: minmax(120px, 40%) 1fr 56px; font-size: 11px; }
+  .log-line { grid-template-columns: 120px 50px 1fr; font-size: 11px; }
+  .timeline-time { min-width: 90px; }
+  .table-search { width: 110px; }
+}
+@container hr (max-width: 380px) {
+  .hr-shell-investigation .hr-shell-header,
+  .hr-shell-dashboard .hr-shell-header { grid-template-columns: 1fr; }
+}
+
+  </style>
+</head>
+<body>
+  <div class="hr-artifact">
+    <article class="hr-artifact" data-shell="investigation" data-density="7/8">
+  <div class="hr-meta-bar sev-info">
+  <div class="hr-meta-titles">
+    <h1 class="hr-title">Alarms — us-east-1</h1>
+    <div class="hr-subtitle">3 matched · 0 firing</div>
+  </div>
+  <div class="hr-meta-tags">
+    <span class="hr-sev-badge sev-info">info</span>
+    <span class="hr-meta-context">us-east-1</span>
+    <span class="hr-meta-time">2026-04-30T05:50:35Z</span>
+  </div>
+</div>
+  
+  <section class="hr-shell hr-shell-investigation" data-shell="investigation">
+  <header class="hr-shell-header" data-slot="header"><div class="widget widget-stat-card status-healthy emph-secondary size-default">
+  <div class="stat-card-label">Total alarms</div>
+  <div class="stat-card-value">
+    <span class="value-number">3</span>
+    <span class="value-unit">alarms</span>
+  </div>
+  
+  
+  
+</div></header>
+  <main class="hr-shell-primary" data-slot="primary"><div class="widget widget-stat-card status-healthy emph-secondary size-default">
+  <div class="stat-card-label">In ALARM</div>
+  <div class="stat-card-value">
+    <span class="value-number">0</span>
+    
+  </div>
+  
+  
+  
+</div>
+<div class="widget widget-stat-card status-healthy emph-secondary size-default">
+  <div class="stat-card-label">OK</div>
+  <div class="stat-card-value">
+    <span class="value-number">3</span>
+    
+  </div>
+  
+  
+  
+</div></main>
+  <aside class="hr-shell-context" data-slot="context"><div class="widget widget-table emph-secondary" data-table-id="tbl-1-5n5k8">
+  <div class="widget-header">
+    <span>CloudWatch alarms matching &#39;AlarmName contains &#39;pet-clinic&#39; or &#39;plugin1989&#39; (case-insensitive)&#39;</span>
+    <input type="search" class="table-search" placeholder="Filter…" aria-label="Filter rows" data-table-search="tbl-1-5n5k8" />
+  </div>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th class=" sortable" data-sort-key="name" data-sort-kind="code">Alarm<span class="sort-indicator" aria-hidden="true"></span></th><th class=" sortable" data-sort-key="state" data-sort-kind="status">State<span class="sort-indicator" aria-hidden="true"></span></th><th class=" sortable" data-sort-key="metric" data-sort-kind="text">Metric<span class="sort-indicator" aria-hidden="true"></span></th><th class=" sortable" data-sort-key="stat" data-sort-kind="text">Stat<span class="sort-indicator" aria-hidden="true"></span></th><th class=" sortable" data-sort-key="op" data-sort-kind="text">Op<span class="sort-indicator" aria-hidden="true"></span></th><th class="align-right sortable" data-sort-key="thr" data-sort-kind="number">Threshold<span class="sort-indicator" aria-hidden="true"></span></th><th class="align-right sortable" data-sort-key="period" data-sort-kind="number">Period (s)<span class="sort-indicator" aria-hidden="true"></span></th></tr></thead>
+      <tbody><tr><td class="" data-col="name"><code>pet-clinic-api-error-rate</code></td><td class="" data-col="state"><span class="cell-status cell-status-ok"><span class="dot"></span>ok</span></td><td class="" data-col="metric">AWS/Lambda/Errors</td><td class="" data-col="stat">Sum</td><td class="" data-col="op">GreaterThanThreshold</td><td class="align-right" data-col="thr">5</td><td class="align-right" data-col="period">300</td></tr><tr><td class="" data-col="name"><code>pet-clinic-api-p99-duration</code></td><td class="" data-col="state"><span class="cell-status cell-status-ok"><span class="dot"></span>ok</span></td><td class="" data-col="metric">AWS/Lambda/Duration</td><td class="" data-col="stat">p99</td><td class="" data-col="op">GreaterThanThreshold</td><td class="align-right" data-col="thr">1,000</td><td class="align-right" data-col="period">300</td></tr><tr><td class="" data-col="name"><code>pet-clinic-api-throttles</code></td><td class="" data-col="state"><span class="cell-status cell-status-ok"><span class="dot"></span>ok</span></td><td class="" data-col="metric">AWS/Lambda/Throttles</td><td class="" data-col="stat">Sum</td><td class="" data-col="op">GreaterThanThreshold</td><td class="align-right" data-col="thr">0</td><td class="align-right" data-col="period">300</td></tr></tbody>
+    </table>
+  </div>
+</div>
+<div class="widget widget-timeline emph-secondary">
+  <div class="widget-header">Last state transitions</div>
+  <ol class="timeline">
+    <li class="timeline-item sev-success">
+      <span class="timeline-dot" aria-hidden="true"></span>
+      <div class="timeline-body">
+        <div class="timeline-row">
+          <span class="timeline-time">2026-04-29T21:58:57.750000-07:00</span>
+          <span class="timeline-title">pet-clinic-api-error-rate → OK</span>
+        </div>
+        <div class="timeline-desc">Threshold Crossed: no datapoints were received for 1 period and 1 missing datapoint was treated as [NonBreaching].</div>
+        
+      </div>
+    </li>
+    <li class="timeline-item sev-success">
+      <span class="timeline-dot" aria-hidden="true"></span>
+      <div class="timeline-body">
+        <div class="timeline-row">
+          <span class="timeline-time">2026-04-29T21:58:53.902000-07:00</span>
+          <span class="timeline-title">pet-clinic-api-p99-duration → OK</span>
+        </div>
+        <div class="timeline-desc">Threshold Crossed: no datapoints were received for 1 period and 1 missing datapoint was treated as [NonBreaching].</div>
+        
+      </div>
+    </li>
+    <li class="timeline-item sev-success">
+      <span class="timeline-dot" aria-hidden="true"></span>
+      <div class="timeline-body">
+        <div class="timeline-row">
+          <span class="timeline-time">2026-04-29T21:58:57.503000-07:00</span>
+          <span class="timeline-title">pet-clinic-api-throttles → OK</span>
+        </div>
+        <div class="timeline-desc">Threshold Crossed: no datapoints were received for 1 period and 1 missing datapoint was treated as [NonBreaching].</div>
+        
+      </div>
+    </li></ol>
+</div></aside>
+  
+</section>
+
+</article>
+  </div>
+  <script>
+// interactions.js — opt-in client-side enhancements for rendered artifacts.
+//
+// The renderer produces a static HTML string with data-attributes annotated.
+// The host calls bindInteractions(rootEl) after inserting that HTML to wire
+// sort + search on tables. Keeping this OUT of the widget output preserves
+// the "manifest in -> HTML out" purity contract of the renderer.
+
+function compareCells(a, b, kind) {
+  if (kind === "number") {
+    const na = parseFloat(String(a).replace(/[^\d.\-]/g, ""));
+    const nb = parseFloat(String(b).replace(/[^\d.\-]/g, ""));
+    if (Number.isNaN(na) && Number.isNaN(nb)) return 0;
+    if (Number.isNaN(na)) return 1;
+    if (Number.isNaN(nb)) return -1;
+    return na - nb;
+  }
+  return String(a ?? "").localeCompare(String(b ?? ""), undefined, { numeric: true, sensitivity: "base" });
+}
+
+function bindTable(tableEl) {
+  const tbody = tableEl.querySelector("tbody");
+  if (!tbody) return;
+  const headers = tableEl.querySelectorAll("th.sortable");
+
+  headers.forEach(th => {
+    th.addEventListener("click", () => {
+      const key = th.getAttribute("data-sort-key");
+      const kind = th.getAttribute("data-sort-kind") || "text";
+      const current = th.getAttribute("aria-sort");
+      const next = current === "ascending" ? "descending" : "ascending";
+
+      headers.forEach(h => h.removeAttribute("aria-sort"));
+      th.setAttribute("aria-sort", next);
+
+      const rows = [...tbody.querySelectorAll("tr")].filter(r => !r.querySelector(".empty-row"));
+      rows.sort((rowA, rowB) => {
+        const a = rowA.querySelector(`td[data-col="${key}"]`)?.textContent.trim();
+        const b = rowB.querySelector(`td[data-col="${key}"]`)?.textContent.trim();
+        const cmp = compareCells(a, b, kind);
+        return next === "ascending" ? cmp : -cmp;
+      });
+      rows.forEach(r => tbody.appendChild(r));
+    });
+  });
+}
+
+function bindSearch(rootEl, tableId) {
+  const input = rootEl.querySelector(`input[data-table-search="${tableId}"]`);
+  const widget = rootEl.querySelector(`.widget-table[data-table-id="${tableId}"]`);
+  if (!input || !widget) return;
+  const tbody = widget.querySelector("tbody");
+  if (!tbody) return;
+
+  input.addEventListener("input", () => {
+    const q = input.value.trim().toLowerCase();
+    const rows = tbody.querySelectorAll("tr");
+    rows.forEach(row => {
+      if (row.querySelector(".empty-row")) return;
+      const text = row.textContent.toLowerCase();
+      row.style.display = q && !text.includes(q) ? "none" : "";
+    });
+  });
+}
+
+export function bindInteractions(rootEl) {
+  if (!rootEl) return;
+  const tables = rootEl.querySelectorAll(".widget-table");
+  tables.forEach(t => {
+    bindTable(t);
+    const id = t.getAttribute("data-table-id");
+    if (id) bindSearch(rootEl, id);
+  });
+}
+
+</script>
+</body>
+</html>

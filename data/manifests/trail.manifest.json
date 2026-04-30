@@ -1,0 +1,315 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "title": "CloudTrail — pet-clinic-api",
+    "subtitle": "26 events (24 AssumeRole, 1 AddPermission20150331v2, 1 CreateFunction20150331)",
+    "severity": "info",
+    "query_intent": "cloudtrail-view",
+    "region": "us-east-1",
+    "generated_at": "2026-04-30T05:50:35Z"
+  },
+  "widgets": [
+    {
+      "type": "stat_card",
+      "priority": 1,
+      "data": {
+        "label": "Events (24h)",
+        "value": 26,
+        "baseline_label": "resource=pet-clinic-api",
+        "status": "neutral"
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 2,
+      "data": {
+        "label": "AssumeRole",
+        "value": 24,
+        "unit": "events",
+        "status": "warning"
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 3,
+      "data": {
+        "label": "AddPermission20150331v2",
+        "value": 1,
+        "unit": "events",
+        "status": "warning"
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 4,
+      "data": {
+        "label": "CreateFunction20150331",
+        "value": 1,
+        "unit": "events",
+        "status": "neutral"
+      }
+    },
+    {
+      "type": "change_event_list",
+      "priority": 10,
+      "data": {
+        "label": "Write/config events (chronological)",
+        "events": [
+          {
+            "timestamp": "2026-04-29T20:48:25-07:00",
+            "title": "CreateFunction20150331",
+            "principal": "arn:aws:iam::826671498721:root",
+            "resource": "pet-clinic-api",
+            "kind": "deploy"
+          },
+          {
+            "timestamp": "2026-04-29T20:48:32-07:00",
+            "title": "AddPermission20150331v2",
+            "principal": "arn:aws:iam::826671498721:root",
+            "resource": "pet-clinic-api",
+            "kind": "iam"
+          }
+        ]
+      }
+    },
+    {
+      "type": "table",
+      "priority": 11,
+      "data": {
+        "label": "All 26 events",
+        "columns": [
+          {
+            "key": "time",
+            "label": "Time",
+            "kind": "text"
+          },
+          {
+            "key": "name",
+            "label": "Event",
+            "kind": "code"
+          },
+          {
+            "key": "src",
+            "label": "Source",
+            "kind": "text"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "kind": "text"
+          },
+          {
+            "key": "ro",
+            "label": "ReadOnly",
+            "kind": "text"
+          }
+        ],
+        "rows": [
+          {
+            "time": "2026-04-29T21:48:36-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:48:36-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:42:19-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:27:14-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T21:27:14-07:00",
+            "name": "AssumeRole",
+            "src": "sts.amazonaws.com",
+            "kind": "iam",
+            "ro": "true"
+          },
+          {
+            "time": "2026-04-29T20:48:32-07:00",
+            "name": "AddPermission20150331v2",
+            "src": "lambda.amazonaws.com",
+            "kind": "iam",
+            "ro": "false"
+          },
+          {
+            "time": "2026-04-29T20:48:25-07:00",
+            "name": "CreateFunction20150331",
+            "src": "lambda.amazonaws.com",
+            "kind": "deploy",
+            "ro": "false"
+          }
+        ],
+        "searchable": true,
+        "sortable": true
+      }
+    },
+    {
+      "type": "timeline",
+      "priority": 12,
+      "data": {
+        "label": "First and last events",
+        "events": [
+          {
+            "timestamp": "2026-04-29T20:48:25-07:00",
+            "title": "First: CreateFunction20150331",
+            "severity": "info"
+          },
+          {
+            "timestamp": "2026-04-29T21:48:36-07:00",
+            "title": "Last: AssumeRole",
+            "severity": "info"
+          }
+        ]
+      }
+    }
+  ]
+}

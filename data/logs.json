@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "pulled_at": "2026-04-30T05:55:00Z",
+    "source": "mcp",
+    "mcp_tool": "mcp__awslabs_cloudwatch-mcp-server__execute_log_insights_query",
+    "region": "us-east-1",
+    "log_group": "/aws/lambda/pet-clinic-api",
+    "query_string": "fields @timestamp, @message | filter @message like /ERROR/ or @message like /Exception/ or @message like /Traceback/ | sort @timestamp desc | limit 50",
+    "window_start": "2026-04-29T05:50:00+00:00",
+    "window_end": "2026-04-30T05:55:00+00:00",
+    "query_id": "5197916d-022a-4603-aed8-0cd62fa58838"
+  },
+  "status": "Complete",
+  "statistics": {
+    "recordsMatched": 0,
+    "recordsScanned": 2855,
+    "estimatedRecordsSkipped": 0,
+    "bytesScanned": 464778,
+    "estimatedBytesSkipped": 0,
+    "logGroupsScanned": 1
+  },
+  "results": [],
+  "interpretation": "The query scanned 2855 log records in /aws/lambda/pet-clinic-api over the last 24h and found ZERO entries matching /ERROR/, /Exception/, or /Traceback/. This is the actual telemetry — Lambda is recording errors at the platform level (AWS/Lambda Errors metric Sum=99, Avg=0.80) but the Lambda itself is NOT writing those keywords to its logs. Likely causes: errors are surfaced via non-2xx HTTP status codes / API Gateway integration failures / explicit `return {statusCode: 5xx}` rather than thrown exceptions, OR the Lambda is logging errors with a different keyword (e.g. 'fail', 'fault', JSON 'level':'error') that this filter does not catch."
+}
