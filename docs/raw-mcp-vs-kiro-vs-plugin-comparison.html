@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Raw MCP vs Kiro Power vs CW Plugin — Comparison</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg-elev: #11141b;
+    --bg-elev-2: #161a23;
+    --border: #232836;
+    --border-strong: #2f3645;
+    --text: #e6e9ef;
+    --text-muted: #8a93a6;
+    --text-dim: #5c6478;
+    --accent-raw: #6b7280;
+    --accent-kiro: #a78bfa;
+    --accent-plugin: #38bdf8;
+    --accent-good: #34d399;
+    --accent-warn: #fbbf24;
+    --accent-bad: #f87171;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.25);
+    --radius: 10px;
+    --radius-sm: 6px;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* Header */
+  header.hero {
+    margin-bottom: 32px;
+  }
+  header.hero .eyebrow {
+    color: var(--text-muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
+  }
+  header.hero h1 {
+    margin: 0 0 12px;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  header.hero p.lede {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 800px;
+  }
+
+  /* Summary cards */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 32px 0;
+  }
+  @media (max-width: 900px) {
+    .summary { grid-template-columns: 1fr; }
+  }
+  .card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+  }
+  .card.raw    { --accent: var(--accent-raw); }
+  .card.kiro   { --accent: var(--accent-kiro); }
+  .card.plugin { --accent: var(--accent-plugin); }
+
+  .card .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .card h3 {
+    margin: 0 0 6px;
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .card p.subtitle {
+    margin: 0 0 14px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .card ul.stats {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .card ul.stats li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 0;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .card ul.stats li:first-child { border-top: none; }
+  .card ul.stats .label { color: var(--text-muted); }
+  .card ul.stats .value {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--text);
+  }
+
+  /* Tabs */
+  .tabs {
+    margin-top: 8px;
+  }
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--text);
+    border-bottom-color: var(--accent-plugin);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Section heads */
+  h2.section {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  p.section-lede {
+    margin: 0 0 20px;
+    color: var(--text-muted);
+    font-size: 13.5px;
+  }
+
+  /* Tables */
+  .table-wrap {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-elev);
+    box-shadow: var(--shadow);
+  }
+  table.compare {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.compare th, table.compare td {
+    padding: 12px 14px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--border);
+  }
+  table.compare tr:last-child td { border-bottom: none; }
+  table.compare thead th {
+    background: var(--bg-elev-2);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border-strong);
+  }
+  table.compare th.col-raw    { color: var(--accent-raw); }
+  table.compare th.col-kiro   { color: var(--accent-kiro); }
+  table.compare th.col-plugin { color: var(--accent-plugin); }
+  table.compare td.dim { color: var(--text-muted); }
+  table.compare td.label-cell {
+    font-weight: 500;
+    color: var(--text);
+    width: 22%;
+    background: var(--bg-elev-2);
+  }
+  table.compare tbody tr:hover td { background: rgba(255,255,255,0.015); }
+  table.compare tbody tr:hover td.label-cell { background: var(--bg-elev-2); }
+
+  /* Pills inside tables */
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .pill.none  { background: rgba(107,114,128,0.15); color: var(--text-muted); }
+  .pill.partial { background: rgba(251,191,36,0.12); color: var(--accent-warn); }
+  .pill.full  { background: rgba(52,211,153,0.12); color: var(--accent-good); }
+  .pill.bad   { background: rgba(248,113,113,0.12); color: var(--accent-bad); }
+
+  /* Unique-features grid */
+  .unique-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 800px) {
+    .unique-grid { grid-template-columns: 1fr; }
+  }
+  .unique-col {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow: var(--shadow);
+  }
+  .unique-col.kiro   { border-top: 3px solid var(--accent-kiro); }
+  .unique-col.plugin { border-top: 3px solid var(--accent-plugin); }
+  .unique-col h3 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .unique-col h3 .who {
+    font-family: var(--mono);
+    font-size: 11px;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--bg-elev-2);
+    color: var(--text-muted);
+    font-weight: 500;
+    vertical-align: middle;
+  }
+  .unique-col p.sub {
+    margin: 0 0 16px;
+    color: var(--text-muted);
+    font-size: 12.5px;
+  }
+  .unique-col ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .unique-col li {
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+  }
+  .unique-col li:first-child { border-top: none; }
+  .unique-col li .feature-name {
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 2px;
+    display: block;
+  }
+  .unique-col li .feature-desc {
+    color: var(--text-muted);
+    font-size: 12.5px;
+  }
+
+  /* Verdict */
+  .verdict-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .verdict-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    box-shadow: var(--shadow);
+  }
+  @media (max-width: 700px) {
+    .verdict-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .verdict-row .arrow { display: none; }
+  }
+  .verdict-row .need {
+    color: var(--text);
+    font-size: 13.5px;
+  }
+  .verdict-row .need .label {
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 2px;
+    display: block;
+  }
+  .verdict-row .arrow {
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 14px;
+  }
+  .verdict-row .pick {
+    text-align: right;
+    font-size: 13.5px;
+  }
+  .verdict-row .pick .label {
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 2px;
+    display: block;
+  }
+  .verdict-row .pick .winner {
+    font-weight: 600;
+  }
+  .verdict-row .pick .winner.kiro   { color: var(--accent-kiro); }
+  .verdict-row .pick .winner.plugin { color: var(--accent-plugin); }
+  .verdict-row .pick .winner.both   {
+    background: linear-gradient(90deg, var(--accent-kiro), var(--accent-plugin));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .verdict-row .pick .why {
+    color: var(--text-muted);
+    font-size: 12.5px;
+    margin-top: 2px;
+  }
+
+  .bottom-line {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-plugin);
+    border-radius: var(--radius);
+    padding: 22px 26px;
+    box-shadow: var(--shadow);
+  }
+  .bottom-line h3 {
+    margin: 0 0 10px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .bottom-line p {
+    margin: 0 0 10px;
+    color: var(--text);
+    font-size: 13.5px;
+  }
+  .bottom-line p:last-child { margin-bottom: 0; }
+  .bottom-line p .k { color: var(--accent-kiro); font-weight: 500; }
+  .bottom-line p .p { color: var(--accent-plugin); font-weight: 500; }
+
+  /* Footer */
+  footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+  footer code {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text-muted);
+  }
+
+  code, .mono {
+    font-family: var(--mono);
+    font-size: 12.5px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="hero">
+    <div class="eyebrow">Architectural comparison</div>
+    <h1>Raw MCP &nbsp;vs&nbsp; Kiro Power &nbsp;vs&nbsp; CW Plugin</h1>
+    <p class="lede">
+      Three ways to use the same four AWS observability MCP servers — bare-bones, Kiro IDE
+      with steering files, or the Claude Code plugin with slash commands and HTML artifacts.
+      Same backends, very different operator experiences.
+    </p>
+  </header>
+
+  <!-- Summary cards -->
+  <section class="summary" aria-label="At-a-glance summary">
+    <div class="card raw">
+      <span class="tag">Baseline</span>
+      <h3>Raw MCP</h3>
+      <p class="subtitle">Just the servers. No orchestration, no presentation.</p>
+      <ul class="stats">
+        <li><span class="label">MCP servers</span><span class="value">4</span></li>
+        <li><span class="label">Orchestration</span><span class="value">none</span></li>
+        <li><span class="label">Output</span><span class="value">API tools only</span></li>
+        <li><span class="label">User burden</span><span class="value">manages everything</span></li>
+      </ul>
+    </div>
+
+    <div class="card kiro">
+      <span class="tag">Kiro Power</span>
+      <h3>Kiro IDE + steering files</h3>
+      <p class="subtitle">Scenario router + dynamic context. Text-only output.</p>
+      <ul class="stats">
+        <li><span class="label">MCP servers</span><span class="value">4</span></li>
+        <li><span class="label">Steering files</span><span class="value">8 &nbsp;·&nbsp; 3,712 lines</span></li>
+        <li><span class="label">Orchestration</span><span class="value">POWER.md router</span></li>
+        <li><span class="label">Runs on</span><span class="value">Kiro IDE only</span></li>
+      </ul>
+    </div>
+
+    <div class="card plugin">
+      <span class="tag">CW Plugin</span>
+      <h3>Claude Code / Cowork plugin</h3>
+      <p class="subtitle">Slash commands, typed skills, interactive HTML artifacts.</p>
+      <ul class="stats">
+        <li><span class="label">MCP servers</span><span class="value">4</span></li>
+        <li><span class="label">Slash commands</span><span class="value">10</span></li>
+        <li><span class="label">Skills</span><span class="value">16</span></li>
+        <li><span class="label">HTML artifacts</span><span class="value">6 templates</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Tabs -->
+  <section class="tabs" aria-label="Detailed comparison">
+    <div class="tab-bar" role="tablist">
+      <button class="tab-btn active" role="tab" data-tab="architecture">Architecture</button>
+      <button class="tab-btn" role="tab" data-tab="capabilities">Capabilities</button>
+      <button class="tab-btn" role="tab" data-tab="unique">Unique features</button>
+      <button class="tab-btn" role="tab" data-tab="verdict">Verdict</button>
+    </div>
+
+    <!-- Architecture -->
+    <div class="tab-panel active" id="tab-architecture" role="tabpanel">
+      <h2 class="section">How each layer is built</h2>
+      <p class="section-lede">All three sit on top of the same four <code>awslabs</code> MCP servers. The differences are everything <em>around</em> them.</p>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead>
+            <tr>
+              <th>Layer</th>
+              <th class="col-raw">Raw MCP</th>
+              <th class="col-kiro">Kiro Power</th>
+              <th class="col-plugin">CW Plugin</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="label-cell">Platform</td>
+              <td>Any MCP-capable client</td>
+              <td>Kiro IDE only</td>
+              <td>Claude Code / Cowork</td>
+            </tr>
+            <tr>
+              <td class="label-cell">MCP servers</td>
+              <td colspan="3" class="dim">
+                Same 4 across all three: <code>cloudwatch</code>, <code>application-signals</code>,
+                <code>cloudtrail</code>, <code>aws-documentation</code>.
+              </td>
+            </tr>
+            <tr>
+              <td class="label-cell">Orchestration layer</td>
+              <td><span class="pill none">None</span> &nbsp;User stitches tool calls.</td>
+              <td><span class="pill partial">POWER.md router</span> &nbsp;Routes to one of 8 scenario steering files.</td>
+              <td><span class="pill full">10 slash commands + 16 skills</span> &nbsp;Typed, named workflows.</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Context loading</td>
+              <td>None — every turn starts cold.</td>
+              <td>Dynamic — POWER.md loads only the relevant steering file (~200–700 lines).</td>
+              <td>Dynamic — slash command pulls only its skill + artifact template.</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Presentation layer</td>
+              <td><span class="pill none">None</span> &nbsp;Raw JSON tool results.</td>
+              <td><span class="pill partial">Text-only</span> &nbsp;Markdown narration in chat.</td>
+              <td><span class="pill full">HTML artifacts</span> &nbsp;6 interactive templates (health card, breach explainer, waterfall, etc.).</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Version pinning</td>
+              <td>User pins manually.</td>
+              <td>Pinned in Kiro config.</td>
+              <td>Pinned in plugin <code>mcp.json</code>.</td>
+            </tr>
+            <tr>
+              <td class="label-cell">State / memory</td>
+              <td><span class="pill none">None</span></td>
+              <td><span class="pill none">None</span> — each session is independent.</td>
+              <td><span class="pill full">Incident memory</span> &nbsp;JSON under <code>.aws-apm/incidents/</code>; surfaces recurrences.</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Safety model</td>
+              <td>Server-level read/write tool tags.</td>
+              <td>Implicit — read-only steering files, no write actions documented.</td>
+              <td><span class="pill full">Explicit</span> &nbsp;<code>ACTION-SAFETY-MODEL.md</code> defines read-only vs. confirmed-write per tool.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Capabilities -->
+    <div class="tab-panel" id="tab-capabilities" role="tabpanel">
+      <h2 class="section">What each one can actually do</h2>
+      <p class="section-lede">Capability coverage by use case. <span class="pill full">Full</span> = first-class workflow. <span class="pill partial">Partial</span> = supported but ad-hoc. <span class="pill none">None</span> = you're on your own.</p>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead>
+            <tr>
+              <th>Capability</th>
+              <th class="col-raw">Raw MCP</th>
+              <th class="col-kiro">Kiro Power</th>
+              <th class="col-plugin">CW Plugin</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="label-cell">Incident response</td>
+              <td><span class="pill none">None</span></td>
+              <td><span class="pill full">Full</span> &nbsp;<code>incident-response.md</code> (537 lines)</td>
+              <td><span class="pill full">Full</span> &nbsp;<code>/cw-alarm-response</code> + <code>alarm-response</code> skill</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Log analysis</td>
+              <td><span class="pill partial">Tools available</span></td>
+              <td><span class="pill full">Full</span> &nbsp;<code>log-analysis.md</code> (269 lines), standalone</td>
+              <td><span class="pill partial">Within investigations</span> &nbsp;Logs Insights used by error-spike skill</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Alerting setup</td>
+              <td><span class="pill none">None</span></td>
+              <td><span class="pill full">Full</span> &nbsp;<code>alerting-setup.md</code> (501 lines) — design new alarms</td>
+              <td><span class="pill none">None</span> — investigation-focused, not setup</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Performance monitoring</td>
+              <td><span class="pill partial">Tools available</span></td>
+              <td><span class="pill full">Full</span> &nbsp;<code>performance-monitoring.md</code> (715 lines)</td>
+              <td><span class="pill full">Full</span> &nbsp;<code>/cw-investigate-latency</code> + trace-waterfall artifact</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Security auditing</td>
+              <td><span class="pill partial">CloudTrail tools</span></td>
+              <td><span class="pill full">Full</span> &nbsp;<code>security-auditing.md</code> (730 lines)</td>
+              <td><span class="pill none">None</span></td>
+            </tr>
+            <tr>
+              <td class="label-cell">Codebase observability gaps</td>
+              <td><span class="pill none">None</span></td>
+              <td><span class="pill full">Full</span> &nbsp;<code>observability-gap-analysis.md</code> (430 lines) — reads source</td>
+              <td><span class="pill partial">Trace-only</span> &nbsp;<code>trace-to-code</code> maps span → file</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Application Signals setup</td>
+              <td><span class="pill none">None</span></td>
+              <td><span class="pill full">Full</span> &nbsp;<code>application-signals-setup.md</code> (217 lines)</td>
+              <td><span class="pill partial">Doctor only</span> &nbsp;<code>/cw-doctor</code> verifies; doesn't onboard</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Visual artifacts</td>
+              <td><span class="pill none">None</span></td>
+              <td><span class="pill none">Text-only</span></td>
+              <td><span class="pill full">6 HTML templates</span> &nbsp;Health card, breach explainer, waterfall, hypotheses, copy-to-incident, SLO report</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Hypothesis ranking</td>
+              <td><span class="pill none">None</span></td>
+              <td><span class="pill partial">Inline narrative</span></td>
+              <td><span class="pill full">Top Suspected Cause</span> &nbsp;Ranked, evidence-cited, confidence-scored</td>
+            </tr>
+            <tr>
+              <td class="label-cell">SLO portfolio reporting</td>
+              <td><span class="pill none">None</span></td>
+              <td><span class="pill none">None</span></td>
+              <td><span class="pill full">Full</span> &nbsp;<code>/cw-slo-report</code> across all services, ranked by risk</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Unique features -->
+    <div class="tab-panel" id="tab-unique" role="tabpanel">
+      <h2 class="section">What only one side has</h2>
+      <p class="section-lede">The non-overlapping bits — where each project bets differently.</p>
+
+      <div class="unique-grid">
+        <div class="unique-col kiro">
+          <h3>Only in Kiro Power <span class="who">8 steering files · 3,712 lines</span></h3>
+          <p class="sub">Broader scope: design, audit, and gap-analysis workflows that the plugin doesn't touch.</p>
+          <ul>
+            <li>
+              <span class="feature-name">Codebase gap analysis</span>
+              <span class="feature-desc">Reads source, identifies missing logs/metrics/traces, recommends instrumentation. <code>observability-gap-analysis.md</code> (430 lines).</span>
+            </li>
+            <li>
+              <span class="feature-name">Proactive alerting design</span>
+              <span class="feature-desc">Designs new CloudWatch alarms from scratch — thresholds, SNS wiring, composite alarms. <code>alerting-setup.md</code> (501 lines).</span>
+            </li>
+            <li>
+              <span class="feature-name">CloudTrail data-source decision tree</span>
+              <span class="feature-desc">Picks Lake vs. Lookup vs. S3+Athena based on time range, cost, and query shape. <code>cloudtrail-data-source-selection.md</code> (313 lines).</span>
+            </li>
+            <li>
+              <span class="feature-name">Standalone log analysis</span>
+              <span class="feature-desc">A first-class workflow — not just a step inside an incident. <code>log-analysis.md</code> (269 lines).</span>
+            </li>
+            <li>
+              <span class="feature-name">Security &amp; compliance auditing</span>
+              <span class="feature-desc">CloudTrail-driven audit runbook for IAM, S3, KMS, network changes. <code>security-auditing.md</code> (730 lines).</span>
+            </li>
+            <li>
+              <span class="feature-name">Application Signals onboarding</span>
+              <span class="feature-desc">End-to-end setup walkthrough, not just verification. <code>application-signals-setup.md</code> (217 lines).</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="unique-col plugin">
+          <h3>Only in CW Plugin <span class="who">10 commands · 16 skills · 6 artifacts</span></h3>
+          <p class="sub">Deeper investigation UX: typed workflows, persistent memory, and developer-grade output.</p>
+          <ul>
+            <li>
+              <span class="feature-name">Interactive HTML artifacts</span>
+              <span class="feature-desc">Service Health Card, SLO Breach Explainer, Trace Waterfall, Top Suspected Cause, SLO Report, Copy-to-Incident — fixed visual grammar across investigations.</span>
+            </li>
+            <li>
+              <span class="feature-name">Incident memory</span>
+              <span class="feature-desc">Persists every investigation as JSON under <code>.aws-apm/incidents/</code>. Surfaces "we saw this before" before re-investigating.</span>
+            </li>
+            <li>
+              <span class="feature-name">Trace-to-code mapping</span>
+              <span class="feature-desc">Span annotations → file/method → recent commits. Bridges production telemetry to the code that needs the fix.</span>
+            </li>
+            <li>
+              <span class="feature-name">Investigation validator</span>
+              <span class="feature-desc">Self-check pass before output: metadata footer, evidence citations, deep links, ruled-out hypotheses, burn-rate math, confidence levels.</span>
+            </li>
+            <li>
+              <span class="feature-name">Service ownership resolution</span>
+              <span class="feature-desc">AWS tags + Service Catalog + CODEOWNERS + GitHub teams + PagerDuty + Slack channel → "Likely owner" + "Suggested page".</span>
+            </li>
+            <li>
+              <span class="feature-name">Explicit safety model</span>
+              <span class="feature-desc"><code>ACTION-SAFETY-MODEL.md</code> classifies every MCP tool as read-only vs. confirmed-write. Kiro relies on convention.</span>
+            </li>
+            <li>
+              <span class="feature-name">Slash-command UX</span>
+              <span class="feature-desc"><code>/cw-alarm-response</code>, <code>/cw-investigate-slo</code>, <code>/cw-investigate-latency</code>, <code>/cw-doctor</code>, <code>/cw-slo-report</code>, etc. — discoverable, autocompleted, scoped.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verdict -->
+    <div class="tab-panel" id="tab-verdict" role="tabpanel">
+      <h2 class="section">Which one should you reach for?</h2>
+      <p class="section-lede">Pick by the job, not by the brand. The two layered options are complementary, not competitive.</p>
+
+      <div class="verdict-grid">
+        <div class="verdict-row">
+          <div class="need">
+            <span class="label">If you need</span>
+            Live incident triage with a paste-ready artifact
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="pick">
+            <span class="label">Best choice</span>
+            <span class="winner plugin">CW Plugin</span>
+            <div class="why">Slash command + HTML health card + copy-to-incident output</div>
+          </div>
+        </div>
+
+        <div class="verdict-row">
+          <div class="need">
+            <span class="label">If you need</span>
+            To audit and design new alarms from scratch
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="pick">
+            <span class="label">Best choice</span>
+            <span class="winner kiro">Kiro Power</span>
+            <div class="why">501-line alerting steering file; plugin doesn't cover setup</div>
+          </div>
+        </div>
+
+        <div class="verdict-row">
+          <div class="need">
+            <span class="label">If you need</span>
+            Codebase observability gap analysis
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="pick">
+            <span class="label">Best choice</span>
+            <span class="winner kiro">Kiro Power</span>
+            <div class="why">Reads source; plugin only does trace-to-code on existing spans</div>
+          </div>
+        </div>
+
+        <div class="verdict-row">
+          <div class="need">
+            <span class="label">If you need</span>
+            Trace → file/method → commit, with a fix plan
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="pick">
+            <span class="label">Best choice</span>
+            <span class="winner plugin">CW Plugin</span>
+            <div class="why"><code>trace-to-code</code> skill is plugin-only</div>
+          </div>
+        </div>
+
+        <div class="verdict-row">
+          <div class="need">
+            <span class="label">If you need</span>
+            CloudTrail-driven security/compliance audit
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="pick">
+            <span class="label">Best choice</span>
+            <span class="winner kiro">Kiro Power</span>
+            <div class="why">730-line security-auditing steering file; plugin has no equivalent</div>
+          </div>
+        </div>
+
+        <div class="verdict-row">
+          <div class="need">
+            <span class="label">If you need</span>
+            SLO portfolio review, ranked by burn risk
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="pick">
+            <span class="label">Best choice</span>
+            <span class="winner plugin">CW Plugin</span>
+            <div class="why"><code>/cw-slo-report</code> + HTML report; not in Kiro</div>
+          </div>
+        </div>
+
+        <div class="verdict-row">
+          <div class="need">
+            <span class="label">If you need</span>
+            Recurrence detection across past incidents
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="pick">
+            <span class="label">Best choice</span>
+            <span class="winner plugin">CW Plugin</span>
+            <div class="why">Incident memory persists; Kiro sessions are stateless</div>
+          </div>
+        </div>
+
+        <div class="verdict-row">
+          <div class="need">
+            <span class="label">If you need</span>
+            Standalone Logs Insights work — not tied to an incident
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="pick">
+            <span class="label">Best choice</span>
+            <span class="winner kiro">Kiro Power</span>
+            <div class="why">Log-analysis is a first-class workflow, not just a sub-step</div>
+          </div>
+        </div>
+
+        <div class="verdict-row">
+          <div class="need">
+            <span class="label">If you need</span>
+            Both broad coverage and deep investigation UX
+          </div>
+          <div class="arrow">&rarr;</div>
+          <div class="pick">
+            <span class="label">Best choice</span>
+            <span class="winner both">Both — same MCP servers</span>
+            <div class="why">Run Kiro for design/audit, plugin for live triage</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-line">
+        <h3>Bottom line</h3>
+        <p>
+          All three sit on the same four MCP servers. The split is what's built on top.
+        </p>
+        <p>
+          <span class="k">Kiro Power</span> is <strong>broader</strong> — codebase gap analysis, alerting
+          design, security auditing, App Signals onboarding, and a standalone log-analysis workflow.
+          It's the right tool when the question is "what should we be monitoring?" or "is this set up correctly?"
+        </p>
+        <p>
+          <span class="p">CW Plugin</span> is <strong>deeper on investigation UX and developer workflow</strong>
+          — slash-commanded, artifact-rendered, validated, with persistent incident memory and
+          trace-to-code mapping. It's the right tool when the question is "what just broke and what do
+          I tell the incident channel?"
+        </p>
+        <p>
+          They're <strong>complementary, not competitive</strong>. The MCP servers are shared infrastructure;
+          the value lives in the orchestration and presentation layers each project builds — and those layers
+          target different parts of the operator's day.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <code>docs/raw-mcp-vs-kiro-vs-plugin-comparison.html</code> &nbsp;·&nbsp; comparison snapshot &nbsp;·&nbsp;
+    Shared MCP servers: <code>cloudwatch · application-signals · cloudtrail · aws-documentation</code>
+  </footer>
+</div>
+
+<script>
+  (function () {
+    const buttons = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.tab-panel');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-tab');
+        buttons.forEach(b => b.classList.toggle('active', b === btn));
+        panels.forEach(p => p.classList.toggle('active', p.id === 'tab-' + target));
+      });
+    });
+  })();
+</script>
+</body>
+</html>
