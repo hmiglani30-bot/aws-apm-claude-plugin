@@ -683,6 +683,22 @@ aws-apm-claude-plugin/
 │   ├── demo-stack.yaml       # CloudFormation template (Lambda + APIGW + ADOT + Alarms + SNS)
 │   ├── generate-load.sh      # Load generator script
 │   └── README.md             # Demo instructions and cost breakdown
+├── renderer/                 # Hybrid-renderer pipeline (manifest → HTML)
+│   ├── render.js             # Entry: preloadShells + renderManifest
+│   ├── engine.js             # validateManifest, planLayout, fillShell, renderShellHeader
+│   ├── widgets/              # 8 widget renderers (stat_card, table, timeline, log_viewer, …)
+│   ├── shells/               # 3 shell templates (single-focus, investigation, dashboard)
+│   ├── styles.css            # Embedded styles for standalone outputs
+│   └── interactions.js       # Drawer toggle and other client-side hooks
+├── render-standalone.mjs     # CLI: manifest JSON in → standalone HTML out
+├── schemas/
+│   └── manifest.schema.json  # JSON Schema enforced by validateManifest
+├── data/                     # End-to-end test corpus (see "End-to-end test infrastructure")
+│   ├── build-manifests.mjs   # Live AWS JSON → widget manifest transform
+│   ├── {health,alarms,dashboard,logs,trail}.json  # Captured live AWS output
+│   ├── manifests/            # 5 schema-conformant widget manifests
+│   ├── rendered/             # 5 HTML artifacts produced by render-standalone.mjs
+│   └── e2e-report.md         # Pipeline audit: layers exercised, derivations, hardcoding check
 ├── hooks/
 │   ├── hooks.json            # PreToolUse confirmation gate on write actions
 │   └── scripts/confirm-write.sh
@@ -740,12 +756,66 @@ The `widget-catalog` skill guides the LLM in selecting the right widgets and
 template for each query. In Markdown-only surfaces, the same manifest renders as
 structured Markdown with "Open in CloudWatch" deep links.
 
+## End-to-end test infrastructure
+
+The `data/` directory contains a recorded end-to-end run of the
+hybrid-renderer pipeline against live AWS data. It exists so the renderer's
+contract — *live AWS JSON in, validated and layout-planned HTML out* — can be
+re-verified at any time without standing up a service.
+
+### What's in `data/`
+
+| Path | What it is |
+|---|---|
+| `data/{health,alarms,dashboard,logs,trail}.json` | Live AWS API output captured from the `plugin1989` CloudFormation stack (`pet-clinic-api` Lambda, us-east-1) |
+| `data/build-manifests.mjs` | Deterministic JSON-only transform: reads `data/*.json`, emits `data/manifests/*.manifest.json`. No HTML strings, no fixtures |
+| `data/manifests/` | 5 schema-conformant widget manifests (one per source JSON), each validated by `schemas/manifest.schema.json` |
+| `data/rendered/` | 5 standalone HTML artifacts produced by `render-standalone.mjs` running the actual renderer |
+| `data/e2e-report.md` | Test report — pipeline layers exercised, widget types covered, derived-value spot checks, hardcoded-HTML audit |
+
+### Pipeline
+
+```
+live AWS data (data/*.json)
+      │
+      │  data/build-manifests.mjs        (JSON-only transform)
+      ▼
+widget manifests (data/manifests/*.manifest.json)
+      │
+      │  render-standalone.mjs           (CLI wrapper)
+      ▼
+renderer/render.js                       (preloadShells + renderManifest)
+      │
+      │  validateManifest → planLayout (shell + density budget + slot capacity)
+      │   → fillShell (renderer/shells/*.html)
+      │   → render each widget (renderer/widgets/*.js)
+      │   → renderDrawer (overflow) → renderShellHeader (severity, title, meta)
+      ▼
+data/rendered/*.html                     (full HTML doc, embedded CSS + JS)
+```
+
+Every layer above ran during the recorded E2E. No layer was bypassed, mocked,
+or stubbed; full audit in [`data/e2e-report.md`](data/e2e-report.md).
+
+### Reproducing
+
+```bash
+node data/build-manifests.mjs
+for n in health alarms dashboard logs trail; do
+  node render-standalone.mjs data/manifests/$n.manifest.json data/rendered/$n.html
+done
+```
+
 ## What's new in v0.3.0
 
 - **MCP-UI visual layer** — 9 widget types and 7 templates rendered via the
   MCP-UI protocol with Cloudscape Design System components. Replaces the
   previous `{{PLACEHOLDER}}` HTML template approach with a structured
   manifest-to-renderer pipeline.
+- **Hybrid-renderer E2E test corpus** — `data/` ships 5 live-AWS JSON
+  fixtures, the deterministic `build-manifests.mjs` transform, 5
+  schema-conformant manifests, 5 rendered HTML artifacts, and an audit report
+  proving the renderer pipeline runs end-to-end with zero hardcoded HTML.
 - **Widget catalog skill** — master reference for LLM-driven widget and
   template selection, including data shapes, density costs, MCP tool-to-widget
   mapping, and a query pattern decision tree.
