@@ -1,0 +1,167 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "title": "Create Alarm — checkout-api Errors",
+    "subtitle": "Recommended threshold: 5 errors/min (rule: 2× p95 baseline, window 7d)",
+    "severity": "info",
+    "query_intent": "create-alarm",
+    "service": "checkout-api",
+    "region": "us-east-1",
+    "environment": "prod",
+    "generated_at": "2026-04-30T18:24:00Z"
+  },
+  "widgets": [
+    {
+      "type": "action_form",
+      "priority": 1,
+      "data": {
+        "action_id": "create_metric_alarm",
+        "label": "Create CloudWatch Alarm — checkout-api Errors",
+        "description": "Errors spiked 14× over baseline at 14:18 UTC. This alarm pages on the same condition. Threshold derived from 7d baseline (p95 = 2.4 errors/min) using the count-metric default rule (2× baseline, floored at 5).",
+        "mcp_tool": "mcp__awslabs__cloudwatch_mcp_server__PutMetricAlarm",
+        "tier": 4,
+        "blast_radius": "single alarm; no impact on metric data",
+        "reversible": true,
+        "rollback_plan": "DeleteAlarms with alarm name (console deep link in this artifact)",
+        "side_effect_detection": "Watch the alarm's state-history page after applying",
+        "context": {
+          "region": "us-east-1",
+          "account": "123456789012",
+          "service": "checkout-api",
+          "environment": "prod"
+        },
+        "fields": [
+          {
+            "key": "AlarmName",
+            "label": "Alarm name",
+            "type": "text",
+            "value": "checkout-api-Lambda-Errors-Sum-Critical",
+            "source": "naming convention",
+            "required": true,
+            "validation": { "pattern": "^[A-Za-z0-9_\\-\\.]+$", "max_length": 255 }
+          },
+          {
+            "key": "Namespace",
+            "label": "Namespace",
+            "type": "text",
+            "value": "AWS/Lambda",
+            "source": "metric metadata",
+            "required": true
+          },
+          {
+            "key": "MetricName",
+            "label": "Metric name",
+            "type": "text",
+            "value": "Errors",
+            "source": "metric metadata",
+            "required": true
+          },
+          {
+            "key": "Statistic",
+            "label": "Statistic",
+            "type": "select",
+            "value": "Sum",
+            "source": "metric class default",
+            "options": [
+              { "value": "Sum", "label": "Sum" },
+              { "value": "Average", "label": "Average" },
+              { "value": "Minimum", "label": "Minimum" },
+              { "value": "Maximum", "label": "Maximum" },
+              { "value": "p90", "label": "p90" },
+              { "value": "p95", "label": "p95" },
+              { "value": "p99", "label": "p99" }
+            ]
+          },
+          {
+            "key": "Period",
+            "label": "Period",
+            "type": "number",
+            "value": 60,
+            "unit": "seconds",
+            "source": "metric class default",
+            "validation": { "min": 10, "step": 10 }
+          },
+          {
+            "key": "EvaluationPeriods",
+            "label": "Evaluation periods",
+            "type": "number",
+            "value": 5,
+            "source": "metric class default",
+            "validation": { "min": 1, "max": 1440 }
+          },
+          {
+            "key": "DatapointsToAlarm",
+            "label": "Datapoints to alarm",
+            "type": "number",
+            "value": 5,
+            "source": "metric class default",
+            "validation": { "min": 1, "max": 1440 }
+          },
+          {
+            "key": "ComparisonOperator",
+            "label": "Comparison operator",
+            "type": "select",
+            "value": "GreaterThanThreshold",
+            "source": "metric class default",
+            "options": [
+              { "value": "GreaterThanThreshold", "label": "> (Greater than)" },
+              { "value": "GreaterThanOrEqualToThreshold", "label": "≥ (Greater than or equal)" },
+              { "value": "LessThanThreshold", "label": "< (Less than)" },
+              { "value": "LessThanOrEqualToThreshold", "label": "≤ (Less than or equal)" }
+            ]
+          },
+          {
+            "key": "Threshold",
+            "label": "Threshold",
+            "type": "number",
+            "value": 5,
+            "unit": "errors/min",
+            "source": "rule: 2× baseline_p95 (=2.4 → 5, floor)",
+            "help": "7d baseline p95 = 2.4 errors/min; the count-metric rule rounds 2× up to floor of 5 to avoid pager noise on single-error blips."
+          },
+          {
+            "key": "TreatMissingData",
+            "label": "Treat missing data as",
+            "type": "select",
+            "value": "notBreaching",
+            "source": "metric class default",
+            "options": [
+              { "value": "notBreaching", "label": "notBreaching" },
+              { "value": "breaching", "label": "breaching" },
+              { "value": "ignore", "label": "ignore" },
+              { "value": "missing", "label": "missing" }
+            ]
+          },
+          {
+            "key": "Dimensions",
+            "label": "Dimensions",
+            "type": "textarea",
+            "value": "Name=FunctionName,Value=checkout-api",
+            "source": "service binding",
+            "help": "One Name=…,Value=… per line."
+          },
+          {
+            "key": "AlarmActions",
+            "label": "ALARM action (SNS topic ARN)",
+            "type": "text",
+            "value": "arn:aws:sns:us-east-1:123456789012:critical-alerts",
+            "source": "tier routing",
+            "help": "Pick the topic that matches the severity tier (paging vs ticket vs log)."
+          },
+          {
+            "key": "OKActions",
+            "label": "OK action (SNS topic ARN)",
+            "type": "text",
+            "value": "arn:aws:sns:us-east-1:123456789012:critical-alerts",
+            "source": "recommended for paging tier"
+          }
+        ],
+        "deep_link": "https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#alarmsV2:create",
+        "deep_link_label": "Open Create Alarm in CloudWatch console",
+        "cli_command": "aws cloudwatch put-metric-alarm \\\n  --alarm-name \"checkout-api-Lambda-Errors-Sum-Critical\" \\\n  --namespace \"AWS/Lambda\" \\\n  --metric-name \"Errors\" \\\n  --statistic \"Sum\" \\\n  --period 60 \\\n  --evaluation-periods 5 \\\n  --datapoints-to-alarm 5 \\\n  --threshold 5 \\\n  --comparison-operator \"GreaterThanThreshold\" \\\n  --treat-missing-data \"notBreaching\" \\\n  --dimensions \"Name=FunctionName,Value=checkout-api\" \\\n  --alarm-actions \"arn:aws:sns:us-east-1:123456789012:critical-alerts\" \\\n  --ok-actions \"arn:aws:sns:us-east-1:123456789012:critical-alerts\" \\\n  --region us-east-1",
+        "cli_label": "Copy CLI command",
+        "safety_note": "Tier 4 write — reviewed, but not yet applied. Click the console button or paste the CLI to apply."
+      }
+    }
+  ]
+}
