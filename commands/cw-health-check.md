@@ -38,10 +38,22 @@ The user invoked this with: `$ARGUMENTS`
 
 4. For each service in parallel (cap at 10 concurrent), gather:
    - **RED metrics** — current 5-min request rate, error rate, p50/p90/p99
-     latency.
+     latency, sourced via the fall-through chain in `service-health-card`
+     (Application Signals → X-Ray trace summaries → raw CloudWatch
+     namespace).
    - **24h baseline** — same metrics from the same 5-min window 24h ago.
    - **SLO state** — every SLO configured on this service, with target,
      current attainment, and state (Healthy / Warning / Breach).
+   - **X-Ray trace error rate** — from `query_sampled_traces` over the
+     5-min window. Use as a cross-check against Application Signals: if
+     the service shows Healthy in App Signals but X-Ray reports trace
+     errors >1%, downgrade to Degraded and surface "Trace errors
+     disagree with App Signals — instrumentation gap likely."
+   - **SLO burn rate** — for each SLO with a defined window, compute
+     1h, 6h, and 24h burn rates per the burn-rate playbook in
+     `slo-breach-investigation` (an SLO at 14.4× burn over 1h depletes a
+     30-day budget in 50 minutes — surface as Warning before the SLO
+     itself flips to Breach).
    - **Verdict** — derived per the rules below.
 
 5. Render the dashboard using the canonical layout below. Each service is
