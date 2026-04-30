@@ -1,0 +1,77 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "title": "Log Insights query — /aws/lambda/pet-clinic-api",
+    "subtitle": "The query scanned 2855 log records in /aws/lambda/pet-clinic-api over the last 24h and found ZERO entries matching /ERROR/, /Exception/, or /Traceback/. This is the actual telemetry — Lambda is recording errors at the platform level (AWS/Lambda Errors metric Sum=99, Avg=0.80) but",
+    "severity": "info",
+    "query_intent": "log-query-result",
+    "region": "us-east-1",
+    "generated_at": "2026-04-30T05:55:00Z"
+  },
+  "widgets": [
+    {
+      "type": "stat_card",
+      "priority": 1,
+      "data": {
+        "label": "Records matched",
+        "value": 0,
+        "baseline": 2855,
+        "baseline_label": "scanned",
+        "status": "warning"
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 2,
+      "data": {
+        "label": "Records scanned",
+        "value": 2855,
+        "unit": "records",
+        "status": "neutral"
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 3,
+      "data": {
+        "label": "Bytes scanned",
+        "value": 464778,
+        "unit": "B",
+        "status": "neutral"
+      }
+    },
+    {
+      "type": "log_viewer",
+      "priority": 4,
+      "data": {
+        "label": "Matching log lines",
+        "log_group": "/aws/lambda/pet-clinic-api",
+        "lines": []
+      }
+    },
+    {
+      "type": "timeline",
+      "priority": 5,
+      "data": {
+        "label": "Query metadata",
+        "events": [
+          {
+            "timestamp": "2026-04-29T05:50:00+00:00",
+            "title": "Window start",
+            "severity": "info"
+          },
+          {
+            "timestamp": "2026-04-30T05:55:00+00:00",
+            "title": "Window end",
+            "severity": "info"
+          },
+          {
+            "timestamp": "2026-04-30T05:55:00Z",
+            "title": "Status: Complete · matched=0",
+            "severity": "success"
+          }
+        ]
+      }
+    }
+  ]
+}

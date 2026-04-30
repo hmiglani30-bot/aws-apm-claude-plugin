@@ -1,0 +1,69 @@
+{
+  "_meta": {
+    "pulled_at": "2026-04-30T05:50:35Z",
+    "source": "aws-cli",
+    "mcp_tool": "aws cloudwatch get-metric-statistics",
+    "fallback_reason": "No general CloudWatch MCP get_metric_statistics tool was registered when this file was first written; mcp__awslabs_cloudwatch-mcp-server__get_metric_data became available later in the session but the AWS CLI numbers below are the source of truth.",
+    "function_name": "pet-clinic-api",
+    "region": "us-east-1",
+    "namespace": "AWS/Lambda",
+    "window_start": "2026-04-29T05:50:35Z",
+    "window_end": "2026-04-30T05:50:35Z",
+    "period_seconds": 3600,
+    "statistics_requested": ["Sum", "Average", "Maximum"]
+  },
+  "metrics": {
+    "Invocations": {
+      "Datapoints": [
+        {
+          "Timestamp": "2026-04-29T20:50:00-07:00",
+          "Average": 1.0,
+          "Sum": 99.0,
+          "Maximum": 1.0,
+          "Unit": "Count"
+        }
+      ]
+    },
+    "Errors": {
+      "Datapoints": [
+        {
+          "Timestamp": "2026-04-29T20:50:00-07:00",
+          "Average": 0.8048780487804879,
+          "Sum": 99.0,
+          "Maximum": 1.0,
+          "Unit": "Count"
+        }
+      ]
+    },
+    "Duration": {
+      "Datapoints": [
+        {
+          "Timestamp": "2026-04-29T20:50:00-07:00",
+          "Average": 442.77656564646463,
+          "Sum": 43834.879999,
+          "Maximum": 2857.38,
+          "Unit": "Milliseconds"
+        }
+      ]
+    },
+    "Throttles": {
+      "Datapoints": [
+        {
+          "Timestamp": "2026-04-29T20:50:00-07:00",
+          "Average": 0.1951219512195122,
+          "Sum": 24.0,
+          "Maximum": 1.0,
+          "Unit": "Count"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "datapoint_count_per_metric": 1,
+    "note": "Function was only invoked within a single 1h bucket of the 24h window (timestamp 2026-04-30T03:50Z). Sum=99 invocations with Sum=99 errors and Sum=24 throttles in that bucket. Avg(Errors)=0.80 means ~80% of sampled call observations recorded an error; max p99 duration in window 2857ms.",
+    "error_rate_pct": 80.49,
+    "throttle_rate_pct": 19.51,
+    "max_duration_ms": 2857.38,
+    "avg_duration_ms": 442.78
+  }
+}

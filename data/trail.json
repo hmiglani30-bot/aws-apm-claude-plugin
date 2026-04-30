@@ -1,0 +1,2017 @@
+{
+  "_meta": {
+    "pulled_at": "2026-04-30T05:50:35Z",
+    "source": "mcp",
+    "mcp_tool": "mcp__awslabs_cloudtrail-mcp-server__lookup_events",
+    "region": "us-east-1",
+    "attribute_key": "ResourceName",
+    "attribute_value": "pet-clinic-api",
+    "window_start": "2026-04-29T05:51:30.388245+00:00",
+    "window_end": "2026-04-30T05:51:30.388637+00:00",
+    "event_count": 26,
+    "event_counts_by_name": {
+      "AssumeRole": 24,
+      "AddPermission20150331v2": 1,
+      "CreateFunction20150331": 1
+    },
+    "redaction_note": "CloudTrailEvent.responseElements.credentials.sessionToken values were redacted before write. Event still contains accessKeyId and expiration. No other fields modified."
+  },
+  "events": [
+    {
+      "EventId": "9f628204-ab69-3727-af49-7a2183365758",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:48:36-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQUUIYJ7U3"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:48:36Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQUUIYJ7U3",
+            "expiration": "Apr 30, 2026, 4:48:36\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0NTE2OTIyOlBrdndHY1BB"
+        },
+        "requestID": "e58c870f-2a26-4944-bafe-e33b5b14617c",
+        "eventID": "9f628204-ab69-3727-af49-7a2183365758",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "f653d848-35ce-4aad-80f2-937a3498bc44",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "b51fe8dd-e40e-3454-a665-2bff003f0194",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:48:36-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQ2BFXIDMP"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:48:36Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQ2BFXIDMP",
+            "expiration": "Apr 30, 2026, 4:48:36\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0NTE2OTI2OkhjeXRoNnhp"
+        },
+        "requestID": "e58c870f-2a26-4944-bafe-e33b5b14617c",
+        "eventID": "b51fe8dd-e40e-3454-a665-2bff003f0194",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "263e92e5-6383-40cc-8e17-cf8d053a67f1",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "01c18dee-a03f-35d6-a393-ab2cf7384764",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQZYRZDFPL"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQZYRZDFPL",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTg2OjYxU2lBQkNW"
+        },
+        "requestID": "f216d74d-f283-42f4-bce2-eecf4fd92c17",
+        "eventID": "01c18dee-a03f-35d6-a393-ab2cf7384764",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "bc9882d8-9f40-4647-b71a-5e2b09a3f474",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "07c94fad-aaa3-33de-bcb3-d0fa9dc663c6",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQQ3WUHGMQ"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQQ3WUHGMQ",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTg4Ok9lWWtFT0ZT"
+        },
+        "requestID": "50aa9b58-5597-4d74-804a-3f9a75b3226e",
+        "eventID": "07c94fad-aaa3-33de-bcb3-d0fa9dc663c6",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "a8f1cc24-a4f8-4877-b9cc-d4140dcb284a",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "1272c58d-13ff-3f41-a94b-aabe11c3f2e2",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQVLVSF7V2"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQVLVSF7V2",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTkyOkhwZXdUN2dy"
+        },
+        "requestID": "f166e7b9-8857-42b0-ba73-a410a8560c20",
+        "eventID": "1272c58d-13ff-3f41-a94b-aabe11c3f2e2",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "54642582-76eb-43a6-8fe4-b54876b91f37",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "21083df9-5187-3ca6-9cf6-83540c4a883a",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQ7WEVTKWV"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQ7WEVTKWV",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTkzOnJWNU11MTJH"
+        },
+        "requestID": "dcf5a573-671c-4e7a-bc6d-103313dbfb77",
+        "eventID": "21083df9-5187-3ca6-9cf6-83540c4a883a",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "025811ab-7470-4228-b271-073587dbb178",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "22b0c806-07fb-3ef1-98b7-ae7e869a37e3",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQR6MAHWGK"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQR6MAHWGK",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5NDMwOmI3NUl2bXlJ"
+        },
+        "requestID": "6735d48f-04b6-495b-b649-516c4e218253",
+        "eventID": "22b0c806-07fb-3ef1-98b7-ae7e869a37e3",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "72d2f26a-2b06-4279-85e4-9ddc530516a6",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "22be954f-3377-3bbf-936f-fd7daf1caaa7",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQ3ELMX7ZV"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQ3ELMX7ZV",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5NDMxOmlhZGFxNTdr"
+        },
+        "requestID": "6735d48f-04b6-495b-b649-516c4e218253",
+        "eventID": "22be954f-3377-3bbf-936f-fd7daf1caaa7",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "ee965a0a-ce6c-428a-884e-4a5b7ab88d10",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "277aa18a-d253-34ab-8a2d-fae11713452b",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQQ6GY2WKM"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQQ6GY2WKM",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTg1Om4yY2lSb2RD"
+        },
+        "requestID": "c4adabe0-d142-4d76-b143-ded55c16b9bb",
+        "eventID": "277aa18a-d253-34ab-8a2d-fae11713452b",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "1420b5ab-ae26-4a27-9de3-937d84c26186",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "3fc32556-aa95-30a8-9935-f6aaf5761c34",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQX76MQ63C"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQX76MQ63C",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTkzOjdsSDBONGxm"
+        },
+        "requestID": "50aa9b58-5597-4d74-804a-3f9a75b3226e",
+        "eventID": "3fc32556-aa95-30a8-9935-f6aaf5761c34",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "5303cf47-c695-4471-a624-ff93fac49e72",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "66c1dfec-93d7-3519-9501-2a7f9713cc92",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQYTMVX5TM"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQYTMVX5TM",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTg5OjMzQUxzV2tC"
+        },
+        "requestID": "1819d552-c5b3-47d9-91f9-03027b32091f",
+        "eventID": "66c1dfec-93d7-3519-9501-2a7f9713cc92",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "ca03014e-f5d3-4330-a237-15cecf68ef11",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "70a0fad1-ad90-3d4d-8c31-b78cdf90fb5a",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQ2XQMKONZ"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQ2XQMKONZ",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTg3OmR6blRRNXJJ"
+        },
+        "requestID": "5e395bd6-4d2b-4eaf-ac89-c5c4fed0e043",
+        "eventID": "70a0fad1-ad90-3d4d-8c31-b78cdf90fb5a",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "d0e495ef-df54-41c2-bbcd-22bd4ac12b8b",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "7a530f8c-5a02-3774-ba2e-4ca5a8af03b7",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQVEJARY5P"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQVEJARY5P",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTgzOno4NjNsNDVZ"
+        },
+        "requestID": "0f2f7779-084f-4395-8f8b-700bfa5cef8b",
+        "eventID": "7a530f8c-5a02-3774-ba2e-4ca5a8af03b7",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "7e40d993-a6e7-4936-865d-936a8eb2d73b",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "8ef4a661-7cdb-3177-ac9e-ef6b73b7daa5",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQZT6M27U3"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQZT6M27U3",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTg2OjF2a1JnaVJi"
+        },
+        "requestID": "c4adabe0-d142-4d76-b143-ded55c16b9bb",
+        "eventID": "8ef4a661-7cdb-3177-ac9e-ef6b73b7daa5",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "596718a3-c119-4058-87f1-d06cc7a35b8f",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "aff34ceb-d004-33c8-a94b-37e2c5d2e91c",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQY3U2HA7E"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQY3U2HA7E",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTkyOmhlZDV6ejBU"
+        },
+        "requestID": "3e0b5959-5578-4f23-abdf-dc5d6b417c31",
+        "eventID": "aff34ceb-d004-33c8-a94b-37e2c5d2e91c",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "d5ab4d28-d443-40ec-81b5-24a07b511a45",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "b19a183e-714d-354f-9dbb-9996b8780d75",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQQ67NFUTF"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQQ67NFUTF",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTgwOk96NVVUWWJZ"
+        },
+        "requestID": "0f2f7779-084f-4395-8f8b-700bfa5cef8b",
+        "eventID": "b19a183e-714d-354f-9dbb-9996b8780d75",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "d6e29c48-1d1e-45aa-8dbb-0f110a2852c9",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "ba9e797c-a58a-37cd-b0a4-fa54be17f3a7",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQSBJFAJLJ"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQSBJFAJLJ",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTg5OmloVnBKeDZ6"
+        },
+        "requestID": "1819d552-c5b3-47d9-91f9-03027b32091f",
+        "eventID": "ba9e797c-a58a-37cd-b0a4-fa54be17f3a7",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "85727293-672b-4893-89a9-facad0209707",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "bf18b842-9228-3d1c-b440-d09437e7b624",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQ6OVGWIJM"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQ6OVGWIJM",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTg1OklzUEQyaFlP"
+        },
+        "requestID": "5e395bd6-4d2b-4eaf-ac89-c5c4fed0e043",
+        "eventID": "bf18b842-9228-3d1c-b440-d09437e7b624",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "2c1b4986-95ac-4f33-af77-8b4bc27524a7",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "c1908893-25f8-3b98-8dcb-6f8613e4bbeb",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQZ56W7VEP"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQZ56W7VEP",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTk0OmZzMk4wVEpW"
+        },
+        "requestID": "dcf5a573-671c-4e7a-bc6d-103313dbfb77",
+        "eventID": "c1908893-25f8-3b98-8dcb-6f8613e4bbeb",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "c9c268c6-bca8-4faa-9ce9-82331331bbf3",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "c28c6ff9-244f-31af-b81c-2c95c91cd943",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQ7AEWDXH2"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQ7AEWDXH2",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTg0Ok9qR1hTUFdm"
+        },
+        "requestID": "f166e7b9-8857-42b0-ba73-a410a8560c20",
+        "eventID": "c28c6ff9-244f-31af-b81c-2c95c91cd943",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "edcfe233-03ee-497f-b447-1b10e5f84e4d",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "d32c02fd-db22-3680-8534-5f595503510f",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQ7DC3LAVP"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQ7DC3LAVP",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTg0OmVnU1JOYk0z"
+        },
+        "requestID": "f216d74d-f283-42f4-bce2-eecf4fd92c17",
+        "eventID": "d32c02fd-db22-3680-8534-5f595503510f",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "88ad494d-20fa-439b-a450-1f713c1b7f42",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "f73e2317-5ca4-37cf-be45-e3fa410a93fa",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:42:19-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQYCM6P5ST"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:42:19Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQYCM6P5ST",
+            "expiration": "Apr 30, 2026, 4:42:19\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTI0MTM5MTg5OlJNTFdFNHdh"
+        },
+        "requestID": "3e0b5959-5578-4f23-abdf-dc5d6b417c31",
+        "eventID": "f73e2317-5ca4-37cf-be45-e3fa410a93fa",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "121ca1f2-5bb2-494e-ba72-073e6ebad21f",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "b4275349-749c-3861-aff6-e933f11e24e0",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:27:14-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQWIEM23HZ"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:27:14Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQWIEM23HZ",
+            "expiration": "Apr 30, 2026, 4:27:14\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTIzMjM0MjI2OldUMDRrUFNU"
+        },
+        "requestID": "da03d1cf-a288-44f4-be07-16a686ad0827",
+        "eventID": "b4275349-749c-3861-aff6-e933f11e24e0",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "b56756e5-7017-4ab9-b024-91a173c1d1c8",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "b8d17956-34da-3ca2-a593-ed8587146997",
+      "EventName": "AssumeRole",
+      "EventTime": "2026-04-29T21:27:14-07:00",
+      "EventSource": "sts.amazonaws.com",
+      "ReadOnly": "true",
+      "Resources": [
+        {
+          "ResourceType": "AWS::IAM::AccessKey",
+          "ResourceName": "ASIA4A6LWAXQXABWWO4Y"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::STS::AssumedRole",
+          "ResourceName": "pet-clinic-api"
+        },
+        {
+          "ResourceType": "AWS::IAM::Role",
+          "ResourceName": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.08",
+        "userIdentity": {
+          "type": "AWSService",
+          "invokedBy": "lambda.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T04:27:14Z",
+        "eventSource": "sts.amazonaws.com",
+        "eventName": "AssumeRole",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "lambda.amazonaws.com",
+        "userAgent": "lambda.amazonaws.com",
+        "requestParameters": {
+          "roleArn": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "roleSessionName": "pet-clinic-api"
+        },
+        "responseElements": {
+          "credentials": {
+            "accessKeyId": "ASIA4A6LWAXQXABWWO4Y",
+            "expiration": "Apr 30, 2026, 4:27:14\u202fPM",
+            "sessionToken": "<redacted>"
+          },
+          "assumedRoleUser": {
+            "assumedRoleId": "AROA4A6LWAXQQEGBUH7KV:pet-clinic-api",
+            "arn": "arn:aws:sts::826671498721:assumed-role/pet-clinic-api-lambda-role/pet-clinic-api"
+          },
+          "packedPolicySize": 1
+        },
+        "additionalEventData": {
+          "ExtendedRequestId": "MTpJQUQ6QToxNzc3NTIzMjM0MjI4OnF6NHVXTmpJ"
+        },
+        "requestID": "da03d1cf-a288-44f4-be07-16a686ad0827",
+        "eventID": "b8d17956-34da-3ca2-a593-ed8587146997",
+        "readOnly": true,
+        "resources": [
+          {
+            "accountId": "826671498721",
+            "type": "AWS::IAM::Role",
+            "ARN": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role"
+          }
+        ],
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "sharedEventID": "57322293-d4b4-49e7-8d55-91a0bb00e78a",
+        "eventCategory": "Management"
+      }
+    },
+    {
+      "EventId": "21e7a25b-1842-4946-9f94-6a0a5ed60f5e",
+      "EventName": "AddPermission20150331v2",
+      "EventTime": "2026-04-29T20:48:32-07:00",
+      "EventSource": "lambda.amazonaws.com",
+      "ReadOnly": "false",
+      "Resources": [
+        {
+          "ResourceType": "AWS::Lambda::Function",
+          "ResourceName": "pet-clinic-api"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.11",
+        "userIdentity": {
+          "type": "Root",
+          "principalId": "826671498721",
+          "arn": "arn:aws:iam::826671498721:root",
+          "accountId": "826671498721",
+          "accessKeyId": "ASIA4A6LWAXQSEYVZBK2",
+          "sessionContext": {
+            "attributes": {
+              "creationDate": "2026-04-30T03:40:59Z",
+              "mfaAuthenticated": "false"
+            }
+          },
+          "invokedBy": "cloudformation.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T03:48:32Z",
+        "eventSource": "lambda.amazonaws.com",
+        "eventName": "AddPermission20150331v2",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "cloudformation.amazonaws.com",
+        "userAgent": "cloudformation.amazonaws.com",
+        "requestParameters": {
+          "functionName": "pet-clinic-api",
+          "statementId": "plugin1989-PetClinicApiPermission-T2tkZYEpz3Hu",
+          "action": "lambda:InvokeFunction",
+          "principal": "apigateway.amazonaws.com",
+          "sourceArn": "arn:aws:execute-api:us-east-1:826671498721:yh42llxjs5/*"
+        },
+        "responseElements": {
+          "statement": "{\"Sid\":\"plugin1989-PetClinicApiPermission-T2tkZYEpz3Hu\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"apigateway.amazonaws.com\"},\"Action\":\"lambda:InvokeFunction\",\"Resource\":\"arn:aws:lambda:us-east-1:826671498721:function:pet-clinic-api\",\"Condition\":{\"ArnLike\":{\"AWS:SourceArn\":\"arn:aws:execute-api:us-east-1:826671498721:yh42llxjs5/*\"}}}"
+        },
+        "requestID": "cfc61c8e-bc1c-4443-a26d-be3b85b98e46",
+        "eventID": "21e7a25b-1842-4946-9f94-6a0a5ed60f5e",
+        "readOnly": false,
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "eventCategory": "Management",
+        "sessionCredentialFromConsole": "true"
+      }
+    },
+    {
+      "EventId": "f71cd4f6-9aa0-44c2-8d97-d8cb4bba21ee",
+      "EventName": "CreateFunction20150331",
+      "EventTime": "2026-04-29T20:48:25-07:00",
+      "EventSource": "lambda.amazonaws.com",
+      "ReadOnly": "false",
+      "Resources": [
+        {
+          "ResourceType": "AWS::Lambda::Function",
+          "ResourceName": "pet-clinic-api"
+        }
+      ],
+      "CloudTrailEvent": {
+        "eventVersion": "1.11",
+        "userIdentity": {
+          "type": "Root",
+          "principalId": "826671498721",
+          "arn": "arn:aws:iam::826671498721:root",
+          "accountId": "826671498721",
+          "accessKeyId": "ASIA4A6LWAXQ3LLP456U",
+          "sessionContext": {
+            "attributes": {
+              "creationDate": "2026-04-30T03:40:59Z",
+              "mfaAuthenticated": "false"
+            }
+          },
+          "invokedBy": "cloudformation.amazonaws.com"
+        },
+        "eventTime": "2026-04-30T03:48:25Z",
+        "eventSource": "lambda.amazonaws.com",
+        "eventName": "CreateFunction20150331",
+        "awsRegion": "us-east-1",
+        "sourceIPAddress": "cloudformation.amazonaws.com",
+        "userAgent": "cloudformation.amazonaws.com",
+        "requestParameters": {
+          "functionName": "pet-clinic-api",
+          "runtime": "python3.12",
+          "role": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "handler": "index.handler",
+          "code": {},
+          "timeout": 30,
+          "memorySize": 128,
+          "publish": false,
+          "environment": {},
+          "tracingConfig": {
+            "mode": "Active"
+          },
+          "tags": {
+            "aws:cloudformation:stack-name": "plugin1989",
+            "aws:cloudformation:stack-id": "arn:aws:cloudformation:us-east-1:826671498721:stack/plugin1989/6161c440-4447-11f1-9b0c-12a1cd15527f",
+            "aws:cloudformation:logical-id": "PetClinicFunction"
+          },
+          "layers": [
+            "arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-python-amd64-ver-1-25-0:1"
+          ],
+          "fileSystemConfigs": [],
+          "architectures": [
+            "x86_64"
+          ]
+        },
+        "responseElements": {
+          "functionName": "pet-clinic-api",
+          "functionArn": "arn:aws:lambda:us-east-1:826671498721:function:pet-clinic-api",
+          "runtime": "python3.12",
+          "role": "arn:aws:iam::826671498721:role/pet-clinic-api-lambda-role",
+          "handler": "index.handler",
+          "codeSize": 1620,
+          "description": "",
+          "timeout": 30,
+          "memorySize": 128,
+          "lastModified": "2026-04-30T03:48:24.720+0000",
+          "codeSha256": "UpFAsdJtBvPlgejR5lCJRJvTB2NptM+9Zjr+eCNqVWY=",
+          "version": "$LATEST",
+          "environment": {},
+          "tracingConfig": {
+            "mode": "Active"
+          },
+          "revisionId": "c8e6868e-901d-4c42-8b01-88a0d6f99235",
+          "layers": [
+            {
+              "arn": "arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-python-amd64-ver-1-25-0:1",
+              "codeSize": 18798701,
+              "uncompressedCodeSize": 58346078
+            }
+          ],
+          "state": "Pending",
+          "stateReason": "The function is being created.",
+          "stateReasonCode": "Creating",
+          "packageType": "Zip",
+          "architectures": [
+            "x86_64"
+          ],
+          "ephemeralStorage": {
+            "size": 512
+          },
+          "snapStart": {
+            "applyOn": "None",
+            "optimizationStatus": "Off"
+          },
+          "runtimeVersionConfig": {
+            "runtimeVersionArn": "arn:aws:lambda:us-east-1::runtime:e4ab553846c4e081013ff7d1d608a5358d5b956bb5b81c83c66d2a31da8f6244"
+          },
+          "loggingConfig": {
+            "logFormat": "Text",
+            "logGroup": "/aws/lambda/pet-clinic-api"
+          }
+        },
+        "requestID": "b5c54203-0772-4bf8-a7b1-e59021418d1d",
+        "eventID": "f71cd4f6-9aa0-44c2-8d97-d8cb4bba21ee",
+        "readOnly": false,
+        "eventType": "AwsApiCall",
+        "managementEvent": true,
+        "recipientAccountId": "826671498721",
+        "eventCategory": "Management",
+        "sessionCredentialFromConsole": "true"
+      }
+    }
+  ],
+  "next_token": null
+}

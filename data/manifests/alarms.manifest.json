@@ -1,0 +1,145 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "title": "Alarms — us-east-1",
+    "subtitle": "3 matched · 0 firing",
+    "severity": "info",
+    "query_intent": "alarm-inventory",
+    "region": "us-east-1",
+    "generated_at": "2026-04-30T05:50:35Z"
+  },
+  "widgets": [
+    {
+      "type": "stat_card",
+      "priority": 1,
+      "data": {
+        "label": "Total alarms",
+        "value": 3,
+        "unit": "alarms",
+        "status": "healthy"
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 2,
+      "data": {
+        "label": "In ALARM",
+        "value": 0,
+        "status": "healthy"
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 3,
+      "data": {
+        "label": "OK",
+        "value": 3,
+        "status": "healthy"
+      }
+    },
+    {
+      "type": "table",
+      "priority": 4,
+      "data": {
+        "label": "CloudWatch alarms matching 'AlarmName contains 'pet-clinic' or 'plugin1989' (case-insensitive)'",
+        "columns": [
+          {
+            "key": "name",
+            "label": "Alarm",
+            "kind": "code"
+          },
+          {
+            "key": "state",
+            "label": "State",
+            "kind": "status"
+          },
+          {
+            "key": "metric",
+            "label": "Metric",
+            "kind": "text"
+          },
+          {
+            "key": "stat",
+            "label": "Stat",
+            "kind": "text"
+          },
+          {
+            "key": "op",
+            "label": "Op",
+            "kind": "text"
+          },
+          {
+            "key": "thr",
+            "label": "Threshold",
+            "kind": "number",
+            "align": "right"
+          },
+          {
+            "key": "period",
+            "label": "Period (s)",
+            "kind": "number",
+            "align": "right"
+          }
+        ],
+        "rows": [
+          {
+            "name": "pet-clinic-api-error-rate",
+            "state": "ok",
+            "metric": "AWS/Lambda/Errors",
+            "stat": "Sum",
+            "op": "GreaterThanThreshold",
+            "thr": 5,
+            "period": 300
+          },
+          {
+            "name": "pet-clinic-api-p99-duration",
+            "state": "ok",
+            "metric": "AWS/Lambda/Duration",
+            "stat": "p99",
+            "op": "GreaterThanThreshold",
+            "thr": 1000,
+            "period": 300
+          },
+          {
+            "name": "pet-clinic-api-throttles",
+            "state": "ok",
+            "metric": "AWS/Lambda/Throttles",
+            "stat": "Sum",
+            "op": "GreaterThanThreshold",
+            "thr": 0,
+            "period": 300
+          }
+        ],
+        "searchable": true,
+        "sortable": true
+      }
+    },
+    {
+      "type": "timeline",
+      "priority": 5,
+      "data": {
+        "label": "Last state transitions",
+        "events": [
+          {
+            "timestamp": "2026-04-29T21:58:57.750000-07:00",
+            "title": "pet-clinic-api-error-rate → OK",
+            "severity": "success",
+            "description": "Threshold Crossed: no datapoints were received for 1 period and 1 missing datapoint was treated as [NonBreaching]."
+          },
+          {
+            "timestamp": "2026-04-29T21:58:53.902000-07:00",
+            "title": "pet-clinic-api-p99-duration → OK",
+            "severity": "success",
+            "description": "Threshold Crossed: no datapoints were received for 1 period and 1 missing datapoint was treated as [NonBreaching]."
+          },
+          {
+            "timestamp": "2026-04-29T21:58:57.503000-07:00",
+            "title": "pet-clinic-api-throttles → OK",
+            "severity": "success",
+            "description": "Threshold Crossed: no datapoints were received for 1 period and 1 missing datapoint was treated as [NonBreaching]."
+          }
+        ]
+      }
+    }
+  ]
+}

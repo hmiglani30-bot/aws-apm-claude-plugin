@@ -1,0 +1,149 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "title": "Service health — pet-clinic-api",
+    "subtitle": "99/99 requests errored (80.5%) in last 24h",
+    "severity": "critical",
+    "query_intent": "service-health",
+    "service": "pet-clinic-api",
+    "region": "us-east-1",
+    "generated_at": "2026-04-30T05:50:35Z"
+  },
+  "widgets": [
+    {
+      "type": "stat_card",
+      "priority": 1,
+      "data": {
+        "label": "Error rate",
+        "value": 80.49,
+        "unit": "%",
+        "baseline": 0,
+        "baseline_label": "expected",
+        "status": "unhealthy",
+        "trend": {
+          "direction": "up",
+          "magnitude": "99/99 req",
+          "good_or_bad": "bad"
+        }
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 2,
+      "data": {
+        "label": "Throttle rate",
+        "value": 19.51,
+        "unit": "%",
+        "baseline": 0,
+        "baseline_label": "expected",
+        "status": "warning",
+        "trend": {
+          "direction": "up",
+          "magnitude": "24/99 req",
+          "good_or_bad": "bad"
+        }
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 3,
+      "data": {
+        "label": "Max duration",
+        "value": 2857.38,
+        "unit": "ms",
+        "baseline": 1000,
+        "baseline_label": "p99 alarm",
+        "status": "warning"
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 4,
+      "data": {
+        "label": "Avg duration",
+        "value": 442.78,
+        "unit": "ms",
+        "status": "neutral"
+      }
+    },
+    {
+      "type": "stat_card",
+      "priority": 5,
+      "data": {
+        "label": "Invocations (24h)",
+        "value": 99,
+        "unit": "calls",
+        "status": "neutral"
+      }
+    },
+    {
+      "type": "table",
+      "priority": 6,
+      "data": {
+        "label": "Per-metric raw datapoints",
+        "columns": [
+          {
+            "key": "metric",
+            "label": "Metric",
+            "kind": "text"
+          },
+          {
+            "key": "sum",
+            "label": "Sum",
+            "kind": "number",
+            "align": "right"
+          },
+          {
+            "key": "avg",
+            "label": "Average",
+            "kind": "number",
+            "align": "right"
+          },
+          {
+            "key": "max",
+            "label": "Max",
+            "kind": "number",
+            "align": "right"
+          },
+          {
+            "key": "unit",
+            "label": "Unit",
+            "kind": "text"
+          }
+        ],
+        "rows": [
+          {
+            "metric": "Invocations",
+            "sum": 99,
+            "avg": 1,
+            "max": 1,
+            "unit": "Count"
+          },
+          {
+            "metric": "Errors",
+            "sum": 99,
+            "avg": 0.805,
+            "max": 1,
+            "unit": "Count"
+          },
+          {
+            "metric": "Duration",
+            "sum": 43834.879999,
+            "avg": 442.777,
+            "max": 2857.38,
+            "unit": "Milliseconds"
+          },
+          {
+            "metric": "Throttles",
+            "sum": 24,
+            "avg": 0.195,
+            "max": 1,
+            "unit": "Count"
+          }
+        ],
+        "searchable": false,
+        "sortable": true
+      }
+    }
+  ]
+}

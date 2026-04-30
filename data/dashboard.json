@@ -1,0 +1,121 @@
+{
+  "_meta": {
+    "pulled_at": "2026-04-30T05:50:35Z",
+    "source": "aws-cli",
+    "mcp_tool": "aws cloudwatch get-dashboard",
+    "fallback_reason": "No CloudWatch MCP get_dashboard tool exists in the registered awslabs server (the cloudwatch MCP server registered here does not expose dashboard read APIs).",
+    "region": "us-east-1",
+    "requested_dashboard_name": "plugin1989-dashboard",
+    "actual_dashboard_name": "pet-clinic-dashboard",
+    "name_mismatch_note": "User asked for 'plugin1989-dashboard' but no such dashboard exists. aws cloudwatch list-dashboards returned exactly one dashboard in the account: 'pet-clinic-dashboard'. Using that one."
+  },
+  "DashboardArn": "arn:aws:cloudwatch::826671498721:dashboard/pet-clinic-dashboard",
+  "DashboardName": "pet-clinic-dashboard",
+  "DashboardLastModified": "2026-04-29T20:48:05-07:00",
+  "DashboardSize": 2129,
+  "DashboardBody": {
+    "widgets": [
+      {
+        "type": "text",
+        "x": 0,
+        "y": 0,
+        "width": 24,
+        "height": 1,
+        "properties": {
+          "markdown": "# Pet Clinic API — Operational Dashboard\nAWS APM Claude Plugin demo environment. Use the plugin to investigate metrics shown here."
+        }
+      },
+      {
+        "type": "metric",
+        "x": 0,
+        "y": 1,
+        "width": 8,
+        "height": 6,
+        "properties": {
+          "title": "Invocations",
+          "metrics": [["AWS/Lambda", "Invocations", "FunctionName", "pet-clinic-api", {"stat": "Sum", "period": 60}]],
+          "view": "timeSeries",
+          "region": "us-east-1",
+          "period": 60
+        }
+      },
+      {
+        "type": "metric",
+        "x": 8,
+        "y": 1,
+        "width": 8,
+        "height": 6,
+        "properties": {
+          "title": "Errors",
+          "metrics": [["AWS/Lambda", "Errors", "FunctionName", "pet-clinic-api", {"stat": "Sum", "period": 60, "color": "#d62728"}]],
+          "view": "timeSeries",
+          "region": "us-east-1",
+          "period": 60
+        }
+      },
+      {
+        "type": "metric",
+        "x": 16,
+        "y": 1,
+        "width": 8,
+        "height": 6,
+        "properties": {
+          "title": "Duration (Avg / p99)",
+          "metrics": [
+            ["AWS/Lambda", "Duration", "FunctionName", "pet-clinic-api", {"stat": "Average", "period": 60, "label": "Avg"}],
+            ["AWS/Lambda", "Duration", "FunctionName", "pet-clinic-api", {"stat": "p99", "period": 60, "label": "p99", "color": "#d62728"}]
+          ],
+          "view": "timeSeries",
+          "region": "us-east-1",
+          "period": 60
+        }
+      },
+      {
+        "type": "metric",
+        "x": 0,
+        "y": 7,
+        "width": 8,
+        "height": 6,
+        "properties": {
+          "title": "Error Rate (%)",
+          "metrics": [
+            [{"expression": "100 * errors / invocations", "label": "Error %", "id": "error_rate"}],
+            ["AWS/Lambda", "Errors", "FunctionName", "pet-clinic-api", {"stat": "Sum", "period": 60, "id": "errors", "visible": false}],
+            ["AWS/Lambda", "Invocations", "FunctionName", "pet-clinic-api", {"stat": "Sum", "period": 60, "id": "invocations", "visible": false}]
+          ],
+          "view": "timeSeries",
+          "region": "us-east-1",
+          "period": 60
+        }
+      },
+      {
+        "type": "metric",
+        "x": 8,
+        "y": 7,
+        "width": 8,
+        "height": 6,
+        "properties": {
+          "title": "Concurrent Executions",
+          "metrics": [["AWS/Lambda", "ConcurrentExecutions", "FunctionName", "pet-clinic-api", {"stat": "Maximum", "period": 60}]],
+          "view": "timeSeries",
+          "region": "us-east-1",
+          "period": 60
+        }
+      },
+      {
+        "type": "metric",
+        "x": 16,
+        "y": 7,
+        "width": 8,
+        "height": 6,
+        "properties": {
+          "title": "Throttles",
+          "metrics": [["AWS/Lambda", "Throttles", "FunctionName", "pet-clinic-api", {"stat": "Sum", "period": 60, "color": "#ff7f0e"}]],
+          "view": "timeSeries",
+          "region": "us-east-1",
+          "period": 60
+        }
+      }
+    ]
+  }
+}
