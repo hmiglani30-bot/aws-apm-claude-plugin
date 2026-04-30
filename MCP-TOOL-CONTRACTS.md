@@ -171,6 +171,38 @@ the window before ranking. If a tool returns datapoints with a different
 period than requested (e.g. CloudWatch falls back from 1m to 5m for old data),
 the skill MUST surface that period in the artifact's metadata footer.
 
+## Write Action Contracts
+
+Write-action tools mutate AWS resources. Every write tool is **Tier 4** (see
+[ACTION-SAFETY-MODEL.md](ACTION-SAFETY-MODEL.md)) and gated by the `PreToolUse`
+hook — the plugin MUST surface a confirmation prompt to the user before execution.
+Skills MUST NOT call these tools speculatively or in a loop without per-call
+confirmation.
+
+### `put_metric_alarm`
+
+| | |
+|---|---|
+| **Name** | `awslabs.cloudwatch-mcp-server.put_metric_alarm` (or equivalent) |
+| **Input** | `alarm_name` (string, required), `namespace` (string, required), `metric_name` (string, required), `dimensions[]` (array of `{name, value}`, optional), `statistic` (string — `SampleCount\|Average\|Sum\|Minimum\|Maximum`, required unless `extended_statistic` given), `period` (integer seconds, required — must be 10, 30, or multiple of 60), `evaluation_periods` (integer, required), `datapoints_to_alarm` (integer, optional — defaults to `evaluation_periods`), `threshold` (number, required), `comparison_operator` (string — `GreaterThanOrEqualToThreshold\|GreaterThanThreshold\|LessThanThreshold\|LessThanOrEqualToThreshold\|LessThanLowerOrGreaterThanUpperThreshold\|LessThanLowerThreshold\|GreaterThanUpperThreshold`, required), `treat_missing_data` (string — `breaching\|notBreaching\|ignore\|missing`, optional — defaults to `missing`), `alarm_actions[]` (array of SNS topic ARNs, optional), `ok_actions[]` (array of SNS topic ARNs, optional), `tags[]` (array of `{key, value}`, optional) |
+| **Output** | `{alarm_arn}` — the ARN of the created or updated alarm. |
+| **Failure modes** | (a) `ValidationError` — invalid parameter combination (e.g. period not a multiple of 60, missing required fields). (b) `LimitExceededFault` — account alarm limit reached (default 5,000 per region). (c) `ResourceNotFound` — an SNS topic ARN in `alarm_actions` or `ok_actions` does not exist or is not accessible. |
+| **Pagination** | N/A — single-resource write. |
+| **Permissions** | `cloudwatch:PutMetricAlarm`. Additionally `sns:GetTopicAttributes` if `alarm_actions` or `ok_actions` are specified (CloudWatch validates the topic exists). |
+| **Safety** | Tier 4. PreToolUse hook gated. **Create-only by default** — if an alarm with the given name already exists, the skill MUST detect this (via `describe_alarms`) and surface an explicit overwrite confirmation to the user before proceeding. The skill MUST NOT silently overwrite existing alarms. |
+
+### `tag_resource`
+
+| | |
+|---|---|
+| **Name** | `awslabs.cloudwatch-mcp-server.tag_resource` (or equivalent) |
+| **Input** | `resource_arn` (string, required — the ARN of the CloudWatch resource to tag), `tags[]` (array of `{key, value}` pairs, required — at least one tag) |
+| **Output** | `{success: true}` on success. No additional payload. |
+| **Failure modes** | (a) `ResourceNotFoundException` — the ARN does not reference an existing CloudWatch resource. (b) `InvalidParameterValueException` — tag key/value violates constraints (key max 128 chars, value max 256 chars, reserved `aws:` prefix, max 50 tags per resource). (c) `ConcurrentModificationException` — another process modified the resource's tags simultaneously; safe to retry once. |
+| **Pagination** | N/A — single-resource write. |
+| **Permissions** | `cloudwatch:TagResource` |
+| **Safety** | Tier 4. PreToolUse hook gated. **Idempotent** — re-tagging with the same key overwrites the value; the skill may call this without checking existing tags first. The skill SHOULD surface the tag diff to the user before execution. |
+
 ## Versioning
 
 When a contract here changes (input added, output field added, pagination
