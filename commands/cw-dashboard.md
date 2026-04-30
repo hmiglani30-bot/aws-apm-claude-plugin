@@ -1,5 +1,5 @@
 ---
-description: Read a CloudWatch dashboard's widget definitions, fetch live values for each metric widget, and render an interpreted summary as a hybrid-renderer manifest
+description: Read a CloudWatch dashboard definition, interpret each widget, fetch current metric values, and render a narrative summary + health verdict
 argument-hint: <dashboard-name> [time-range]
 allowed-tools:
   - Read
@@ -12,168 +12,176 @@ allowed-tools:
 
 # /cw-dashboard
 
-Read a CloudWatch dashboard the user already has configured, parse its widget
-definitions, fetch live metric values for each metric/alarm/log widget, and
-render an interpreted summary that explains what the dashboard is showing
-right now — instead of just deep-linking the user to the console.
+Fetch an existing CloudWatch dashboard, parse its widget JSON, and produce a
+narrative health summary by mapping each widget's metric configuration to the
+current metric values. Lets users get the plugin's interpretation of a
+dashboard they already use, rather than building a parallel view from scratch.
 
 The user invoked this with: `$ARGUMENTS`
 
 ## Argument parsing
 
-`$ARGUMENTS` is space-separated:
+- **dashboard-name** (required) — the CloudWatch dashboard identifier (case-
+  sensitive). Example: `pet-clinic-dashboard`.
+- **time-range** (optional) — `15m | 1h | 6h | 24h | 7d` (default `1h`). The
+  rendered narrative compares current values to baseline 24h ago regardless of
+  this range; the range controls the time window for `get_metric_data` calls.
 
-- **dashboard-name** (required) — exact dashboard name. If omitted, list all
-  dashboards in the region first and ask the user to pick one.
-- **time-range** (optional, default `1h`) — one of `15m | 1h | 6h | 24h | 7d`,
-  or an ISO 8601 range. Each metric widget is queried over this window.
+If `$ARGUMENTS` is empty, list available dashboards (see Empty states) and ask
+the user to pick one.
 
 ## Instructions
 
-1. Verify prerequisites. If the `awslabs.cloudwatch-mcp-server` is not
-   connected, run the `aws-apm-setup` skill first.
+1. Verify the `awslabs.cloudwatch-mcp-server` is connected. If not, run
+   `aws-apm-setup`.
 
 2. Resolve the dashboard:
-   - If `$ARGUMENTS` is empty, call `list_dashboards` (or fall back to the
-     CLI: ask the user to run `aws cloudwatch list-dashboards`) and present
-     the names. Stop and wait for selection.
-   - If a name is supplied, call `get_dashboard --dashboard-name <name>`.
+   - Prefer the MCP tool if available:
+     `mcp__awslabs.cloudwatch-mcp-server__get_dashboard` with `DashboardName`.
+   - **Fallback:** if the MCP server does not expose a `get_dashboard` tool,
+     shell out via Bash to `aws cloudwatch get-dashboard --dashboard-name
+     <name> --region <region> --output json`. Note the fallback in the
+     metadata footer ("Source: AWS CLI fallback — MCP tool unavailable").
 
-3. **MCP tool fallback:** if `get_dashboard` is not available in the
-   connected MCP server (some versions don't expose it), instruct the user
-   to run:
-   ```
-   aws cloudwatch get-dashboard --dashboard-name <name> --query DashboardBody --output text
-   ```
-   and paste the resulting JSON back. Parse the pasted JSON identically to
-   an MCP response. Do **not** fabricate widget data.
+3. Parse the `DashboardBody` JSON. It is a string containing a JSON object
+   with a `widgets` array. Each widget has:
+   - `type` — `metric | log | alarm | text | explorer`
+   - `properties.metrics` (for `metric` widgets) — list of metric tuples
+     `[Namespace, MetricName, Dimension1, Value1, ..., {options}]`
+   - `properties.region`, `properties.period`, `properties.stat`,
+     `properties.title`, `properties.view`, `properties.yAxis`
 
-4. Parse `dashboard_body` (a JSON string per the [CloudWatch dashboard body
-   schema](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/CloudWatch-Dashboard-Body-Structure.html)).
-   For each top-level entry in `widgets[]`, classify by `type`:
+4. For each `metric` widget, extract every metric tuple and call
+   `get_metric_data` for the parsed time-range AND the same window 24h ago.
+   Cap concurrency at 10. For widgets with metric math expressions, preserve
+   the expression and pass it through to the math result.
 
-   | Widget `type` | Interpretation | Live data fetched |
-   |---|---|---|
-   | `metric` | One or more metric series, possibly with math | `get_metric_data` for each metric, period=`properties.period` (default 60s) |
-   | `text` | Markdown narrative — read it for context, do NOT re-render verbatim if >200 chars | None |
-   | `log` | Logs Insights query result | `start_query` + poll `get_query_results` (cap 30s) |
-   | `alarm` | Alarm widget — single or composite | `describe_alarms` for current state |
-   | other / unknown | Surface the type and skip data fetch | None |
+5. For each `alarm` widget, call `describe_alarms` for the alarm ARNs listed
+   and capture state + threshold + actions.
 
-5. For each `metric` widget, extract:
-   - The metric name(s), namespace(s), dimensions, and statistic from
-     `properties.metrics[]`.
-   - Any metric math expressions (rows where index 0 is `{ "expression": ... }`).
-   - The widget title (from `properties.title`) and Y-axis label.
+6. For each `log` widget, capture the `query` field but do NOT execute it —
+   surface the query as-is and link the user to it. Auto-execution would
+   blow the command's time budget for dashboards with many log widgets.
 
-   Then fetch live values via `get_metric_data` for the requested time range
-   and compute:
-   - Latest value
-   - Min / max in the window
-   - Trend direction (rising / falling / flat) — last quarter vs first quarter
-   - Whether any associated alarm threshold is currently breached
+7. Render the canonical layout below.
 
-6. For each `alarm` widget, list the alarm names, fetch state via
-   `describe_alarms`, and surface `OK | INSUFFICIENT_DATA | ALARM` plus the
-   reason text from the alarm history.
+## Canonical layout
 
-7. Activate the `hybrid-renderer` skill and emit a manifest. Pick the
-   layout intent based on widget mix:
+```markdown
+## 📊 CloudWatch Dashboard: `<dashboard-name>`
+**Region:** <region> · **Account:** <account> · **As of:** <ISO ts UTC>
+**Time window:** <range> · **Widgets:** <N> (`<M>` metric · `<L>` log · `<A>` alarm · `<T>` text)
 
-   | Widget mix | `query_intent` | Renderer shell |
-   |---|---|---|
-   | Mostly `metric` widgets, ≤6 total | `dashboard-summary` | `dashboard` |
-   | Mix of `metric` + `alarm` + `log`, 7–15 widgets | `dashboard-overview` | `investigation` |
-   | Single big-picture `metric` widget plus narrative text | `dashboard-focus` | `single-focus` |
+---
 
-## Manifest widget mapping
+### 🩺 Verdict: <🟢 Healthy | 🟡 Degraded | 🔴 Unhealthy>
 
-For each parsed dashboard widget, emit a corresponding renderer widget:
+<one-line dashboard-level summary — e.g. "p99 latency widget shows 920ms vs
+260ms baseline (3.5×). All other widgets within ±20%.">
 
-- `metric` widget → `stat_card` (latest value + sparkline of the series) when
-  ≤4 series; `chart`-style `sparkline` widget when more.
-- `alarm` widget → `stat_card` with `status` derived from state (`OK` →
-  `healthy`, `ALARM` → `unhealthy`, `INSUFFICIENT_DATA` → `warning`).
-- `log` widget → `log_viewer` if rows returned, else `stat_card` with the
-  query string and a "no rows" empty message.
-- `text` widget → include in manifest `metadata.subtitle` if short, or as a
-  prefix paragraph in the first widget's description.
+---
 
-The renderer applies its own density budget; do NOT pre-compute widget
-counts beyond emitting them in priority order.
+### Widget breakdown
 
-## Manifest metadata
+#### 1. <widget title> — `metric` · <namespace>
+| Metric | Stat | Now (<period>) | 24h ago | Δ | Status |
+|---|---|---|---|---|---|
+| <MetricName> | <Avg \| Sum \| p99> | <value> | <value> | <±%> | 🟢 / 🟡 / 🔴 |
 
-```json
-"metadata": {
-  "title": "<dashboard name>",
-  "subtitle": "<region> · <N widgets> · <time range>",
-  "severity": "info | warning | critical",
-  "query_intent": "<one of dashboard-summary | dashboard-overview | dashboard-focus>",
-  "generated_at": "<ISO 8601 UTC>",
-  "region": "<resolved region>"
-}
+**Interpretation:** <one-line explanation — e.g. "Error count is 14× baseline,
+likely correlated with the deploy at 14:18 UTC. See `/cw-investigate-errors`.">
+
+[Open widget in CloudWatch](<deep-link>)
+
+#### 2. <widget title> — `alarm`
+| Alarm | State | Threshold | Last transition |
+|---|---|---|---|
+| <alarm-name> | ALARM / OK / INSUFFICIENT_DATA | <threshold> | <ts> |
+
+#### 3. <widget title> — `log`
+**Log group:** `<group>`
+**Query (not auto-run):**
+```
+<the Logs Insights query verbatim>
+```
+[Run query in console](<deep-link>)
+
+---
+
+### 🔗 Suggested next steps
+
+- `/cw-investigate-errors <service>` — for any metric widget showing >2×
+  baseline error rate
+- `/cw-investigate-latency <service>` — for any p99 widget >2× baseline
+- `/cw-alarm-response <alarm-name>` — for any alarm widget in ALARM state
+
+---
+
+**Source:** `awslabs.cloudwatch-mcp-server` (dashboard + metrics)
+**MCP tools called:** `get_dashboard`, `get_metric_data`, `describe_alarms`
+**Time window queried:** <start> .. <end>
+**Confidence:** High (live data, no derivation)
 ```
 
-`severity` rule: `critical` if any alarm is in `ALARM` or any metric exceeds
-its associated alarm threshold; `warning` if any metric is trending toward
-threshold (>80%); otherwise `info`.
+## Verdict rules
 
-## Verdict line
+The dashboard verdict is the **worst** of any individual widget verdict:
 
-End the manifest with a one-line verdict in the metadata footer:
+- **🔴 Unhealthy** — any widget metric is >2× baseline OR any alarm is in
+  ALARM state.
+- **🟡 Degraded** — any widget metric is outside ±20% of baseline OR any
+  alarm is `INSUFFICIENT_DATA`.
+- **🟢 Healthy** — all widget metrics within ±20% of baseline AND all
+  alarms in OK.
 
-- "🟢 Dashboard healthy — all metrics within bounds"
-- "🟡 Dashboard shows N metric(s) trending warm — see <widget titles>"
-- "🔴 Dashboard shows N alarm(s) in ALARM state — see <alarm names>"
+Text-only widgets, log widgets without auto-run, and explorer widgets do not
+contribute to the verdict — only metric and alarm widgets do.
+
+## Service inference
+
+If the dashboard's metric tuples include `AWS/Lambda` with a `FunctionName`
+dimension, infer that the service maps to the Lambda function for cross-
+references in the suggested next steps. Same for `AWS/ApiGateway`
+(`ApiName`), `AWS/ECS` (`ClusterName` / `ServiceName`), and
+`AWS/ApplicationSignals` (`Service` / `Operation`). Surface inferred services
+in the metadata footer so the user can confirm.
 
 ## Action safety
 
-This command is **read-only**. It calls only `list_dashboards`,
-`get_dashboard`, `get_metric_data`, `describe_alarms`, `start_query`,
-`get_query_results`, and `describe_log_groups`. It never modifies the
-dashboard.
-
-If the user asks to "fix" or "edit" a widget, respond with the IaC snippet
-shape (CloudFormation `AWS::CloudWatch::Dashboard` or Terraform
-`aws_cloudwatch_dashboard`) and direct them to apply via their normal
-deploy pipeline. Do not call `put_dashboard`.
-
-## Empty states
-
-- **No dashboards in region** → "No CloudWatch dashboards found in
-  `<region>`. Either the region is empty or you lack `cloudwatch:ListDashboards`
-  permission."
-- **Dashboard not found** → surface the AWS error verbatim. Do not guess at
-  the closest match — ask the user to confirm the name.
-- **Widget references a metric that no longer exists** → render the widget
-  card with `status: warning` and inline note "Metric returned no data —
-  the resource may have been deleted."
-- **Dashboard JSON malformed** → surface the parse error and the offending
-  fragment. Do not fabricate widget data to fill the gap.
-
-## Pagination and limits
-
-- Cap at **20 widgets** rendered. If the dashboard has more, render the top
-  20 by `properties.position` (top-left first) and note "<N> more widgets
-  not shown — view the dashboard directly in CloudWatch."
-- Per-`get_metric_data` call: 10s timeout. Total command budget: 60s.
-- On `ThrottlingException`, retry once with 2s backoff.
+This command is **read-only**. Tools called:
+`get_dashboard`, `get_metric_data`, `describe_alarms`. Never modify or delete
+a dashboard. If the user asks to "fix" or "update" the dashboard, propose the
+JSON diff and link them to the AWS console — do not call `PutDashboard`.
 
 ## Examples
 
 ```
 /cw-dashboard pet-clinic-dashboard
 /cw-dashboard pet-clinic-dashboard 6h
-/cw-dashboard production-overview 24h
-/cw-dashboard         # lists dashboards and asks user to pick
+/cw-dashboard plugin1989-dashboard 24h
 ```
 
-## Why this command exists
+## Empty states and data unavailability
 
-CloudWatch dashboards are the system-of-record for what teams already chose
-to monitor. The plugin's other commands (`/cw-health-check`, `/cw-investigate-*`)
-build their own views from Application Signals — but most teams have years
-of effort baked into their custom dashboards. This command reads that
-existing configuration and produces a narrative interpretation, so users
-get value without having to re-encode their dashboards as commands.
+- **Empty `$ARGUMENTS`** → call `aws cloudwatch list-dashboards` (or the MCP
+  equivalent) and present the available dashboards as a numbered list. Ask
+  the user to pick.
+- **Dashboard not found** → surface the AWS error verbatim ("Dashboard
+  `<name>` not found in `<region>`. Use `aws cloudwatch list-dashboards` to
+  see available dashboards."). Do not fabricate.
+- **Dashboard body is empty** → render the metadata footer + a single
+  "Dashboard has no widgets" line. Do not guess content.
+- **Widget references metrics with no datapoints** → set the Now / 24h-ago
+  cells to `—` and note "No datapoints in window."
+- **Cross-account dashboard or unreadable widget config** → surface the
+  raw widget JSON in a code block with a "could not interpret" note rather
+  than dropping it.
+
+## Performance
+
+- Cap `get_metric_data` calls at 10 concurrent.
+- Per-call timeout 10s. Total command budget 60s for dashboards up to ~30
+  widgets.
+- For dashboards >30 widgets, render the first 30 by display order and add a
+  footer line: "<N> more widgets not shown — open in console for the full
+  view."

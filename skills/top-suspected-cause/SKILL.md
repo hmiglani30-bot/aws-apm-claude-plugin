@@ -181,8 +181,16 @@ Placeholder reference (non-exhaustive):
   - `{{HYP1_NEXT_STEP_TEXT}}` — describe the read-only verification
   - `{{HYP1_NEXT_STEP_QUERY}}` — the exact Logs Insights / metric-math / CLI command
   - `{{HYP1_NEXT_STEP_LINK}}` — deep link via `open-in-cloudwatch`
-- `{{HYP3_BLOCK_OPTIONAL}}` / `{{HYP4_BLOCK_OPTIONAL}}` — emit a full `<div class="hypothesis">…</div>`
-  block when present, leave empty otherwise
+- `{{HYP1_TAB_LABEL}}`, `{{HYP2_TAB_LABEL}}`, etc. — short noun phrase shown on the
+  tab button (e.g. "Bad deploy", "Downstream timeout"). The full claim sentence stays
+  inside the panel; the tab label is the 1-second skim.
+- `{{HYP3_TAB_BTN_OPTIONAL}}` / `{{HYP4_TAB_BTN_OPTIONAL}}` — emit a full
+  `<button class="hyp-tab-btn" data-tab="hyp3"|"hyp4">…</button>` matching the HYP1 /
+  HYP2 button shape, or empty string when the hypothesis is absent.
+- `{{HYP3_PANEL_OPTIONAL}}` / `{{HYP4_PANEL_OPTIONAL}}` — emit a full
+  `<div class="hyp-tab-panel" id="hyp3"|"hyp4">…<div class="hypothesis">…</div></div>`
+  when present, or empty string when absent. The `id` MUST match the tab button's
+  `data-tab` value or the click handler will not switch panels.
 - `{{RULED_OUT_ITEMS}}` — `<li>{{CLAIM}} — ruled out because {{EVIDENCE}}</li>` rows;
   always include this section even when empty (one `<li>None — all hypotheses
   retained.</li>`)
