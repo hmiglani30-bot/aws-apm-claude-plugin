@@ -101,8 +101,10 @@ For the affected service (resolved in Phase 1):
 1. **For latency alarms**: search slow traces (duration > current p99) in the alarm
    window. Pick 3–5 representative traces using the `trace-waterfall-summary` shape.
 2. **For error alarms**: search failed traces (status = error) in the alarm window, and
-   query Logs Insights for the same window grouping by `errorType` /
-   `exception.type` — patterns first, raw second.
+   query Logs Insights for the same window. Use the **two-stage query strategy** from
+   `error-spike-triage` Phase 2: try a structured `filter level = "ERROR" | stats count() by errorType`
+   query first, then fall back to `filter @message like /(?i)(error|exception|traceback|fault|fail|panic)/`
+   with a `parse @message` regex for unstructured logs (`print()` / stdout). Patterns first, raw second.
 3. **For resource alarms**: pull supporting metrics (e.g. for CPU, also pull request
    rate, task count, autoscaling events; for queue depth, also pull producer / consumer
    rate).
