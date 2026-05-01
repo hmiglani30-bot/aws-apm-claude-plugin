@@ -65,6 +65,11 @@ the user to pick one.
 
 7. Render the canonical layout below.
 
+8. The dashboard narrative is text-heavy by design. For all prose (Verdict
+   rationale, per-widget interpretation, next-step recommendations), follow
+   `skills/hybrid-renderer/references/text-presentation-guide.md` — lead with
+   the answer, the 3am test, no preamble, hard word limits per section.
+
 ## Canonical layout
 
 ```markdown

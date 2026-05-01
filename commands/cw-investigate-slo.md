@@ -34,6 +34,10 @@ The user invoked this with: `$ARGUMENTS`
 4. Produce the **SLO Breach Explainer** artifact as the final output, including the
    metadata footer (source metric, time range, queries, MCP tools called, confidence).
 5. Surface deep links into the AWS console via the `open-in-cloudwatch` skill.
+6. For prose accompanying the artifact (50–150 word companion text next to each
+   widget, or any text-only fallback when data completeness is below 80%), follow
+   `skills/hybrid-renderer/references/text-presentation-guide.md` — lead with the
+   answer, the 3am test, hard word limits.
 
 ## Action safety
 

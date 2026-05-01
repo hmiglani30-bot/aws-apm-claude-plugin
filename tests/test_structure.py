@@ -41,6 +41,8 @@ EXPECTED_SKILLS = {
     "create-alarm",
     "hybrid-renderer",
     "widget-catalog",
+    "slo-burn-rate",
+    "cloudtrail-explorer",
 }
 
 EXPECTED_COMMANDS = {
@@ -57,6 +59,7 @@ EXPECTED_COMMANDS = {
     "cw-alert-design.md",
     "cw-create-alarm.md",
     "cw-trail-view.md",
+    "cw-dashboard.md",
 }
 
 EXPECTED_MCP_SERVERS = {
@@ -74,6 +77,7 @@ EXPECTED_ARTIFACTS = {
     "investigation-summary.html",
     "observability-gap-report.html",
     "alerting-plan.html",
+    "cloudtrail-timeline.html",
 }
 
 # Workflow skills that must include a Phase 6 cascading dependency check.

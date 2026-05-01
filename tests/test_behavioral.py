@@ -107,7 +107,7 @@ class TestSloBreachScenario(unittest.TestCase):
         self.assertIn("Recovered", self.skill)
 
     def test_skill_uses_application_signals_mcp(self) -> None:
-        self.assertIn("awslabs.cloudwatch-applicationsignals-mcp-server", self.skill)
+        self.assertIn("awslabs_cloudwatch-applicationsignals-mcp-server", self.skill)
 
     def test_skill_correlates_with_cloudtrail_in_phase_4(self) -> None:
         # Find the Phase 4 block and check it references CloudTrail.

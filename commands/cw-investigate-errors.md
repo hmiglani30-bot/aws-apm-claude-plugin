@@ -33,6 +33,10 @@ The user invoked this with: `$ARGUMENTS`
 4. Produce **Service Health Card** + **Top Suspected Cause** as the final artifacts.
 5. Surface the Logs Insights query used so the user can rerun / extend it in the console
    via `open-in-cloudwatch`.
+6. For prose accompanying the artifacts (the 50–150 word companion text next to each
+   widget, or any text-only fallback when data completeness is below 80%), follow
+   `skills/hybrid-renderer/references/text-presentation-guide.md` — lead with the
+   answer, the 3am test, hard word limits.
 
 ## Action safety
 

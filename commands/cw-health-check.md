@@ -85,6 +85,11 @@ The user invoked this with: `$ARGUMENTS`
 6. End with a fleet summary line: `<N> services · <H> healthy · <D>
    degraded · <U> unhealthy` and a metadata footer.
 
+7. For prose inside each card (verdict rationale, RED-metric narration,
+   suggested next steps), follow
+   `skills/hybrid-renderer/references/text-presentation-guide.md` — lead
+   with the answer, the 3am test, hard word limits.
+
 ## Verdict rules
 
 Same rules as the `service-health-card` skill:

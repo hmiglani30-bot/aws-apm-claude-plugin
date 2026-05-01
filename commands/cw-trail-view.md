@@ -41,6 +41,11 @@ The user invoked this with: `$ARGUMENTS`
 
 3. Hand off the populated HTML file path to the user. Do not auto-open it.
 
+4. For any prose summarising the timeline (chat-side answer, anomaly callouts,
+   recommended follow-ups), follow
+   `skills/hybrid-renderer/references/text-presentation-guide.md` — lead with
+   the answer, the 3am test, hard word limits.
+
 ## Action safety
 
 This command is **read-only**. It only calls `lookup_events`. Never call any

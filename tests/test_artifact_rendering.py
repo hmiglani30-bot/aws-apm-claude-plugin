@@ -73,6 +73,11 @@ REQUIRED_SECTION_MARKERS = {
         "AWS docs MCP",          # source-of-truth attribution in footer
         "Generated",             # generated-at timestamp in footer
     ),
+    "cloudtrail-timeline.html": (
+        "CloudWatch Console",    # deep-link to the CloudTrail console (under CloudWatch family)
+        "MCP tools",             # MCP-tools-called field in footer
+        "Time range",            # window covered by the timeline
+    ),
 }
 
 

@@ -116,8 +116,9 @@ If any probe fails, surface the error verbatim — do not retry silently.
   (Step 2). The plugin still works for Markdown summaries; only the HTML artifact
   view degrades.
 - **`Unable to locate credentials`** → no AWS creds reachable from this runtime
-  (Step 3). In Cowork's VM, fall back to setting env vars in the session if `~/.aws/`
-  is not mounted in.
+  (Step 3). On a developer machine, run `aws configure` to write
+  `~/.aws/credentials` and `~/.aws/config`. In Cowork's VM, fall back to setting
+  env vars in the session if `~/.aws/` is not mounted in.
 - **`AccessDenied`** → IAM perms (Step 5) — surface the exact action denied.
 - **`No services found`** → Application Signals not enabled (Step 6), or wrong region.
 - **`ThrottlingException`** → AWS API rate limit. Surface the exact API + operation

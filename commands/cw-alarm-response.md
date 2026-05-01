@@ -35,6 +35,10 @@ The user invoked this with: `$ARGUMENTS`
    confidence).
 5. Include deep links via `open-in-cloudwatch` to the alarm detail, the metric graph,
    and the affected service view.
+6. For prose accompanying the artifacts (50–150 word companion text next to each
+   widget, or any text-only fallback when data completeness is below 80%), follow
+   `skills/hybrid-renderer/references/text-presentation-guide.md` — lead with the
+   answer, the 3am test, hard word limits.
 
 ## Action safety
 
