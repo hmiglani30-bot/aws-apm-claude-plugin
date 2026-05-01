@@ -14,6 +14,7 @@ const ALLOWED_TYPES = new Set([
   "stat_card", "sparkline", "timeline", "table",
   "trace_waterfall", "log_viewer", "change_event_list",
   "action_form",
+  "app_map", "diff_view", "heatmap", "comparison_table", "progress_tracker",
 ]);
 const ALLOWED_SEVERITY = new Set(["critical", "warning", "info"]);
 

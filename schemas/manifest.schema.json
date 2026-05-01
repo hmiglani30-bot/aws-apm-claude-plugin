@@ -54,7 +54,12 @@
             "trace_waterfall",
             "log_viewer",
             "change_event_list",
-            "action_form"
+            "action_form",
+            "app_map",
+            "diff_view",
+            "heatmap",
+            "comparison_table",
+            "progress_tracker"
           ]
         },
         "priority": {
@@ -125,6 +130,36 @@
           "properties": {
             "type": { "const": "action_form" },
             "data": { "$ref": "#/$defs/data_action_form" }
+          }
+        },
+        {
+          "properties": {
+            "type": { "const": "app_map" },
+            "data": { "$ref": "#/$defs/data_app_map" }
+          }
+        },
+        {
+          "properties": {
+            "type": { "const": "diff_view" },
+            "data": { "$ref": "#/$defs/data_diff_view" }
+          }
+        },
+        {
+          "properties": {
+            "type": { "const": "heatmap" },
+            "data": { "$ref": "#/$defs/data_heatmap" }
+          }
+        },
+        {
+          "properties": {
+            "type": { "const": "comparison_table" },
+            "data": { "$ref": "#/$defs/data_comparison_table" }
+          }
+        },
+        {
+          "properties": {
+            "type": { "const": "progress_tracker" },
+            "data": { "$ref": "#/$defs/data_progress_tracker" }
           }
         }
       ]
@@ -388,6 +423,213 @@
               "resource": { "type": "string", "maxLength": 200 },
               "kind": { "enum": ["deploy", "config", "iam", "infra", "other"] },
               "link": { "type": "string", "format": "uri" }
+            }
+          }
+        }
+      }
+    },
+
+    "data_app_map": {
+      "type": "object",
+      "required": ["services"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "maxLength": 80 },
+        "services": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 60,
+          "items": {
+            "type": "object",
+            "required": ["id", "name"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "minLength": 1, "maxLength": 80 },
+              "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+              "status": { "enum": ["healthy", "degraded", "warning", "unhealthy", "neutral"] },
+              "error_rate": { "type": "number" },
+              "error_rate_unit": { "type": "string", "maxLength": 8 },
+              "latency_ms": { "type": "number" },
+              "on_critical_path": { "type": "boolean" }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "required": ["from", "to"],
+            "additionalProperties": false,
+            "properties": {
+              "from": { "type": "string", "minLength": 1, "maxLength": 80 },
+              "to": { "type": "string", "minLength": 1, "maxLength": 80 },
+              "traffic": { "type": "number", "minimum": 0 },
+              "on_critical_path": { "type": "boolean" }
+            }
+          }
+        },
+        "critical_path": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "maxItems": 60
+        }
+      }
+    },
+
+    "data_diff_view": {
+      "type": "object",
+      "required": ["before", "after"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "maxLength": 80 },
+        "mode": { "enum": ["unified", "side-by-side"] },
+        "before": {
+          "type": "object",
+          "required": ["content"],
+          "additionalProperties": false,
+          "properties": {
+            "label": { "type": "string", "maxLength": 80 },
+            "language": { "type": "string", "maxLength": 40 },
+            "content": { "type": "string", "maxLength": 200000 }
+          }
+        },
+        "after": {
+          "type": "object",
+          "required": ["content"],
+          "additionalProperties": false,
+          "properties": {
+            "label": { "type": "string", "maxLength": 80 },
+            "language": { "type": "string", "maxLength": 40 },
+            "content": { "type": "string", "maxLength": 200000 }
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "what": { "type": "string", "maxLength": 200 },
+            "who": { "type": "string", "maxLength": 120 },
+            "when": { "type": "string", "maxLength": 80 }
+          }
+        }
+      }
+    },
+
+    "data_heatmap": {
+      "type": "object",
+      "required": ["rows", "columns", "data"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "maxLength": 80 },
+        "unit": { "type": "string", "maxLength": 16 },
+        "rows": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 168,
+          "items": { "type": "string", "maxLength": 40 }
+        },
+        "columns": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 168,
+          "items": { "type": "string", "maxLength": 40 }
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": { "type": ["number", "null"] }
+          }
+        },
+        "scale": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "min": { "type": "number" },
+            "max": { "type": "number" }
+          }
+        }
+      }
+    },
+
+    "data_comparison_table": {
+      "type": "object",
+      "required": ["columns", "rows"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "maxLength": 80 },
+        "metric_label": { "type": "string", "maxLength": 60 },
+        "threshold": { "type": "number", "minimum": 0 },
+        "columns": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "required": ["key", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "key": { "type": "string", "minLength": 1, "maxLength": 40 },
+              "label": { "type": "string", "minLength": 1, "maxLength": 60 },
+              "sublabel": { "type": "string", "maxLength": 80 }
+            }
+          }
+        },
+        "rows": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "required": ["metric", "values"],
+            "additionalProperties": false,
+            "properties": {
+              "metric": { "type": "string", "minLength": 1, "maxLength": 120 },
+              "unit": { "type": "string", "maxLength": 16 },
+              "values": {
+                "type": "object",
+                "additionalProperties": { "type": ["number", "string", "null"] }
+              },
+              "delta": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "magnitude": { "type": "string", "maxLength": 24 },
+                    "direction": { "enum": ["up", "down", "flat"] },
+                    "good_or_bad": { "enum": ["good", "bad", "neutral"] },
+                    "highlight": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "data_progress_tracker": {
+      "type": "object",
+      "required": ["steps"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "maxLength": 80 },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 30,
+          "items": {
+            "type": "object",
+            "required": ["label", "status"],
+            "additionalProperties": false,
+            "properties": {
+              "label": { "type": "string", "minLength": 1, "maxLength": 160 },
+              "status": { "enum": ["pending", "in_progress", "completed", "failed", "skipped"] },
+              "detail": { "type": "string", "maxLength": 400 },
+              "link": { "type": "string", "format": "uri" },
+              "link_label": { "type": "string", "maxLength": 80 }
             }
           }
         }
