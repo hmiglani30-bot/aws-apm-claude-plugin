@@ -6,7 +6,7 @@ allowed-tools:
   - Bash
   - Grep
   - Glob
-  - "mcp__awslabs.aws-documentation-mcp-server__*"
+  - "mcp__awslabs_aws-documentation-mcp-server__*"
 ---
 
 # /cw-obs-gaps
@@ -43,7 +43,7 @@ The user invoked this with: `$ARGUMENTS`
 4. The report must include, per gap: file path + line range, what is
    missing, why it matters in production, and a concrete fix snippet in
    the detected language.
-5. Use `mcp__awslabs.aws-documentation-mcp-server__*` only to cite AWS
+5. Use `mcp__awslabs_aws-documentation-mcp-server__*` only to cite AWS
    best-practice references (CloudWatch agent config, EMF, Application
    Signals enablement, X-Ray SDK setup) — the actual codebase analysis
    is done by reading files directly.

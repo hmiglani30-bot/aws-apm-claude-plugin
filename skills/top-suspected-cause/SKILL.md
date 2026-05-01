@@ -153,7 +153,7 @@ Each card MUST populate:
 
 1. **kind icon + label** — the visual category
 2. **source** — which MCP server / dashboard provided the data (e.g.
-   `awslabs.cloudwatch-applicationsignals-mcp-server`, `Logs Insights`,
+   `awslabs_cloudwatch-applicationsignals-mcp-server`, `Logs Insights`,
    `CloudTrail Lake`)
 3. **timestamp** — ISO UTC of the observation (or window for log patterns)
 4. **value** — the actual observation: metric+number, trace ID + span name,

@@ -85,7 +85,7 @@ If any of these are missing, do not render — return to the parent skill to gat
 - [CloudTrail event search](<deep-link>)
 
 ---
-**Source:** `awslabs.cloudwatch-applicationsignals-mcp-server`
+**Source:** `awslabs_cloudwatch-applicationsignals-mcp-server`
 **Time range:** `<start>` → `<end>` (UTC)
 **MCP tools called:** `<list_slos>`, `<get_slo>`, `<list_top_contributors>`, `<list_traces>`, `<lookup_events>`
 **Queries used:** see Logs Insights deep link above

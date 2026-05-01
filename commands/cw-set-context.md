@@ -99,9 +99,9 @@ After the user picks:
 **To:** `prod-readonly` · `us-east-1`
 
 This will update `.mcp.json` env for all 4 MCP servers:
-- `awslabs.cloudwatch-mcp-server`
-- `awslabs.cloudwatch-applicationsignals-mcp-server`
-- `awslabs.cloudtrail-mcp-server`
+- `awslabs_cloudwatch-mcp-server`
+- `awslabs_cloudwatch-applicationsignals-mcp-server`
+- `awslabs_cloudtrail-mcp-server`
 - (`aws-documentation-mcp-server` does not need credentials — unchanged)
 
 Reply `yes` to apply, or `cancel` to keep the current context.

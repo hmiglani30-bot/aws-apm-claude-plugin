@@ -52,8 +52,8 @@ Read these fields from the context provider (ARCHITECTURE.md context shape):
 
 ## MCP tool dependencies
 
-- `awslabs.cloudwatch-mcp-server` -- `describe_alarms`, `get_metric_data`, `list_metrics`
-- `awslabs.aws-documentation-mcp-server` -- `search_documentation` (alarm best-practice citations)
+- `awslabs_cloudwatch-mcp-server` -- `describe_alarms`, `get_metric_data`, `list_metrics`
+- `awslabs_aws-documentation-mcp-server` -- `search_documentation` (alarm best-practice citations)
 
 The Application Signals and CloudTrail MCP servers are **not required**.
 This is a design workflow, not an incident workflow.

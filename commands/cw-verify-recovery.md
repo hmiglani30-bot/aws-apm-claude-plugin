@@ -5,9 +5,9 @@ allowed-tools:
   - Read
   - Bash
   - Grep
-  - "mcp__awslabs.cloudwatch-mcp-server__*"
-  - "mcp__awslabs.cloudwatch-applicationsignals-mcp-server__*"
-  - "mcp__awslabs.cloudtrail-mcp-server__*"
+  - "mcp__awslabs_cloudwatch-mcp-server__*"
+  - "mcp__awslabs_cloudwatch-applicationsignals-mcp-server__*"
+  - "mcp__awslabs_cloudtrail-mcp-server__*"
 ---
 
 # /cw-verify-recovery

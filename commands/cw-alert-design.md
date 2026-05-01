@@ -5,8 +5,8 @@ allowed-tools:
   - Read
   - Bash
   - Grep
-  - "mcp__awslabs.cloudwatch-mcp-server__*"
-  - "mcp__awslabs.aws-documentation-mcp-server__*"
+  - "mcp__awslabs_cloudwatch-mcp-server__*"
+  - "mcp__awslabs_aws-documentation-mcp-server__*"
 ---
 
 # /cw-alert-design

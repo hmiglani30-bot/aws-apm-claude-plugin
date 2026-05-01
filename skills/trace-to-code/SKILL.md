@@ -49,8 +49,8 @@ Read these fields from the context provider (ARCHITECTURE.md context shape):
 
 ## MCP tool dependencies
 
-- `awslabs.cloudwatch-applicationsignals-mcp-server` -- trace + span data
-- `awslabs.cloudwatch-mcp-server` -- log lines correlated to the trace
+- `awslabs_cloudwatch-applicationsignals-mcp-server` -- trace + span data
+- `awslabs_cloudwatch-mcp-server` -- log lines correlated to the trace
 
 ## Workflow
 

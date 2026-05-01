@@ -1,9 +1,9 @@
 {
-  "description": "Action-safety gate for AWS write operations. Intercepts state-changing MCP calls (Put, Update, Delete, Modify, Create, Remove, Disable, Enable, Attach, Detach, Tag, Untag, Set, Batch, Send, Publish, Invoke, Execute, Run, Associate, Disassociate, Register, Deregister, Restore, Reboot, Terminate, Start, Stop) before they execute and requires explicit user confirmation. Read operations pass through unmodified. Fails closed on parse errors so an unparseable payload that matched the write pattern is blocked rather than waved through.",
+  "description": "Action-safety gate for AWS write operations. Intercepts state-changing MCP calls (put_, update_, delete_, modify_, create_, remove_, disable_, enable_, attach_, detach_, tag_, untag_, set_, batch_, send_, publish_, invoke_, execute_, run_, associate_, disassociate_, register_, deregister_, restore_, reboot_, terminate_, start_, stop_) before they execute and requires explicit user confirmation. Read operations pass through unmodified. Fails closed on parse errors so an unparseable payload that matched the write pattern is blocked rather than waved through. Tool-name shape is mcp__awslabs_<server-name>__<lowercase_verb>_<rest> — single underscore between awslabs and the server name, double underscore at the segment boundary (matches the awslabs MCP server naming where the dotted server id 'awslabs.<server>' is exposed as 'awslabs_<server>').",
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "mcp__awslabs__.*__(Put|Update|Delete|Modify|Create|Remove|Disable|Enable|Attach|Detach|Tag|Untag|Set|Batch|Send|Publish|Invoke|Execute|Run|Associate|Disassociate|Register|Deregister|Restore|Reboot|Terminate|Start|Stop).*",
+        "matcher": "mcp__awslabs_[a-z0-9-]+__(put|update|delete|modify|create|remove|disable|enable|attach|detach|tag|untag|set|batch|send|publish|invoke|execute|run|associate|disassociate|register|deregister|restore|reboot|terminate|start|stop)_.*",
         "hooks": [
           {
             "type": "command",

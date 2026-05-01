@@ -55,12 +55,12 @@ Read the following from the plugin's context:
 
 ## MCP tool dependencies
 
-- `awslabs.cloudwatch-mcp-server` — `get_metric_data`,
+- `awslabs_cloudwatch-mcp-server` — `get_metric_data`,
   `get_metric_metadata`, `list_metrics` (read-only — confirm metric
   exists and pull baseline).
-- `awslabs.cloudwatch-applicationsignals-mcp-server` (optional) — for
+- `awslabs_cloudwatch-applicationsignals-mcp-server` (optional) — for
   SLO-derived alarm recommendations.
-- `awslabs.aws-documentation-mcp-server` (optional) — cite the AWS docs
+- `awslabs_aws-documentation-mcp-server` (optional) — cite the AWS docs
   page that recommends the threshold style.
 
 **Never call `Put*`, `Update*`, `Create*`, `Modify*`, or `Delete*`.**
@@ -164,7 +164,7 @@ form's `data` object MUST contain:
   "action_id": "create_metric_alarm",
   "label": "Create CloudWatch Alarm — <Service> <Metric>",
   "description": "<one-line summary including the recommended threshold and why>",
-  "mcp_tool": "mcp__awslabs__cloudwatch_mcp_server__PutMetricAlarm",
+  "mcp_tool": "mcp__awslabs_cloudwatch-mcp-server__put_metric_alarm",
   "tier": 4,
   "blast_radius": "single alarm; no impact on metric data",
   "reversible": true,

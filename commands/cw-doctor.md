@@ -5,9 +5,9 @@ allowed-tools:
   - Read
   - Bash
   - Grep
-  - "mcp__awslabs.cloudwatch-mcp-server__*"
-  - "mcp__awslabs.cloudwatch-applicationsignals-mcp-server__*"
-  - "mcp__awslabs.cloudtrail-mcp-server__*"
+  - "mcp__awslabs_cloudwatch-mcp-server__*"
+  - "mcp__awslabs_cloudwatch-applicationsignals-mcp-server__*"
+  - "mcp__awslabs_cloudtrail-mcp-server__*"
 ---
 
 # /cw-doctor
@@ -30,21 +30,59 @@ The user invoked this with: `$ARGUMENTS`
    failure, and present them all together. The on-call engineer should not
    have to invoke `/cw-doctor` five times to discover five problems.
 
-3. Before running checks, write a one-line thought: "Running 9 read-only
-   probes — MCP, identity, region, Application Signals, Logs, X-Ray,
-   CloudTrail, IAM coverage. This will take ~10s."
+3. Before running checks, write a one-line thought: "Running 12 read-only
+   probes — runtime, MCP, identity, region, Application Signals, Logs,
+   X-Ray, CloudTrail, renderer, end-to-end data flow. This will take ~15s."
 
-## The 9 checks
+## The 12 checks
 
 Run these in order. For each, record Pass / Fail / Skip with a one-line
 reason. None of these are write actions — every probe is read-only.
+
+The first three checks (0a, 0b, 0c) probe the **runtime environment** —
+they cover Cowork's lightweight VM, fresh Claude Code installs, and
+restricted CI environments where the plugin's host dependencies may be
+missing. Without these, the data flow described later cannot run.
+
+### 0a. Runtime: `uvx` available
+- Run `command -v uvx` via Bash. The four `awslabs` MCP servers in
+  `.mcp.json` are launched via `uvx`. If `uvx` is missing, every MCP server
+  in checks 1–8 will fail to launch and the plugin cannot reach AWS at all.
+- Pass = `uvx --version` prints. Fail = command not found.
+- **Fix this** if missing: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+  then restart the Claude Code / Cowork session. In Cowork's VM the install
+  goes to `~/.local/bin`, which Cowork includes in `PATH` by default.
+
+### 0b. Runtime: `node` available (renderer)
+- Run `command -v node && node --version`. The HTML artifact path
+  (`render-standalone.mjs`) requires Node.js 18+.
+- Pass = node ≥ 18 prints. Skip-with-warning = node missing or < 18 (the
+  plugin still works for Markdown-only output; HTML rendering is degraded).
+- **Fix this** if missing: install Node.js 18+ from https://nodejs.org or
+  via the user's package manager. In Cowork's VM, `apt-get install -y nodejs`
+  may require sudo; surface that as a known limitation rather than retrying.
+
+### 0c. Runtime: `${CLAUDE_PLUGIN_ROOT}` resolves
+- Run `echo "${CLAUDE_PLUGIN_ROOT:-UNSET}"` and verify the path exists and
+  contains `render-standalone.mjs`. The hook script and the renderer
+  invocation both depend on this env var being populated by the plugin host.
+- Pass = path resolves and contains `render-standalone.mjs`. Fail =
+  variable unset OR path does not contain the renderer.
+- **Fix this** if missing: the plugin is not loaded correctly. Re-install
+  via the marketplace or check `.claude-plugin/plugin.json` is on disk.
 
 ### 1. MCP server status
 - All four `awslabs` servers connected? (`cloudwatch-mcp-server`,
   `cloudwatch-applicationsignals-mcp-server`, `cloudtrail-mcp-server`,
   `aws-documentation-mcp-server`)
-- If any are missing, surface which ones and stop subsequent checks that
-  depend on them (mark dependent checks as Skip with reason "depends on
+- The actual MCP tool prefix is `mcp__awslabs_<server-name>__<tool>` (single
+  underscore between `awslabs` and `<server>`, double underscore at segment
+  boundaries). If `allowed-tools` patterns or hook matchers in the plugin
+  use the wrong form (e.g. dotted `mcp__awslabs.<server>__*` or
+  double-underscore `mcp__awslabs__.*`), grep for and surface them — they
+  silently disable permissions / hooks without throwing errors.
+- If any servers are missing, surface which ones and stop subsequent checks
+  that depend on them (mark dependent checks as Skip with reason "depends on
   <server>").
 
 ### 2. AWS identity (caller identity)
@@ -103,20 +141,57 @@ reason. None of these are write actions — every probe is read-only.
   set is intentionally minimal; the user's actual workflow may exercise
   more actions.
 
+### 10. Renderer end-to-end smoke test
+- Skip if check 0b failed (no `node`).
+- Write a tiny manifest to a temp file, run the standalone renderer, and
+  confirm a non-empty HTML file lands on disk:
+  ```bash
+  tmp=$(mktemp -d) && cat > "$tmp/m.json" <<'EOF'
+  {"version":"1.0","metadata":{"title":"doctor","severity":"info","query_intent":"doctor"},"widgets":[{"type":"stat_card","priority":1,"data":{"label":"ok","value":1,"status":"healthy"}}]}
+  EOF
+  node "$CLAUDE_PLUGIN_ROOT/render-standalone.mjs" "$tmp/m.json" "$tmp/out.html" && \
+    test -s "$tmp/out.html" && echo "renderer-ok: $(wc -c < "$tmp/out.html") bytes"
+  ```
+- Pass = renderer prints `Rendered:` and the output file is > 1 KB.
+- Fail = non-zero exit OR empty file. Surface the first error line.
+- This proves the JSON-manifest → HTML half of the data flow is wired —
+  it does NOT prove AWS data flows in (that's checks 5–8).
+
+### 11. Full-loop smoke test (AWS → manifest → HTML)
+- Skip if any of checks 0a, 0b, 1, 2, 5 failed (the loop has no chance).
+- This is the single check that proves the whole pipeline:
+  1. Call `list_services` (Application Signals MCP) for the configured
+     region with limit=1 — same as check 5, but capture the response.
+  2. Convert the response to a one-widget manifest (a `stat_card` whose
+     `value` is the service count, `label` is "Application Signals
+     services" + region) and write it under
+     `${CLAUDE_PROJECT_DIR:-.}/.aws-apm/artifacts/doctor-<ts>.manifest.json`.
+  3. Render via the same `node $CLAUDE_PLUGIN_ROOT/render-standalone.mjs`
+     command from check 10, output to `doctor-<ts>.html` next to it.
+  4. Confirm the HTML contains the service count text from step 1.
+- Pass = HTML written, contains the value from the AWS response. This is
+  the only check that proves data flowed end-to-end from AWS to a rendered
+  artifact in this environment.
+- Fail = describe which step failed.
+
 ## Verdict line
 
 End with exactly one of:
 
-- ✅ **Ready** — all 8 must-pass checks (1–8) passed. Check 9 may show
-  "Not verified" entries; those are advisory, not blocking.
-- ⚠️ **Partially ready** — checks 1–4 passed, but Application Signals
-  returned 0 services OR Logs / X-Ray / CloudTrail had non-fatal warnings.
-  The plugin can still investigate, but some workflows will degrade.
-  List which workflow skills will degrade and how (link to the
-  degraded-telemetry handling section in the workflow skills).
-- 🔴 **Not ready** — any of checks 1–4 failed. The plugin cannot run
-  reliably. Surface the first failing check's remediation step from the
-  `aws-apm-setup` skill verbatim.
+- ✅ **Ready** — all must-pass checks (0a, 0c, 1–8, 10, 11) passed. Check 9
+  may show "Not verified" entries; those are advisory, not blocking. 0b
+  may downgrade to a warning if Node is missing; the rest of the plugin
+  still works in that case (Markdown-only output).
+- ⚠️ **Partially ready** — runtime + identity + region passed (0a, 0c,
+  1–4), but Application Signals returned 0 services OR Logs / X-Ray /
+  CloudTrail had non-fatal warnings OR Node is unavailable so check 10/11
+  could not run. The plugin can still investigate via MCP, but the HTML
+  artifact path is degraded. List which workflow skills will degrade and
+  how (link to the degraded-telemetry handling section in the workflow
+  skills).
+- 🔴 **Not ready** — any of checks 0a, 0c, 1–4 failed. The plugin cannot
+  run reliably. Surface the first failing check's remediation step from
+  the `aws-apm-setup` skill verbatim.
 
 ## Canonical output layout
 
@@ -125,21 +200,26 @@ End with exactly one of:
 **Region:** <region> · **Account:** <account-id> (<alias>) · **Profile:** <profile>
 **As of:** <ISO ts UTC>
 
-| # | Check | Status | Notes |
-|---|---|---|---|
-| 1 | MCP servers | ✅ | 4/4 connected |
-| 2 | AWS identity | ✅ | `<arn>` |
-| 3 | Account ID | ✅ | `<account-id>` (`<alias>`) |
-| 4 | Region | ✅ | `<region>` (consistent across 4 servers) |
-| 5 | Application Signals | ✅ | <N> services |
-| 6 | CloudWatch Logs | ✅ | DescribeLogGroups returned |
-| 7 | X-Ray | ✅ | GetTraceSummaries returned |
-| 8 | CloudTrail | ✅ | source: Lake event data store |
-| 9 | Missing permissions | ⚠️ | `synthetics:GetCanary` not verified — needed for canary alarms |
+| #   | Check                  | Status | Notes |
+|-----|------------------------|--------|---|
+| 0a  | uvx                    | ✅     | uvx 0.x.y |
+| 0b  | node (renderer)        | ✅     | node v20.x |
+| 0c  | CLAUDE_PLUGIN_ROOT     | ✅     | resolves; render-standalone.mjs found |
+| 1   | MCP servers            | ✅     | 4/4 connected |
+| 2   | AWS identity           | ✅     | `<arn>` |
+| 3   | Account ID             | ✅     | `<account-id>` (`<alias>`) |
+| 4   | Region                 | ✅     | `<region>` (consistent across 4 servers) |
+| 5   | Application Signals    | ✅     | <N> services |
+| 6   | CloudWatch Logs        | ✅     | DescribeLogGroups returned |
+| 7   | X-Ray                  | ✅     | GetTraceSummaries returned |
+| 8   | CloudTrail             | ✅     | source: Lake event data store |
+| 9   | Missing permissions    | ⚠️     | `synthetics:GetCanary` not verified — needed for canary alarms |
+| 10  | Renderer smoke         | ✅     | render-standalone.mjs OK, 27 KB out |
+| 11  | Full-loop smoke (AWS→HTML) | ✅ | wrote `doctor-<ts>.html`, contains "<N>" |
 
 ---
 
-✅ **Ready** — all 8 must-pass checks passed.
+✅ **Ready** — all must-pass checks passed.
 
 > Run `/cw-set-context` to switch account / region.
 > Run `/cw-health-check` to scan service health.

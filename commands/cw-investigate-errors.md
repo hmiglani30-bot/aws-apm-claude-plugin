@@ -5,10 +5,10 @@ allowed-tools:
   - Read
   - Bash
   - Grep
-  - "mcp__awslabs.cloudwatch-mcp-server__*"
-  - "mcp__awslabs.cloudwatch-applicationsignals-mcp-server__*"
-  - "mcp__awslabs.cloudtrail-mcp-server__*"
-  - "mcp__awslabs.aws-documentation-mcp-server__*"
+  - "mcp__awslabs_cloudwatch-mcp-server__*"
+  - "mcp__awslabs_cloudwatch-applicationsignals-mcp-server__*"
+  - "mcp__awslabs_cloudtrail-mcp-server__*"
+  - "mcp__awslabs_aws-documentation-mcp-server__*"
 ---
 
 # /cw-investigate-errors

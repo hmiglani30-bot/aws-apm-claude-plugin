@@ -353,6 +353,46 @@ User: "weekly SLO compliance report"
 
 ## How to invoke
 
+There are two invocation paths. Pick the one that matches your runtime.
+
+### Claude Code / Cowork (CLI path — the canonical one for this plugin)
+
+The model writes the manifest JSON to disk, then runs the standalone renderer
+via `Bash`. The renderer is a Node.js CLI bundled with the plugin.
+
+```bash
+# 1. Pick a stable, writable artifact path. Use the plugin-relative output
+#    directory so files are easy to find and don't pollute the user's repo.
+mkdir -p "${CLAUDE_PROJECT_DIR:-.}/.aws-apm/artifacts"
+artifact_dir="${CLAUDE_PROJECT_DIR:-.}/.aws-apm/artifacts"
+
+# 2. Write the manifest you produced. Replace <intent> with metadata.query_intent.
+cat > "$artifact_dir/<intent>-$(date +%Y%m%dT%H%M%SZ).manifest.json" <<'EOF'
+{ ...your manifest JSON... }
+EOF
+manifest_path="$(ls -t "$artifact_dir"/<intent>-*.manifest.json | head -1)"
+output_path="${manifest_path%.manifest.json}.html"
+
+# 3. Render. CLAUDE_PLUGIN_ROOT is set by the plugin host (Claude Code and
+#    Cowork both populate it) and resolves to the plugin install directory.
+node "$CLAUDE_PLUGIN_ROOT/render-standalone.mjs" "$manifest_path" "$output_path"
+```
+
+After the render succeeds, **surface both paths to the user**: the manifest
+(for re-rendering / sharing / debugging) and the HTML (for viewing). Cowork's
+inline display picks up `*.html` artifacts placed under
+`${CLAUDE_PROJECT_DIR}/.aws-apm/artifacts/`; Claude Code shows the path so the
+user can open it manually.
+
+If `node` is not available, do NOT fall back to hand-authoring HTML — emit the
+manifest JSON to disk anyway and tell the user: "Manifest written to
+`<path>`. To render, install Node.js 18+ then run `/cw-doctor` to verify, or
+run `node ${CLAUDE_PLUGIN_ROOT}/render-standalone.mjs <manifest> <out.html>`
+manually." The manifest is the artifact-of-record; the HTML is a presentation
+view.
+
+### Browser / programmatic host
+
 ```js
 import { initRenderer, renderManifest } from "./renderer/render.js";
 
@@ -361,7 +401,7 @@ const html = renderManifest(manifest, { prompt: rawUserPrompt });
 // inject `html` into the panel's content container
 ```
 
-Pass the raw user prompt as `opts.prompt` to enable the manifest cache (30 min TTL, in-memory). Identical (prompt, query_intent) pairs return cached HTML.
+Pass the raw user prompt as `opts.prompt` to enable the manifest cache (30 min TTL, in-memory). Identical (prompt, query_intent) pairs return cached HTML. The CLI path above wraps this same `renderManifest` function — both paths produce byte-identical output for the same manifest.
 
 ## When NOT to use this skill
 

@@ -50,8 +50,8 @@ Read these fields from the context provider (ARCHITECTURE.md context shape):
 
 ## MCP tool dependencies
 
-- `awslabs.cloudwatch-applicationsignals-mcp-server` -- `list_services` (to resolve service name to resource ARN)
-- `awslabs.cloudwatch-mcp-server` -- `list_tags_for_resource` (to read AWS resource tags)
+- `awslabs_cloudwatch-applicationsignals-mcp-server` -- `list_services` (to resolve service name to resource ARN)
+- `awslabs_cloudwatch-mcp-server` -- `list_tags_for_resource` (to read AWS resource tags)
 
 ## Sources, in priority order
 

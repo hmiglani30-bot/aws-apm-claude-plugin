@@ -29,10 +29,10 @@ This setup skill initializes the context provider. After setup completes, the fo
 ## MCP tool dependencies
 
 Tests connectivity to all four MCP servers:
-- `awslabs.cloudwatch-mcp-server` -- `describe_alarms` (connectivity test)
-- `awslabs.cloudwatch-applicationsignals-mcp-server` -- `list_services` (connectivity test)
-- `awslabs.cloudtrail-mcp-server` -- `lookup_events` (connectivity test)
-- `awslabs.aws-documentation-mcp-server` -- `search_documentation` (connectivity test)
+- `awslabs_cloudwatch-mcp-server` -- `describe_alarms` (connectivity test)
+- `awslabs_cloudwatch-applicationsignals-mcp-server` -- `list_services` (connectivity test)
+- `awslabs_cloudtrail-mcp-server` -- `lookup_events` (connectivity test)
+- `awslabs_aws-documentation-mcp-server` -- `search_documentation` (connectivity test)
 
 ## Prerequisites checklist
 
@@ -42,15 +42,29 @@ Tests connectivity to all four MCP servers:
    curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
    (macOS / Linux. Windows: see https://docs.astral.sh/uv/getting-started/installation/.)
+   Cowork's lightweight VM does not ship `uvx` by default — running this command inside
+   the Cowork session installs it to `~/.local/bin/uvx`, which is on the default PATH.
 
-2. **AWS credentials configured** — check for `~/.aws/credentials` or `AWS_PROFILE` env
-   var. If neither, instruct the user to run `aws configure` or set up SSO.
+2. **Node.js 18+ installed** — the HTML artifact path uses
+   `render-standalone.mjs` (a Node CLI bundled with the plugin). If `node` is missing
+   or older than 18, the investigation skills still produce Markdown summaries, but the
+   inline HTML artifact view in Cowork will not render. Install:
+   - macOS / Linux dev: nvm / fnm / asdf, or https://nodejs.org/
+   - Cowork VM: `apt-get install -y nodejs npm` (may need sudo) or install via uv-managed
+     node — surface this as a Cowork-specific limitation if neither path is usable.
 
-3. **AWS region set** — verify by reading `~/.aws/config` or asking the user. Default in
+3. **AWS credentials reachable from the runtime** — check for `~/.aws/credentials`,
+   `AWS_PROFILE` env, or explicit `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` /
+   `AWS_SESSION_TOKEN`. In Cowork specifically, the VM may or may not see the host's
+   `~/.aws/` — if `/cw-doctor` check 2 fails with `Unable to locate credentials`, fall
+   back to setting env vars in the Cowork session. The plugin never asks for or persists
+   credentials.
+
+4. **AWS region set** — verify by reading `~/.aws/config` or asking the user. Default in
    `.mcp.json` is `us-east-1`; the user should change it via Claude Code settings or by
    editing the plugin's `.mcp.json` if their workloads are elsewhere.
 
-4. **IAM permissions** — the user's role / user needs at minimum:
+5. **IAM permissions** — the user's role / user needs at minimum:
    - `cloudwatch:Get*`, `cloudwatch:List*`, `cloudwatch:Describe*`
    - `logs:StartQuery`, `logs:GetQueryResults`, `logs:DescribeLogGroups`
    - `xray:GetTrace*`, `xray:Get*`
@@ -58,12 +72,20 @@ Tests connectivity to all four MCP servers:
    - `cloudtrail:LookupEvents`, `cloudtrail:GetEventDataStore`
    - `synthetics:GetCanary`, `synthetics:GetCanaryRuns` (canary status)
 
-   Write actions (`Put*`, `Update*`, etc.) are **not required** for read-only investigations.
-   The plugin's confirmation gate hook prevents accidental writes regardless.
+   Write actions (`put_*`, `update_*`, etc. — note the lowercase underscore-separated
+   form the MCP servers actually expose) are **not required** for read-only
+   investigations. The plugin's confirmation gate hook prevents accidental writes
+   regardless.
 
-5. **Application Signals enabled** in the user's account — required for service-map,
+6. **Application Signals enabled** in the user's account — required for service-map,
    SLO, and operation tools to return data. Link them to:
    https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Application-Monitoring-Intro.html
+
+7. **`${CLAUDE_PLUGIN_ROOT}` populated** — the plugin host (Claude Code and Cowork
+   both) sets this env var to the plugin's install directory. The hook script and the
+   renderer invocation depend on it. If `/cw-doctor` check 0c shows it unset, the
+   plugin is loaded incorrectly — re-install via the marketplace. The plugin does not
+   try to guess or fall back to a hard-coded path.
 
 ## Region and profile configuration
 
@@ -88,14 +110,29 @@ If any probe fails, surface the error verbatim — do not retry silently.
 
 ## Common errors
 
-- **`uvx: command not found`** → uv not installed (Step 1)
-- **`Unable to locate credentials`** → no AWS creds (Step 2)
-- **`AccessDenied`** → IAM perms (Step 4) — surface the exact action denied
-- **`No services found`** → Application Signals not enabled (Step 5), or wrong region
+- **`uvx: command not found`** → uv not installed (Step 1). In Cowork specifically,
+  `uvx` is rarely pre-installed; run the install command in the Cowork session.
+- **`node: command not found`** when running the renderer → Node.js not installed
+  (Step 2). The plugin still works for Markdown summaries; only the HTML artifact
+  view degrades.
+- **`Unable to locate credentials`** → no AWS creds reachable from this runtime
+  (Step 3). In Cowork's VM, fall back to setting env vars in the session if `~/.aws/`
+  is not mounted in.
+- **`AccessDenied`** → IAM perms (Step 5) — surface the exact action denied.
+- **`No services found`** → Application Signals not enabled (Step 6), or wrong region.
 - **`ThrottlingException`** → AWS API rate limit. Surface the exact API + operation
   rather than retrying silently; the user may need to lower investigation cadence or
-  request a quota increase
-- **`Connection refused` to MCP** → MCP server failed to launch; check `FASTMCP_LOG_LEVEL=DEBUG`
+  request a quota increase.
+- **`Connection refused` to MCP** → MCP server failed to launch; check `FASTMCP_LOG_LEVEL=DEBUG`.
+- **MCP tool calls keep prompting for permission** → the plugin's `allowed-tools`
+  pattern is using the wrong tool-name shape. The real prefix is
+  `mcp__awslabs_<server>__<tool>` (single underscore between `awslabs` and `<server>`,
+  lowercase underscore-separated tool name). See `docs/cowork-runtime.md`.
+- **Write-confirmation hook never fires** → hook matcher regex is using the wrong
+  shape (must match `mcp__awslabs_<server>__<verb>_*` lowercase). See
+  `docs/cowork-runtime.md`.
+- **`${CLAUDE_PLUGIN_ROOT}` is empty inside the hook script or render command** →
+  plugin is loaded incorrectly. Re-install via the marketplace.
 
 ### Service-name resolution
 

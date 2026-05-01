@@ -48,7 +48,7 @@ Read these fields from the context provider (ARCHITECTURE.md context shape):
 
 ## MCP tool dependencies
 
-- `awslabs.aws-documentation-mcp-server` -- `search_documentation` (citations for AWS best practices: CloudWatch Agent, EMF, Application Signals, X-Ray SDK). Optional but strongly recommended; without it, recommendations cite general patterns rather than canonical AWS docs.
+- `awslabs_aws-documentation-mcp-server` -- `search_documentation` (citations for AWS best practices: CloudWatch Agent, EMF, Application Signals, X-Ray SDK). Optional but strongly recommended; without it, recommendations cite general patterns rather than canonical AWS docs.
 
 The CloudWatch / Application Signals / CloudTrail MCP servers are **not**
 required -- the analysis runs entirely on the local codebase.

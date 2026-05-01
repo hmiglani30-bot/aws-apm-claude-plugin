@@ -46,9 +46,9 @@ Read these fields from the context provider (ARCHITECTURE.md context shape):
 
 ## MCP tool dependencies
 
-- `awslabs.cloudwatch-mcp-server` -- `describe_alarms`, `get_metric_data`, `start_query`, `get_query_results`
-- `awslabs.cloudwatch-applicationsignals-mcp-server` -- `list_services`, `list_service_operations`, `get_top_contributors`
-- `awslabs.cloudtrail-mcp-server` -- `lookup_events`
+- `awslabs_cloudwatch-mcp-server` -- `describe_alarms`, `get_metric_data`, `start_query`, `get_query_results`
+- `awslabs_cloudwatch-applicationsignals-mcp-server` -- `list_services`, `list_service_operations`, `get_top_contributors`
+- `awslabs_cloudtrail-mcp-server` -- `lookup_events`
 
 If any required MCP is not connected, run the `aws-apm-setup` skill before continuing.
 
@@ -255,7 +255,7 @@ wait for the exact confirmation phrase before re-issuing the call:
 
 ```
 🛑 Write action proposed
-- API action: mcp__awslabs.<server>__<ToolName>
+- API action: mcp__awslabs_<server>__<tool_name>
 - Target ARN: <fully-qualified ARN or resource ID>
 - Region / account: <region> · <account>
 - Arguments: <full JSON the tool will receive>
