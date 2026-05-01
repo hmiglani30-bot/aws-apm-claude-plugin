@@ -452,7 +452,7 @@ Column `kind` values and their rendering:
     "action_id": "create_metric_alarm",
     "label": "Create Metric Alarm",
     "description": "Create a CloudWatch metric alarm for checkout-api Lambda errors",
-    "mcp_tool": "mcp__awslabs__cloudwatch_mcp_server__PutMetricAlarm",
+    "mcp_tool": "mcp__awslabs_cloudwatch-mcp-server__put_metric_alarm",
     "tier": 4,
     "blast_radius": "single resource",
     "reversible": true,

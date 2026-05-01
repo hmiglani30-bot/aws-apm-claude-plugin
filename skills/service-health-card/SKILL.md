@@ -138,7 +138,7 @@ exhausted before the breach alarm fires.
 - [SLO list](<deep-link>)
 
 ---
-**Source:** `awslabs.cloudwatch-applicationsignals-mcp-server`, `awslabs.cloudtrail-mcp-server`
+**Source:** `awslabs_cloudwatch-applicationsignals-mcp-server`, `awslabs_cloudtrail-mcp-server`
 **Time range:** last 5 min (current) vs same window 24h ago
 **MCP tools called:** `<list_services>`, `<get_service>`, `<list_operations>`, `<lookup_events>`
 **Confidence:** <Low | Medium | High>

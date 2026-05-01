@@ -54,7 +54,7 @@ reason. Do not skip checks silently.
 
 The artifact MUST end with a metadata block containing:
 
-- [ ] **Source MCP server(s)** — e.g. `awslabs.cloudwatch-applicationsignals-mcp-server`
+- [ ] **Source MCP server(s)** — e.g. `awslabs_cloudwatch-applicationsignals-mcp-server`
 - [ ] **Time window** — explicit ISO start → end in UTC, not "last hour"
 - [ ] **Region** — the AWS region the data came from
 - [ ] **Account** — AWS account ID or account alias if multi-account

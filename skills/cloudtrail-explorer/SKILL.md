@@ -40,7 +40,7 @@ correlation phase.
 
 ## Required MCP servers
 
-- `awslabs.cloudtrail-mcp-server` — `lookup_events` for the management-event
+- `awslabs_cloudtrail-mcp-server` — `lookup_events` for the management-event
   history. CloudTrail Lake (`lake_query`) is the fallback for windows longer
   than 7 days; this skill does not use it.
 
@@ -81,7 +81,7 @@ returns all events in the window.
 
 ### Phase 2 — Query CloudTrail
 
-1. Call `mcp__awslabs.cloudtrail-mcp-server__lookup_events` with:
+1. Call `mcp__awslabs_cloudtrail-mcp-server__lookup_events` with:
    - `StartTime`: now − 7d (ISO 8601, UTC)
    - `EndTime`: now (UTC)
    - `LookupAttributes`: from Phase 1 (or omit)
@@ -138,7 +138,7 @@ Sort newest-first.
    - `{{LINK_CLOUDTRAIL_CONSOLE}}` — deep link to CloudTrail event history
      in the AWS console for the same filter (use `open-in-cloudwatch` patterns
      for the URL builder)
-   - `{{SOURCE_MCP_SERVERS}}` — `awslabs.cloudtrail-mcp-server`
+   - `{{SOURCE_MCP_SERVERS}}` — `awslabs_cloudtrail-mcp-server`
    - `{{MCP_TOOLS_LIST}}` — `lookup_events`
    - `{{PAGINATION_NOTE}}` — empty unless the 1000-event cap was hit
 3. Write the populated HTML to a path like

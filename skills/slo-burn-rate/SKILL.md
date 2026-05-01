@@ -44,9 +44,9 @@ to `slo-breach-investigation` — this skill produces only the numbers.
 
 ## MCP tool dependencies
 
-- `awslabs.cloudwatch-applicationsignals-mcp-server` -- `get_slo`,
+- `awslabs_cloudwatch-applicationsignals-mcp-server` -- `get_slo`,
   `list_slos`
-- `awslabs.cloudwatch-mcp-server` -- `get_metric_data` (for raw good/total
+- `awslabs_cloudwatch-mcp-server` -- `get_metric_data` (for raw good/total
   event counts when the SLO API does not expose burn rate over time)
 
 ## Definitions
@@ -168,7 +168,7 @@ risk appetite.
 - [Burn rate dashboard](<deep-link>)
 
 ---
-**Source:** `awslabs.cloudwatch-applicationsignals-mcp-server`, `awslabs.cloudwatch-mcp-server`
+**Source:** `awslabs_cloudwatch-applicationsignals-mcp-server`, `awslabs_cloudwatch-mcp-server`
 **Time range:** since period start (<P>) · current windows: 5m / 1h / 6h / 24h
 **MCP tools called:** `get_slo`, `get_metric_data`
 **Confidence:** High (deterministic math)

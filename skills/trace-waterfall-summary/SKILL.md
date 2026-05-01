@@ -84,7 +84,7 @@ gantt
 - [Logs for this requestId](<deep-link>)
 
 ---
-**Source:** `awslabs.cloudwatch-applicationsignals-mcp-server`
+**Source:** `awslabs_cloudwatch-applicationsignals-mcp-server`
 **Trace time:** `<ts>`
 **MCP tools called:** `<get_trace>`, `<list_traces>`
 **Spans captured:** <captured>/<total> (<pct>%)

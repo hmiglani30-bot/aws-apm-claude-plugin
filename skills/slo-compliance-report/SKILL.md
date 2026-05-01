@@ -42,7 +42,7 @@ If the user is asking about a *specific* breaching SLO right now, prefer
 
 ## MCP tool dependencies
 
-- `awslabs.cloudwatch-applicationsignals-mcp-server` -- `list_services`, `list_slos`, `get_slo`
+- `awslabs_cloudwatch-applicationsignals-mcp-server` -- `list_services`, `list_slos`, `get_slo`
 
 ## Presentation
 
@@ -148,7 +148,7 @@ Render a fixed-shape **SLO Compliance Report** dashboard:
 - [Service map](<deep-link>)
 
 ---
-**Source:** `awslabs.cloudwatch-applicationsignals-mcp-server`
+**Source:** `awslabs_cloudwatch-applicationsignals-mcp-server`
 **Time window:** <window>
 **MCP tools called:** `list_services`, `list_slos`, `get_slo`
 **Region:** <context.region> . **Account:** <context.account>

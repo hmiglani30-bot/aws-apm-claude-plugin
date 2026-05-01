@@ -5,10 +5,10 @@ allowed-tools:
   - Read
   - Bash
   - Grep
-  - "mcp__awslabs.cloudwatch-mcp-server__*"
-  - "mcp__awslabs.cloudwatch-applicationsignals-mcp-server__*"
-  - "mcp__awslabs.cloudtrail-mcp-server__*"
-  - "mcp__awslabs.aws-documentation-mcp-server__*"
+  - "mcp__awslabs_cloudwatch-mcp-server__*"
+  - "mcp__awslabs_cloudwatch-applicationsignals-mcp-server__*"
+  - "mcp__awslabs_cloudtrail-mcp-server__*"
+  - "mcp__awslabs_aws-documentation-mcp-server__*"
 ---
 
 # /cw-health-check
@@ -27,7 +27,7 @@ The user invoked this with: `$ARGUMENTS`
      the service name. Match by `contains`, not exact.
 
 2. Verify prerequisites. If the
-   `awslabs.cloudwatch-applicationsignals-mcp-server` is not connected, run
+   `awslabs_cloudwatch-applicationsignals-mcp-server` is not connected, run
    the `aws-apm-setup` skill first.
 
 3. Fetch the service list:
@@ -154,7 +154,7 @@ column shows `—` and a footnote: "No SLOs configured."
 **Fleet summary:** <N> services · 🟢 <H> healthy · 🟡 <D> degraded · 🔴 <U> unhealthy
 
 ---
-**Source:** `awslabs.cloudwatch-applicationsignals-mcp-server`, `awslabs.cloudwatch-mcp-server` (App Signals + X-Ray)
+**Source:** `awslabs_cloudwatch-applicationsignals-mcp-server`, `awslabs_cloudwatch-mcp-server` (App Signals + X-Ray)
 **Time range:** last 5 min vs same window 24h ago
 **Region:** <region> · **Account:** <account>
 **MCP tools called:** `list_services`, `get_service`, `list_slos`, `get_slo`, `query_sampled_traces`, `get_metric_data`

@@ -5,9 +5,9 @@ allowed-tools:
   - Read
   - Bash
   - Grep
-  - "mcp__awslabs.cloudwatch-mcp-server__*"
-  - "mcp__awslabs.cloudwatch-applicationsignals-mcp-server__*"
-  - "mcp__awslabs.aws-documentation-mcp-server__*"
+  - "mcp__awslabs_cloudwatch-mcp-server__*"
+  - "mcp__awslabs_cloudwatch-applicationsignals-mcp-server__*"
+  - "mcp__awslabs_aws-documentation-mcp-server__*"
 ---
 
 # /cw-dashboard
@@ -32,12 +32,12 @@ the user to pick one.
 
 ## Instructions
 
-1. Verify the `awslabs.cloudwatch-mcp-server` is connected. If not, run
+1. Verify the `awslabs_cloudwatch-mcp-server` is connected. If not, run
    `aws-apm-setup`.
 
 2. Resolve the dashboard:
    - Prefer the MCP tool if available:
-     `mcp__awslabs.cloudwatch-mcp-server__get_dashboard` with `DashboardName`.
+     `mcp__awslabs_cloudwatch-mcp-server__get_dashboard` with `DashboardName`.
    - **Fallback:** if the MCP server does not expose a `get_dashboard` tool,
      shell out via Bash to `aws cloudwatch get-dashboard --dashboard-name
      <name> --region <region> --output json`. Note the fallback in the
@@ -117,7 +117,7 @@ likely correlated with the deploy at 14:18 UTC. See `/cw-investigate-errors`.">
 
 ---
 
-**Source:** `awslabs.cloudwatch-mcp-server` (dashboard + metrics)
+**Source:** `awslabs_cloudwatch-mcp-server` (dashboard + metrics)
 **MCP tools called:** `get_dashboard`, `get_metric_data`, `describe_alarms`
 **Time window queried:** <start> .. <end>
 **Confidence:** High (live data, no derivation)

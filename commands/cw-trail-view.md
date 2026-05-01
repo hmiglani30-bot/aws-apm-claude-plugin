@@ -6,8 +6,8 @@ allowed-tools:
   - Write
   - Bash
   - Grep
-  - "mcp__awslabs.cloudtrail-mcp-server__*"
-  - "mcp__awslabs.aws-documentation-mcp-server__*"
+  - "mcp__awslabs_cloudtrail-mcp-server__*"
+  - "mcp__awslabs_aws-documentation-mcp-server__*"
 ---
 
 # /cw-trail-view
@@ -32,7 +32,7 @@ The user invoked this with: `$ARGUMENTS`
 
 2. Activate the `cloudtrail-explorer` skill and follow its workflow:
    1. Resolve filters and time window (now − 7d → now, UTC).
-   2. Call `mcp__awslabs.cloudtrail-mcp-server__lookup_events` (paginating until
+   2. Call `mcp__awslabs_cloudtrail-mcp-server__lookup_events` (paginating until
       `NextToken` is empty or a sane page cap is hit).
    3. Compute summary stats: total events, unique principals, unique event sources,
       time range actually covered.
