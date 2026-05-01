@@ -569,9 +569,36 @@ git clone https://github.com/hmiglani30/aws-apm-claude-plugin
 Cowork uses the same plugin format as Claude Code (`.claude-plugin/plugin.json`,
 `skills/`, `commands/`, `hooks/`, and a root `.mcp.json`), but does **not** have
 an in-app marketplace browser and does not install directly from a GitHub URL.
-Two install paths are supported:
 
-**Option A — drop the plugin folder into the org-plugins directory.** Cowork
+**Recommended — download and upload the prebuilt `.plugin` file.**
+
+1. Download the latest `aws-apm-claude-plugin.plugin` from
+   [GitHub Releases](https://github.com/hmiglani30/aws-apm-claude-plugin/releases).
+2. Open Cowork → **Settings** → **Plugins** → **Upload**.
+3. Pick the downloaded `.plugin` file. Cowork unpacks it and prompts to
+   restart so the four `awslabs.*` MCP servers can launch.
+
+The `.plugin` file is a zip archive (renamed). If your Cowork build only
+accepts `.zip`, rename the extension before uploading.
+
+<details>
+<summary>Build the <code>.plugin</code> file from source</summary>
+
+```bash
+# From the repo root
+zip -r aws-apm-claude-plugin.plugin . \
+  -x "*.DS_Store" -x ".git/*" -x "tests/*" -x "node_modules/*"
+```
+
+The resulting archive root contains `.claude-plugin/plugin.json`,
+`.mcp.json`, `skills/`, `commands/`, `hooks/`, `artifacts/`, `renderer/`,
+`schemas/`, and `data/`.
+</details>
+
+<details>
+<summary>Alternative — drop the plugin folder into the IT-managed <code>org-plugins</code> directory</summary>
+
+For organizations that ship plugins to a managed fleet, Cowork
 auto-discovers any plugin folder placed in:
 
 | OS      | Path                                              |
@@ -580,28 +607,15 @@ auto-discovers any plugin folder placed in:
 | Windows | `C:\ProgramData\Claude\org-plugins\`              |
 
 ```bash
-# macOS example
+# macOS example — needs sudo to write under /Library
 git clone https://github.com/hmiglani30/aws-apm-claude-plugin
 sudo cp -R aws-apm-claude-plugin "/Library/Application Support/Claude/org-plugins/aws-apm"
 # Then restart Cowork.
 ```
 
-**Option B — upload a zip archive via Cowork settings.** Build a zip whose root
-contains `.claude-plugin/plugin.json`, `.mcp.json`, `skills/`, `commands/`, and
-`hooks/` (i.e. unzip-here layout, not a wrapper folder), then upload it from
-Cowork → **Customize** → upload custom plugin.
-
-```bash
-# From the repo root
-zip -r aws-apm.zip \
-  .claude-plugin .mcp.json skills commands hooks artifacts renderer \
-  schemas data renderer/templates
-# Upload aws-apm.zip via Cowork's plugin upload dialog.
-```
-
-> Cowork's plugin upload dialog currently accepts `.zip`. Some early docs
-> reference a `.plugin` extension, which is the same zip layout renamed —
-> upload as `.zip` for compatibility.
+This path requires admin privileges and is intended for IT-managed
+deployments, not single-user installs.
+</details>
 
 **Cowork-specific prerequisites:**
 

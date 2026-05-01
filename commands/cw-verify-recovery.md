@@ -140,7 +140,7 @@ End with exactly one of:
 
 > **Source:** Application Signals + CloudWatch
 > **Time range:** 13:48–14:33 UTC (mitigation at 14:18)
-> **MCP tools called:** `list_slos`, `get_slo`, `get_metric_data`, `search_traces`, `describe_alarms`
+> **MCP tools called:** `list_slos`, `get_slo`, `get_metric_data`, `query_sampled_traces`, `get_active_alarms`
 > **Confidence:** High — 5/5 multi-source agreement
 
 > Next step: write the postmortem. Use `copy-to-incident` skill for a

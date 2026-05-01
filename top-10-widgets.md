@@ -60,7 +60,7 @@
 
 **What it renders:** A directed graph of service nodes connected by edges representing observed calls. Nodes are color-coded by health (green/yellow/red). Edges are labeled with latency, throughput, and error rates. Root/entry-point nodes are visually distinct.
 
-**Data source (MCP tool):** `get_service_graph` (X-Ray API) or Application Signals `list_services` + `list_service_dependencies`.
+**Data source (MCP tool):** `get_service_graph` (X-Ray API) or Application Signals `list_monitored_services` + `get_service_detail` (the `get_service_detail` response includes upstream/downstream dependencies).
 
 **Example user queries:**
 - "Show me my application topology"
@@ -121,7 +121,7 @@
 
 **What it renders:** A grid of alarm tiles, each showing alarm name, state (OK/ALARM/INSUFFICIENT_DATA), and the metric it monitors. Color-coded: green for OK, red for ALARM, gray for INSUFFICIENT_DATA. Optionally shows a mini metric graph per alarm.
 
-**Data source (MCP tool):** `describe_alarms` (CloudWatch Alarms API).
+**Data source (MCP tool):** `get_active_alarms` (current state) and `get_alarm_history` (state-transition timeline) on the CloudWatch MCP server.
 
 **Example user queries:**
 - "Are any alarms firing right now?"
@@ -231,7 +231,7 @@
 
 **What it renders:** A structured list of label-value pairs organized in columns, with optional status indicators, copy-to-clipboard for IDs, and links. Used for trace details, alarm configuration, resource metadata, and service properties.
 
-**Data source (MCP tool):** Any — this is a generic display widget fed by `describe_alarms`, `batch_get_traces`, `describe_instances`, `list_services`, etc.
+**Data source (MCP tool):** Any — this is a generic display widget fed by `get_active_alarms`, `query_sampled_traces`, `describe_instances`, `list_monitored_services`, etc.
 
 **Example user queries:**
 - "Show me the details of this alarm"

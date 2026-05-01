@@ -62,7 +62,7 @@ Read these fields from the context provider (ARCHITECTURE.md context shape):
    Call `batch_get_traces(trace_ids=[<trace-id>])` --> full trace with all segments and subsegments.
 
 2. If only span name + service + time window given:
-   Call `get_trace_summaries(start_time=<context.time_window.start>, end_time=<context.time_window.end>, filter_expression='service("<service>") AND responseTime > 1', sampling=true)` --> pick trace with captured exception or duration outlier.
+   Call `query_sampled_traces(start_time=<context.time_window.start>, end_time=<context.time_window.end>, filter_expression='service("<service>") AND responseTime > 1', sampling=true)` --> pick trace with captured exception or duration outlier.
    Then call `batch_get_traces(trace_ids=[<selected-id>])` for the full trace.
 
 #### Per-span extraction
@@ -199,8 +199,8 @@ End the artifact with exact validation commands:
 | Error | Detect | Behavior |
 |---|---|---|
 | `batch_get_traces` returns empty | Trace expired (>30 days) or invalid ID | Output "Trace `<id>` not found -- may have expired (>30 day retention). Ask the user for a recent trace ID." |
-| `get_trace_summaries` returns empty | No traces match filter in window | Output "No traces matching `<service>` in `<window>`. Widen window or verify service name." |
-| `get_trace_summaries` ThrottlingException | X-Ray rate limit | Retry once with 2s backoff. On second failure, output "X-Ray throttled. Try again in 30s or provide a specific trace ID." |
+| `query_sampled_traces` returns empty | No traces match filter in window | Output "No traces matching `<service>` in `<window>`. Widen window or verify service name." |
+| `query_sampled_traces` ThrottlingException | X-Ray rate limit | Retry once with 2s backoff. On second failure, output "X-Ray throttled. Try again in 30s or provide a specific trace ID." |
 | All spans are opaque | No `code.*` attributes on any span | Lead verdict with "Cannot map trace to code -- every span is opaque." Render Phase 4 instrumentation gaps as primary output. |
 | No repo in working directory | No source files found | Output "No source code in working directory. Open the service repo first, then re-run." |
 | Git not available | `git log` fails | Skip Phase 3. Note "Git unavailable -- commit correlation skipped." |

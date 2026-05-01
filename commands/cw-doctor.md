@@ -103,8 +103,8 @@ missing. Without these, the data flow described later cannot run.
   are a footgun).
 
 ### 5. Application Signals service count
-- Call `list_services` for the configured region (capped to 1 result for
-  the probe; we only need to know it returns).
+- Call `list_monitored_services` for the configured region (capped to 1
+  result for the probe; we only need to know it returns).
 - If the call returns 0 services, **fail with reason** "Application
   Signals not enabled or no services in region — run /cw-set-context to
   pick a region with services, or enable Application Signals in the AWS
@@ -118,7 +118,7 @@ missing. Without these, the data flow described later cannot run.
 - Fail = `AccessDenied` or `ThrottlingException`.
 
 ### 7. X-Ray trace access
-- Call `GetTraceSummaries` for the last 5 minutes with no filter, limit=1.
+- Call `query_sampled_traces` for the last 5 minutes with no filter, limit=1.
 - Pass = call returns (any number of traces is fine, even 0).
 - Fail = `AccessDenied` or auth error.
 
@@ -160,8 +160,8 @@ missing. Without these, the data flow described later cannot run.
 ### 11. Full-loop smoke test (AWS → manifest → HTML)
 - Skip if any of checks 0a, 0b, 1, 2, 5 failed (the loop has no chance).
 - This is the single check that proves the whole pipeline:
-  1. Call `list_services` (Application Signals MCP) for the configured
-     region with limit=1 — same as check 5, but capture the response.
+  1. Call `list_monitored_services` (Application Signals MCP) for the
+     configured region with limit=1 — same as check 5, but capture the response.
   2. Convert the response to a one-widget manifest (a `stat_card` whose
      `value` is the service count, `label` is "Application Signals
      services" + region) and write it under
@@ -211,7 +211,7 @@ End with exactly one of:
 | 4   | Region                 | ✅     | `<region>` (consistent across 4 servers) |
 | 5   | Application Signals    | ✅     | <N> services |
 | 6   | CloudWatch Logs        | ✅     | DescribeLogGroups returned |
-| 7   | X-Ray                  | ✅     | GetTraceSummaries returned |
+| 7   | X-Ray                  | ✅     | query_sampled_traces returned |
 | 8   | CloudTrail             | ✅     | source: Lake event data store |
 | 9   | Missing permissions    | ⚠️     | `synthetics:GetCanary` not verified — needed for canary alarms |
 | 10  | Renderer smoke         | ✅     | render-standalone.mjs OK, 27 KB out |

@@ -18,7 +18,7 @@ investigation, you should be able to reconstruct:
 - Which MCP server was called (`awslabs.cloudwatch-mcp-server`,
   `awslabs.cloudwatch-applicationsignals-mcp-server`,
   `awslabs.cloudtrail-mcp-server`, `awslabs.aws-documentation-mcp-server`)
-- The exact tool name (`list_services`, `get_slo`, `lookup_events`, etc.)
+- The exact tool name (`list_monitored_services`, `get_slo`, `lookup_events`, etc.)
 - The arguments (especially: time window, region, service / resource ID)
 - The status (success / throttled / access-denied / timeout)
 - The duration

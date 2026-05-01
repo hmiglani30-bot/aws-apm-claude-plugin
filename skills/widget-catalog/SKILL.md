@@ -96,7 +96,7 @@ fallback widgets in the meantime.
 - Tabular data with multiple rows -- use `table`
 - More than 6 stat cards in a single manifest -- the grid becomes unreadable; consolidate or use a `table`
 
-**MCP tool sources:** `get_metric_data` (latest value), `get_slo` (attainment, burn_rate, budget_remaining), `describe_alarms` (alarm count by state), `list_services` (service count)
+**MCP tool sources:** `get_metric_data` (latest value), `get_slo` (attainment, burn_rate, budget_remaining), `get_active_alarms` (alarm count by state), `list_monitored_services` (service count)
 
 ---
 
@@ -141,9 +141,9 @@ Column `kind` values and their rendering:
 
 **When to use:**
 - Operation breakdowns from `list_service_operations` or `get_top_contributors`
-- Alarm inventories from `describe_alarms`
+- Alarm inventories from `get_active_alarms`
 - Log query results from `get_query_results` (structured rows)
-- Trace summary lists from `get_trace_summaries`
+- Trace summary lists from `query_sampled_traces`
 - Any ranked list with 3+ columns
 
 **When NOT to use:**
@@ -151,7 +151,7 @@ Column `kind` values and their rendering:
 - Unstructured log lines -- use `log_viewer`
 - Time-ordered event sequences where chronology matters more than sortability -- use `timeline`
 
-**MCP tool sources:** `describe_alarms`, `list_service_operations`, `get_top_contributors`, `get_trace_summaries`, `get_query_results`, `list_services`
+**MCP tool sources:** `get_active_alarms`, `list_service_operations`, `get_top_contributors`, `query_sampled_traces`, `get_query_results`, `list_monitored_services`
 
 ---
 
@@ -254,7 +254,7 @@ Column `kind` values and their rendering:
 - A single event -- use a `stat_card` or inline text
 - Deploy/config changes where the user needs principal + resource detail -- use `change_event_list`
 
-**MCP tool sources:** `lookup_events` (chronological view), `describe_alarms` (state transitions), `get_slo` (breach events)
+**MCP tool sources:** `lookup_events` (chronological view), `get_alarm_history` (state transitions), `get_slo` (breach events)
 
 ---
 
@@ -678,7 +678,7 @@ Direct mappings from each MCP tool's output shape to the widget(s) that render i
 
 **Baseline pattern:** Always issue TWO `get_metric_data` calls -- current window and same window 24h ago. Use the 24h values as `baseline` and `baseline_label` in the `stat_card`.
 
-### 4.2 `describe_alarms` --> `table`
+### 4.2 `get_active_alarms` --> `table`
 
 Transform each alarm object into a table row:
 
@@ -689,7 +689,7 @@ rows: one per alarm
 
 For a single alarm, consider `stat_card` instead (state as status, threshold as value).
 
-### 4.3 `get_trace_summaries` --> `table` or `timeline`
+### 4.3 `query_sampled_traces` --> `table` or `timeline`
 
 - **Default: `table`** -- columns: `trace_id (code)`, `duration_ms (number)`, `http_status (number)`, `has_error (status)`, `root_cause (text)`. Sortable by duration.
 - **Alternative: `timeline`** -- if the user wants chronological ordering, map each trace to a timeline event with `timestamp`, `title` (trace_id + duration), `severity` (error/ok).
@@ -711,7 +711,7 @@ One waterfall per trace. If multiple traces were fetched, pick the most interest
 | Raw log lines (`fields @timestamp, @message` only) | `log_viewer` -- map to `lines[]` with timestamp + severity (parse from message) + message |
 | Mixed (some structured fields + `@message`) | `table` -- treat all fields as columns, including message |
 
-### 4.6 `list_services` --> `table`
+### 4.6 `list_monitored_services` --> `table`
 
 Map to a table with columns: `service_name (code)`, `namespace (text)`, `type (text)`.
 

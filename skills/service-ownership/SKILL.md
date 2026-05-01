@@ -50,7 +50,7 @@ Read these fields from the context provider (ARCHITECTURE.md context shape):
 
 ## MCP tool dependencies
 
-- `awslabs_cloudwatch-applicationsignals-mcp-server` -- `list_services` (to resolve service name to resource ARN)
+- `awslabs_cloudwatch-applicationsignals-mcp-server` -- `list_monitored_services` (to resolve service name to resource ARN)
 - `awslabs_cloudwatch-mcp-server` -- `list_tags_for_resource` (to read AWS resource tags)
 
 ## Sources, in priority order
@@ -64,7 +64,7 @@ still surfaced as cross-references.
 
 #### MCP tool call sequence
 
-1. Call `list_services` with `region=context.region` to find the service by name. Extract `key_attributes` for the resource ARN.
+1. Call `list_monitored_services` with `region=context.region` to find the service by name. Extract `key_attributes` for the resource ARN.
 2. Call `list_tags_for_resource` with `resource_arn=<extracted ARN>` to retrieve all tags.
 3. Scan for tags matching (case-insensitive): `Owner`, `Team`, `CostCenter`, `oncall`, `pagerduty-service`, `slack-channel`.
 
@@ -73,7 +73,7 @@ If no ownership tags found, record "AWS tags: no ownership tags" and continue to
 #### Example MCP call sequence
 
 ```
-Step 1: list_services(region="us-east-2") -> find service by name -> extract key_attributes for resource ARN
+Step 1: list_monitored_services(region="us-east-2") -> find service by name -> extract key_attributes for resource ARN
 Step 2: list_tags_for_resource(resource_arn="arn:aws:ecs:us-east-1:123456:service/checkout-api") -> scan for ownership tags
 Step 3: Filter tags matching Owner, Team, CostCenter, oncall, pagerduty-service, slack-channel
 ```
@@ -174,7 +174,7 @@ resolution if any source disagrees.
 
 | Error | Detect | Behavior |
 |---|---|---|
-| `list_services` returns empty | No services in region | Surface "No Application Signals services in `<region>`. Confirm region or run `aws-apm-setup`." |
+| `list_monitored_services` returns empty | No services in region | Surface "No Application Signals services in `<region>`. Confirm region or run `aws-apm-setup`." |
 | `list_tags_for_resource` AccessDenied | IAM permission missing | Note "AWS tags: AccessDenied -- cannot read tags. Ask admin for `tag:GetResources` permission." Skip to source 2. |
 | `list_tags_for_resource` returns empty | Resource exists but no tags | Record "AWS tags: no tags on resource." Continue to source 2. |
 | Multiple services match name | Ambiguous input | List all matches with ARNs. Ask the user to pick one. Do NOT guess. |

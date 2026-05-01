@@ -42,7 +42,7 @@ If the user is asking about a *specific* breaching SLO right now, prefer
 
 ## MCP tool dependencies
 
-- `awslabs_cloudwatch-applicationsignals-mcp-server` -- `list_services`, `list_slos`, `get_slo`
+- `awslabs_cloudwatch-applicationsignals-mcp-server` -- `list_monitored_services`, `list_slos`, `get_slo`
 
 ## Presentation
 
@@ -56,11 +56,11 @@ If the user is asking about a *specific* breaching SLO right now, prefer
 
 #### MCP tool call sequence
 
-1. Call `list_services(region=context.region)`. Iterate until `next_token` is null. Do NOT truncate to first page.
+1. Call `list_monitored_services(region=context.region)`. Iterate until `next_token` is null. Do NOT truncate to first page.
 2. For each service, call `list_slos(service_name=<name>)`. Iterate until `next_token` is null.
 3. Build a flat inventory: Service, SLO name, SLO type (availability/latency/custom), Target, Compliance window.
 
-**Cap at 200 services per run.** If `list_services` returns more, stop and surface "Exceeded MAX_SERVICES (200), refine filter."
+**Cap at 200 services per run.** If `list_monitored_services` returns more, stop and surface "Exceeded MAX_SERVICES (200), refine filter."
 
 If zero SLOs are returned, the report headline becomes "No SLOs configured" and Phase 5 pivots to "define SLOs for top N services by traffic."
 
@@ -150,7 +150,7 @@ Render a fixed-shape **SLO Compliance Report** dashboard:
 ---
 **Source:** `awslabs_cloudwatch-applicationsignals-mcp-server`
 **Time window:** <window>
-**MCP tools called:** `list_services`, `list_slos`, `get_slo`
+**MCP tools called:** `list_monitored_services`, `list_slos`, `get_slo`
 **Region:** <context.region> . **Account:** <context.account>
 **Confidence:** <Low | Medium | High>
 ```
@@ -170,7 +170,7 @@ recommendation anchored to the per-SLO data:
 
 | Error | Detect | Behavior |
 |---|---|---|
-| `list_services` returns empty | No services in region | Output "No Application Signals services in `<region>`. Confirm region or run `aws-apm-setup`. Report aborted." |
+| `list_monitored_services` returns empty | No services in region | Output "No Application Signals services in `<region>`. Confirm region or run `aws-apm-setup`. Report aborted." |
 | `list_slos` returns empty for all services | No SLOs configured | Headline: "No SLOs configured across `<N>` services." Pivot Phase 5 to recommending SLO definitions. |
 | `get_slo` ThrottlingException | Rate limit on per-SLO fetch | Retry once with 2s backoff. On second failure, mark SLO as "Status unknown" in dashboard. |
 | `get_slo` AccessDenied | IAM permission missing | Do NOT retry. Mark SLO as "Status unknown" and surface in data-unavailable banner. |

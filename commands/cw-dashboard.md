@@ -36,12 +36,11 @@ the user to pick one.
    `aws-apm-setup`.
 
 2. Resolve the dashboard:
-   - Prefer the MCP tool if available:
-     `mcp__awslabs_cloudwatch-mcp-server__get_dashboard` with `DashboardName`.
-   - **Fallback:** if the MCP server does not expose a `get_dashboard` tool,
-     shell out via Bash to `aws cloudwatch get-dashboard --dashboard-name
-     <name> --region <region> --output json`. Note the fallback in the
-     metadata footer ("Source: AWS CLI fallback — MCP tool unavailable").
+   - There is no MCP tool for fetching a dashboard body in the registered
+     `awslabs_cloudwatch-mcp-server`. Shell out via Bash to `aws cloudwatch
+     get-dashboard --dashboard-name <name> --region <region> --output json`.
+     Note the source in the metadata footer ("Source: AWS CLI — no MCP
+     equivalent for `GetDashboard`").
 
 3. Parse the `DashboardBody` JSON. It is a string containing a JSON object
    with a `widgets` array. Each widget has:
@@ -56,8 +55,9 @@ the user to pick one.
    Cap concurrency at 10. For widgets with metric math expressions, preserve
    the expression and pass it through to the math result.
 
-5. For each `alarm` widget, call `describe_alarms` for the alarm ARNs listed
-   and capture state + threshold + actions.
+5. For each `alarm` widget, call `get_active_alarms` (and
+   `get_alarm_history` if a state-transition timeline is needed) for the
+   alarm ARNs listed and capture state + threshold + actions.
 
 6. For each `log` widget, capture the `query` field but do NOT execute it —
    surface the query as-is and link the user to it. Auto-execution would
@@ -122,8 +122,8 @@ likely correlated with the deploy at 14:18 UTC. See `/cw-investigate-errors`.">
 
 ---
 
-**Source:** `awslabs_cloudwatch-mcp-server` (dashboard + metrics)
-**MCP tools called:** `get_dashboard`, `get_metric_data`, `describe_alarms`
+**Source:** `awslabs_cloudwatch-mcp-server` (metrics + alarms) · AWS CLI `cloudwatch get-dashboard` (dashboard body — no MCP equivalent)
+**MCP tools called:** `get_metric_data`, `get_active_alarms`
 **Time window queried:** <start> .. <end>
 **Confidence:** High (live data, no derivation)
 ```
@@ -153,10 +153,11 @@ in the metadata footer so the user can confirm.
 
 ## Action safety
 
-This command is **read-only**. Tools called:
-`get_dashboard`, `get_metric_data`, `describe_alarms`. Never modify or delete
-a dashboard. If the user asks to "fix" or "update" the dashboard, propose the
-JSON diff and link them to the AWS console — do not call `PutDashboard`.
+This command is **read-only**. Tools called: `aws cloudwatch get-dashboard`
+(CLI fallback — no MCP `get_dashboard` exists), `get_metric_data`,
+`get_active_alarms`. Never modify or delete a dashboard. If the user asks
+to "fix" or "update" the dashboard, propose the JSON diff and link them to
+the AWS console — do not call `PutDashboard`.
 
 ## Examples
 

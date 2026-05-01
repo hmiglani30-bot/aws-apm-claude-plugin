@@ -29,8 +29,8 @@ This setup skill initializes the context provider. After setup completes, the fo
 ## MCP tool dependencies
 
 Tests connectivity to all four MCP servers:
-- `awslabs_cloudwatch-mcp-server` -- `describe_alarms` (connectivity test)
-- `awslabs_cloudwatch-applicationsignals-mcp-server` -- `list_services` (connectivity test)
+- `awslabs_cloudwatch-mcp-server` -- `get_active_alarms` (connectivity test)
+- `awslabs_cloudwatch-applicationsignals-mcp-server` -- `list_monitored_services` (connectivity test)
 - `awslabs_cloudtrail-mcp-server` -- `lookup_events` (connectivity test)
 - `awslabs_aws-documentation-mcp-server` -- `search_documentation` (connectivity test)
 
@@ -103,7 +103,7 @@ does not need credentials; the other three do.
 Once configured, verify by running these read-only probes:
 
 1. CloudWatch: `list_metrics` for namespace `AWS/EC2` (returns immediately if creds work)
-2. Application Signals: `list_services` for the configured region
+2. Application Signals: `list_monitored_services` for the configured region
 3. CloudTrail: `lookup_events` for the last 5 minutes (max 1 result)
 
 If any probe fails, surface the error verbatim — do not retry silently.
@@ -138,9 +138,9 @@ If any probe fails, surface the error verbatim — do not retry silently.
 ### Service-name resolution
 
 If the user names a service that returns **multiple matching services** from
-`list_services` (e.g. "checkout" matches `checkout-api` and `checkout-worker`), do not
+`list_monitored_services` (e.g. "checkout" matches `checkout-api` and `checkout-worker`), do not
 guess. Show the candidates with their environments / ARNs and ask the user to pick one
-before continuing. If the name is ambiguous and `list_services` returns zero matches,
+before continuing. If the name is ambiguous and `list_monitored_services` returns zero matches,
 treat it as the "wrong region" case above.
 
 ## App Signals Enablement for Lambda (ADOT Layer)
@@ -206,10 +206,10 @@ ManagedPolicyArns:
 
 After deploying, invoke the Lambda a few times, then check:
 - **X-Ray traces**: should appear within 1-2 minutes
-- **App Signals service list**: `list_services` should return the service after 5-10 minutes
+- **App Signals service list**: `list_monitored_services` should return the service after 5-10 minutes
 - **App Signals console**: deep link to `#application-signals:services/<service-name>`
 
-If `list_services` returns empty after 10 minutes, verify:
+If `list_monitored_services` returns empty after 10 minutes, verify:
 1. The ADOT layer ARN matches your region and runtime
 2. `AWS_LAMBDA_EXEC_WRAPPER` is set to `/opt/otel-handler`
 3. The Lambda role has both X-Ray and App Signals managed policies

@@ -40,7 +40,7 @@ command makes the choice explicit and visible.
 3. Resolve available regions:
    - For the chosen profile, list every region where Application Signals
      has at least one service.
-   - Use `list_services` against each region; cap fan-out at 5 concurrent
+   - Use `list_monitored_services` against each region; cap fan-out at 5 concurrent
      and only probe regions where the user typically runs (start with
      `us-east-1`, `us-east-2`, `us-west-2`, `eu-west-1`, then ask if they
      want a wider scan).
@@ -118,7 +118,7 @@ After applying:
 
 ## Action safety
 
-- The probes (`list_services` per region) are read-only.
+- The probes (`list_monitored_services` per region) are read-only.
 - Editing `.mcp.json` IS a write to the working tree — must go through the
   plugin's PreToolUse confirmation gate. Show the diff, wait for explicit
   `yes`.

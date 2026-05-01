@@ -22,7 +22,7 @@ The user invoked this with: `$ARGUMENTS`
 ## Instructions
 
 1. Parse `$ARGUMENTS`:
-   - If empty, include every service returned by `list_services`.
+   - If empty, include every service returned by `list_monitored_services`.
    - Otherwise treat `$ARGUMENTS` as a case-insensitive substring filter on
      the service name. Match by `contains`, not exact.
 
@@ -31,26 +31,25 @@ The user invoked this with: `$ARGUMENTS`
    the `aws-apm-setup` skill first.
 
 3. Fetch the service list:
-   - Call `list_services` for the configured region.
+   - Call `list_monitored_services` for the configured region.
    - Apply the `$ARGUMENTS` filter if any.
    - If the filtered list is empty, surface "No services match `<filter>`"
      and stop.
 
 4. For each service in parallel (cap at 10 concurrent), gather:
-   - **Application Signals service health** — call `get_service` (or
-     equivalent) to pull the service-level health summary, key attributes
-     (Lambda function, ECS service, EKS pod), and operation count. This is
-     the canonical "is App Signals seeing this service" check. If
-     `get_service` returns `ResourceNotFoundException` or empty key
-     attributes, mark the service as `Status unknown — App Signals
-     instrumentation incomplete or delayed` and proceed with the fallback
-     in step 4a.
+   - **Application Signals service health** — call `get_service_detail` to
+     pull the service-level health summary, key attributes (Lambda function,
+     ECS service, EKS pod), and operation count. This is the canonical "is
+     App Signals seeing this service" check. If `get_service_detail` returns
+     `ResourceNotFoundException` or empty key attributes, mark the service
+     as `Status unknown — App Signals instrumentation incomplete or
+     delayed` and proceed with the fallback in step 4a.
    - **RED metrics** — current 5-min request rate, error rate, p50/p90/p99
      latency, sourced from `AWS/ApplicationSignals` namespace via
      `get_metric_data`.
-   - **X-Ray trace error rate** — call `query_sampled_traces` (or
-     `get_trace_summaries` if available) for the last 5 min on this
-     service's name, compute `error_traces / total_traces`. This corroborates
+   - **X-Ray trace error rate** — call `query_sampled_traces` for the last
+     5 min on this service's name, compute `error_traces / total_traces`.
+     This corroborates
      the App Signals error-rate metric and surfaces sampling-bias gaps. If
      X-Ray returns 0 traces while App Signals shows non-zero requests,
      surface "X-Ray sampling rate may be too low" as a footnote on the
@@ -63,7 +62,7 @@ The user invoked this with: `$ARGUMENTS`
    - **Verdict** — derived per the rules below.
 
 4a. **Fallback to raw CloudWatch namespaces** when App Signals data is sparse
-    or `get_service` returned empty. For each App-Signals-incomplete service
+    or `get_service_detail` returned empty. For each App-Signals-incomplete service
     whose key attributes can be inferred (function name, API name, cluster
     name), pull RED metrics from the underlying namespace:
     - **Lambda** → `AWS/Lambda` with `FunctionName` dimension: `Invocations`,
@@ -162,7 +161,7 @@ column shows `—` and a footnote: "No SLOs configured."
 **Source:** `awslabs_cloudwatch-applicationsignals-mcp-server`, `awslabs_cloudwatch-mcp-server` (App Signals + X-Ray)
 **Time range:** last 5 min vs same window 24h ago
 **Region:** <region> · **Account:** <account>
-**MCP tools called:** `list_services`, `get_service`, `list_slos`, `get_slo`, `query_sampled_traces`, `get_metric_data`
+**MCP tools called:** `list_monitored_services`, `get_service_detail`, `list_slos`, `get_slo`, `query_sampled_traces`, `get_metric_data`
 **Confidence:** High (live data, no derivation) — capped at Medium when AWS/Lambda or AWS/ApiGateway namespace fallback was used
 ```
 
@@ -185,7 +184,7 @@ column shows `—` and a footnote: "No SLOs configured."
 
 ## Action safety
 
-Read-only. The command only calls `list_services`, `get_service`,
+Read-only. The command only calls `list_monitored_services`, `get_service_detail`,
 `list_slos`, `get_slo` and supporting metric reads. It never proposes write
 actions. If the user wants to act on an unhealthy service, they invoke the
 suggested `/cw-investigate-*` command — which has its own confirmation gate
@@ -220,7 +219,7 @@ Surface gaps; do not silently render an incomplete dashboard.
 **Data unavailability (UX8)** — render a banner above the dashboard. Per-
 row failures appear in a "Status unknown" tier between Degraded and
 Healthy with the specific error inline (e.g. `payment-service —
-get_service returned AccessDenied`).
+get_service_detail returned AccessDenied`).
 
 ## Caching, pagination, and rate limits (Arch7)
 
@@ -233,7 +232,7 @@ throttle limits and renders a misleading partial picture.
 - **Max services in a single render** — 50. If the filtered fleet has
   more, render the top 50 by severity and note "<N> more services not
   shown — refine filter or use the AWS console" at the bottom.
-- **Concurrency** — fan out `get_service` / `list_slos` / `get_slo` reads
+- **Concurrency** — fan out `get_service_detail` / `list_slos` / `get_slo` reads
   at concurrency 10. Bursting 50+ in parallel hits
   `ThrottlingException`.
 - **Per-call timeout** — 10s per MCP read.
@@ -242,7 +241,7 @@ throttle limits and renders a misleading partial picture.
 
 **Caching:**
 
-- Cache `list_services` for the duration of the run so the per-service
+- Cache `list_monitored_services` for the duration of the run so the per-service
   fan-out reads from a single canonical inventory.
 - Cache per-service results so the verdict computation does not re-fetch.
 - Do NOT cache across runs.
@@ -262,7 +261,7 @@ throttle limits and renders a misleading partial picture.
 
 ## Performance notes
 
-- Cap `get_service` / `get_slo` calls at 10 concurrent. Application Signals
+- Cap `get_service_detail` / `get_slo` calls at 10 concurrent. Application Signals
   read APIs are throttled per-account; bursting 50+ in parallel will hit
   `ThrottlingException`.
 - If the fleet has >100 services, prefer running this command with a

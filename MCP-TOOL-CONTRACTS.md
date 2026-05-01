@@ -33,11 +33,11 @@ assume newer MCP behavior than the contract describes.
 
 ## Service / SLO discovery (Application Signals)
 
-### `list_services`
+### `list_monitored_services`
 
 | | |
 |---|---|
-| **Name** | `awslabs.cloudwatch-applicationsignals-mcp-server.list_services` (or equivalent) |
+| **Name** | `awslabs.cloudwatch-applicationsignals-mcp-server.list_monitored_services` |
 | **Input** | `region` (string), `time_window` (start/end ISO-8601, optional — defaults to last 24h) |
 | **Output** | Array of `{name, namespace, type, key_attributes}`. Empty array if Application Signals is enabled but no services have reported. |
 | **Failure modes** | (a) Application Signals not enabled in region → structured error referencing the setup skill. (b) IAM denied → structured error naming the missing permission. (c) Region typo → empty array, NOT error. |
@@ -88,15 +88,16 @@ assume newer MCP behavior than the contract describes.
 | **Pagination** | No (response is bounded by 1440 datapoints per query). |
 | **Permissions** | `cloudwatch:GetMetricData` |
 
-### `describe_alarms`
+### `get_active_alarms` and `get_alarm_history`
 
 | | |
 |---|---|
-| **Input** | `alarm_names[]` or `alarm_name_prefix`, `state_value` (optional) |
-| **Output** | Array of alarm objects with current state, threshold, dimensions, actions. |
+| **Names** | `awslabs.cloudwatch-mcp-server.get_active_alarms` (returns currently-active alarms in the configured region — preferred for "what's on fire right now"), `awslabs.cloudwatch-mcp-server.get_alarm_history` (returns state-transition history for a named alarm — preferred for timelines and post-mortems). The registered MCP server does NOT expose a generic `describe_alarms` tool with arbitrary filters; pick the one whose shape matches the question. |
+| **Input** | `get_active_alarms`: `region` (optional). `get_alarm_history`: `alarm_name`, `start_time`, `end_time`. |
+| **Output** | `get_active_alarms`: array of alarm objects with current state, threshold, dimensions, actions. `get_alarm_history`: array of `{timestamp, history_item_type, summary, history_data}` ordered by timestamp. |
 | **Failure modes** | Empty array if no match — NOT error. |
 | **Pagination** | Yes. |
-| **Permissions** | `cloudwatch:DescribeAlarms` |
+| **Permissions** | `cloudwatch:DescribeAlarms`, `cloudwatch:DescribeAlarmHistory` |
 
 ## Dashboard retrieval (CloudWatch)
 
@@ -111,18 +112,28 @@ assume newer MCP behavior than the contract describes.
 | **Pagination** | Yes (`next_token`). |
 | **Permissions** | `cloudwatch:ListDashboards` |
 
-### `get_dashboard`
+### `get_dashboard` (NOT EXPOSED — CLI fallback required)
+
+The registered `awslabs.cloudwatch-mcp-server` does **not** expose a
+`get_dashboard` MCP tool. Skills that need a dashboard body MUST fall back
+to the AWS CLI:
+
+```
+aws cloudwatch get-dashboard --dashboard-name <name> --region <region> --output json
+```
 
 | | |
 |---|---|
-| **Name** | `awslabs.cloudwatch-mcp-server.get_dashboard` (or equivalent — may not be present) |
-| **Input** | `dashboard_name` |
-| **Output** | `{dashboard_name, dashboard_arn, dashboard_body}` where `dashboard_body` is a JSON string per the [CloudWatch dashboard body schema](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/CloudWatch-Dashboard-Body-Structure.html) — top-level `widgets[]` array, each with `type` (`metric`, `text`, `log`, `alarm`), `properties`, `width`, `height`, `x`, `y`. |
-| **Failure modes** | (a) Tool not present → fall back: have the user run `aws cloudwatch get-dashboard --dashboard-name <name>` and paste the JSON. (b) Dashboard not found → structured error. (c) Body is a JSON string the skill MUST parse defensively (some dashboards contain non-standard fields). |
+| **Source** | `aws cloudwatch get-dashboard` CLI (no MCP equivalent) |
+| **Input** | `dashboard_name`, `region` |
+| **Output** | `{DashboardName, DashboardArn, DashboardBody}` where `DashboardBody` is a JSON string per the [CloudWatch dashboard body schema](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/CloudWatch-Dashboard-Body-Structure.html) — top-level `widgets[]` array, each with `type` (`metric`, `text`, `log`, `alarm`), `properties`, `width`, `height`, `x`, `y`. |
+| **Failure modes** | (a) AWS CLI not installed → instruct user to install. (b) Dashboard not found → structured error. (c) Body is a JSON string the skill MUST parse defensively (some dashboards contain non-standard fields). |
 | **Pagination** | No. |
 | **Permissions** | `cloudwatch:GetDashboard` |
 
-If neither tool is present in the deployed MCP server, the `cw-dashboard` command's skill MUST fall back to asking the user to paste the dashboard JSON, rather than fabricating data.
+The `/cw-dashboard` command's skill MUST surface the CLI source in the
+artifact's metadata footer ("Source: AWS CLI — no MCP equivalent for
+`GetDashboard`"). It MUST NOT fabricate dashboard contents.
 
 ## Log retrieval (CloudWatch Logs Insights)
 
@@ -140,15 +151,27 @@ If neither tool is present in the deployed MCP server, the `cw-dashboard` comman
 
 ## Trace retrieval (X-Ray)
 
-### `get_trace_summaries`
+### `query_sampled_traces`
 
 | | |
 |---|---|
+| **Name** | `awslabs.cloudwatch-applicationsignals-mcp-server.query_sampled_traces` |
 | **Input** | `start_time`, `end_time`, `filter_expression` (X-Ray filter syntax), `sampling` (boolean) |
 | **Output** | Array of trace summaries with `{trace_id, duration_ms, http_status, root_cause, error_root_cause, fault_root_cause, response_time_root_cause}`. |
 | **Failure modes** | Empty array if no traces match — NOT error. Filter syntax error → structured error. |
 | **Pagination** | Yes. Iterate up to a skill-defined cap (typically 100 traces) to avoid runaway cost. |
 | **Permissions** | `xray:GetTraceSummaries` |
+
+### `search_transaction_spans`
+
+| | |
+|---|---|
+| **Name** | `awslabs.cloudwatch-applicationsignals-mcp-server.search_transaction_spans` |
+| **Input** | `service_name`, `operation_name` (optional), `start_time`, `end_time`, optional span attribute filters |
+| **Output** | Array of spans with timing, attributes, status — finer-grained than trace summaries. Use this when the question is "which span dominated p99 on this operation?" rather than "which traces failed?" |
+| **Failure modes** | Empty array if no spans match — NOT error. |
+| **Pagination** | Yes. |
+| **Permissions** | `xray:GetTraceSummaries`, `application-signals:SearchTransactionSpans` |
 
 ### `batch_get_traces`
 
@@ -215,7 +238,7 @@ confirmation.
 | **Failure modes** | (a) `ValidationError` — invalid parameter combination (e.g. period not a multiple of 60, missing required fields). (b) `LimitExceededFault` — account alarm limit reached (default 5,000 per region). (c) `ResourceNotFound` — an SNS topic ARN in `alarm_actions` or `ok_actions` does not exist or is not accessible. |
 | **Pagination** | N/A — single-resource write. |
 | **Permissions** | `cloudwatch:PutMetricAlarm`. Additionally `sns:GetTopicAttributes` if `alarm_actions` or `ok_actions` are specified (CloudWatch validates the topic exists). |
-| **Safety** | Tier 4. PreToolUse hook gated. **Create-only by default** — if an alarm with the given name already exists, the skill MUST detect this (via `describe_alarms`) and surface an explicit overwrite confirmation to the user before proceeding. The skill MUST NOT silently overwrite existing alarms. |
+| **Safety** | Tier 4. PreToolUse hook gated. **Create-only by default** — if an alarm with the given name already exists, the skill MUST detect this (via `get_active_alarms`) and surface an explicit overwrite confirmation to the user before proceeding. The skill MUST NOT silently overwrite existing alarms. |
 
 ### `tag_resource`
 

@@ -48,7 +48,7 @@ Read these fields from the context provider (ARCHITECTURE.md context shape):
 
 ## MCP tool dependencies
 
-- `awslabs_cloudwatch-applicationsignals-mcp-server` -- `list_slos`, `get_slo`, `list_service_operations`, `get_top_contributors`, `get_trace_summaries`, `batch_get_traces`
+- `awslabs_cloudwatch-applicationsignals-mcp-server` -- `list_slos`, `get_slo`, `list_service_operations`, `get_top_contributors`, `query_sampled_traces`, `search_transaction_spans`
 - `awslabs_cloudwatch-mcp-server` -- `get_metric_data`, `start_query`, `get_query_results`
 - `awslabs_cloudtrail-mcp-server` -- `lookup_events`
 
@@ -288,13 +288,13 @@ the user explicitly which signals were missing.
 
 | Gap | Detect | Behavior | Confidence cap |
 |---|---|---|---|
-| Traces missing | `search_traces` returns 0 results when error/latency metrics show events | Skip Phases 3 + 6's trace-based steps; rely on metrics + logs only | Medium |
+| Traces missing | `query_sampled_traces` returns 0 results when error/latency metrics show events | Skip Phases 3 + 6's trace-based steps; rely on metrics + logs only | Medium |
 | Logs not correlated to traces | No `traceId` field on log lines for the affected operation | Surface log patterns without trace cross-reference | Medium |
 | SLOs absent | `list_slos` returns empty for the service | Hand off to `latency-regression` or `error-spike-triage`; do NOT compute fictional burn rates | N/A — switch skill |
 | CloudTrail denied | `AccessDenied` on `LookupEvents` / Lake / Logs integration | Skip Phase 4 entirely; surface "Cannot correlate with CloudTrail — no access" in artifact | Medium |
 | Operation-level metrics flat / missing | `get_service_operations` returns no per-operation breakdown | Skip Phase 2 ranking; analyze service-level only | Medium |
 | Application Signals service map empty | No callers / dependencies returned | Skip blast radius "Callers" + "Upstream services" lines; note explicitly | Low for blast radius |
-| All telemetry unavailable | `list_services` errors or returns empty for the configured region | Stop. Run `/cw-doctor` and `/cw-set-context` first | N/A — refuse to run |
+| All telemetry unavailable | `list_monitored_services` errors or returns empty for the configured region | Stop. Run `/cw-doctor` and `/cw-set-context` first | N/A — refuse to run |
 
 Always tell the user which signals degraded and why. A confident-looking
 artifact built on missing data is worse than a hedged one — silent gaps

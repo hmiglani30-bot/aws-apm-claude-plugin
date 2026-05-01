@@ -24,7 +24,7 @@ A gap is real when **at least two lenses** agree. Single-lens "gaps" are usually
 | # | Gap | Type | What it blocks today |
 |---|---|---|---|
 | 1 | **Line chart** widget | Widget | Every `get_metric_data` response with > 1 series. Today we either inline a sparkline or fall back to a table. |
-| 2 | **Topology / service map** widget | Widget | All `list_services` + `list_service_dependencies` output. "Show me my app topology" returns prose. |
+| 2 | **Topology / service map** widget | Widget | All `list_monitored_services` + `list_service_dependencies` output. "Show me my app topology" returns prose. |
 | 3 | **`slo-compliance-report.html`** | Template | `/cw-slo-report` output is a fixed-shape portfolio scorecard with no HTML home — markdown-only. |
 | 4 | **`service-fleet-dashboard.html`** | Template | `/cw-health-check` cannot scale past ~6 services; cards stack unreadably in chat. |
 
@@ -44,16 +44,16 @@ For each MCP tool response shape, what's the best widget today, and what's missi
 | `get_metric_data` + `ANOMALY_DETECTION_BAND` | series + upper/lower bounds | None | **Anomaly band** (line chart overlay) | P1 |
 | `get_metric_data` (stacked composition: e.g. errors-by-type) | multiple series summing to a total | None — table | **Stacked area chart** | P1 |
 | `get_metric_data` (categorical aggregate) | one value per dimension | None — table | **Bar chart** | P1 |
-| `describe_alarms` (multi-alarm) | array of `{name, state, threshold, dimensions}` | None — table | **Alarm status grid** (color-coded tiles) | P1 |
-| `describe_alarms` (single alarm detail) | one alarm with full config | None — table | **Key-value detail panel** | P1 |
-| `get_dashboard` (CloudWatch dashboard body) | JSON of widgets[] (metric, text, log, alarm) | None | Dedicated dashboard-mirror widget OR fan-out into multiple existing widgets | P2 |
+| `get_active_alarms` (multi-alarm) | array of `{name, state, threshold, dimensions}` | None — table | **Alarm status grid** (color-coded tiles) | P1 |
+| `get_active_alarms` (single alarm detail) | one alarm with full config | None — table | **Key-value detail panel** | P1 |
+| `aws cloudwatch get-dashboard` CLI fallback (no MCP equivalent) | JSON of widgets[] (metric, text, log, alarm) | None | Dedicated dashboard-mirror widget OR fan-out into multiple existing widgets | P2 |
 | `start_query` / `get_query_results` (Logs Insights, raw rows) | array of `[{field, value}]` | `log_viewer` (text only) | None for raw rows; **bar/line/pie** needed when query is `stats by ... | bin()` | P1 |
-| `get_trace_summaries` | array of trace summaries | None — table | **Trace summary table** with status/duration sparklines (specialized table preset) | P2 |
+| `query_sampled_traces` | array of trace summaries | None — table | **Trace summary table** with status/duration sparklines (specialized table preset) | P2 |
 | `batch_get_traces` (single trace) | full segments + subsegments | `trace_waterfall` | None — covered | — |
 | `batch_get_traces` (response-time distribution across many traces) | derived percentile distribution | None | **Histogram / distribution chart** | P2 |
 | `lookup_events` (CloudTrail) | array of audit events | `change_event_list` + `timeline` | None — covered | — |
-| `list_services` (Application Signals) | array of services | None — table | **Service list cards** (covered indirectly by service-health-card today) | P2 |
-| `list_services` + `list_service_dependencies` (graph) | adjacency list | None — prose | **Topology / service map** widget | P0 |
+| `list_monitored_services` (Application Signals) | array of services | None — table | **Service list cards** (covered indirectly by service-health-card today) | P2 |
+| `list_monitored_services` + `list_service_dependencies` (graph) | adjacency list | None — prose | **Topology / service map** widget | P0 |
 | `get_slo` (single SLO) | `{attainment, error_budget, burn_rate}` | `stat_card` | **SLO status card** (specialized stat_card with budget/burn) | P1 |
 | `get_slo` (many SLOs across services) | array of SLO summaries | None — table | **SLO scorecard table** preset | P1 |
 | `get_top_contributors` (operations contributing to a breach) | array with `{operation, contribution_pct, sample_trace_ids[]}` | None — table | **Contributor breakdown** (mini bar chart inline with table) | P1 |
@@ -64,8 +64,8 @@ For each MCP tool response shape, what's the best widget today, and what's missi
 ### Why these widget gaps matter
 
 - **Line chart (P0)** — `get_metric_data` is the most-called MCP tool. Every investigation skill (`error-spike-triage`, `latency-regression`, `slo-breach-investigation`) pulls multi-series metric data and currently has nowhere good to render it. The `sparkline` widget caps at 200 points and has no axes; for any analysis longer than ~3h at 1m resolution, it loses fidelity. This is a daily friction point, not a polish item.
-- **Topology map (P0)** — Application Signals' service map is the canonical answer to "what's my system shaped like?" The plugin already calls `list_services`; without a graph widget it can only describe the topology in prose. CloudWatch console, Datadog, New Relic, Grafana all have this — its absence is the most-noticed gap by users coming from another tool.
-- **Alarm status grid (P1)** — `describe_alarms` is one of the simplest tools to call but the hardest to render well. A grid of status tiles is the standard CloudWatch dashboard answer to "what's on fire right now?" Today the plugin returns a table that buries the state column.
+- **Topology map (P0)** — Application Signals' service map is the canonical answer to "what's my system shaped like?" The plugin already calls `list_monitored_services`; without a graph widget it can only describe the topology in prose. CloudWatch console, Datadog, New Relic, Grafana all have this — its absence is the most-noticed gap by users coming from another tool.
+- **Alarm status grid (P1)** — `get_active_alarms` is one of the simplest tools to call but the hardest to render well. A grid of status tiles is the standard CloudWatch dashboard answer to "what's on fire right now?" Today the plugin returns a table that buries the state column.
 - **Anomaly band (P1)** — Once line chart exists, this is a small overlay that turns "is this spike abnormal?" from a judgment call into a visual answer. Differentiator vs. raw CloudWatch.
 - **Key-value detail panel (P1)** — Every detail view (alarm config, trace metadata, service properties) currently inlines key/value into ad-hoc HTML inside other widgets. Cloudscape has a primitive for this; we're paying complexity tax for not having one.
 - **Histogram / distribution (P2)** — Critical when investigating tail-latency regressions; CloudWatch and X-Ray both expose response-time histograms. Today we summarize percentiles into a stat_card and lose the shape.
@@ -121,7 +121,7 @@ This list is filtered to views that have a clear AWS data source (so a future sk
 |---|---|---|---|
 | Service map / topology | CW console, Datadog, NR, Grafana | Yes (X-Ray `GetServiceGraph`, App Signals dependencies) | ❌ — no widget |
 | Multi-series time-series chart | Universal | Yes (`get_metric_data`) | ❌ — sparkline only |
-| Alarm status grid | CW console | Yes (`describe_alarms`) | ❌ — table only |
+| Alarm status grid | CW console | Yes (`get_active_alarms`) | ❌ — table only |
 | Response-time histogram / distribution | X-Ray, Datadog, NR | Yes (X-Ray `ResponseTimeHistogram`) | ❌ |
 | SLO portfolio dashboard | App Signals, Datadog SLO list | Yes (`list_slos`, `get_slo`) | ⚠️ skill exists, no template |
 | Anomaly detection band overlay | CW console | Yes (`ANOMALY_DETECTION_BAND`) | ❌ |
@@ -167,7 +167,7 @@ The bottom four are widget gaps **gated by missing MCP tools**, not by the rende
 | Item | Type | Effort | Why |
 |---|---|---|---|
 | Histogram / distribution widget | Widget | M | Tail-latency analysis; X-Ray data is available |
-| Trace-summary table preset | Widget | S | Specialized `table` configuration for `get_trace_summaries` |
+| Trace-summary table preset | Widget | S | Specialized `table` configuration for `query_sampled_traces` |
 | Contributor breakdown widget | Widget | S | Inline mini-bar within a table row for `get_top_contributors` |
 | Pie / donut chart widget | Widget | S | Distribution breakdowns; Logs Insights GROUP BY |
 | Gauge widget | Widget | S | Utilization metrics (CPU, memory, disk) |

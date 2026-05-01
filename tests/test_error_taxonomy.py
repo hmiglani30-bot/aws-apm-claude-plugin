@@ -71,7 +71,7 @@ class TestWrongRegion(unittest.TestCase):
 
 
 class TestNoApplicationSignalsServices(unittest.TestCase):
-    """If list_services returns empty, AppSignals likely isn't enabled."""
+    """If list_monitored_services returns empty, AppSignals likely isn't enabled."""
 
     def test_setup_skill_documents_no_services_case(self) -> None:
         skill = _read_skill("aws-apm-setup")
@@ -175,7 +175,7 @@ class TestAmbiguousServiceName(unittest.TestCase):
 
 
 class TestMultipleMatchingServices(unittest.TestCase):
-    """If list_services returns >1 match for a name, the user must pick one."""
+    """If list_monitored_services returns >1 match for a name, the user must pick one."""
 
     def test_a_skill_documents_multi_match_disambiguation(self) -> None:
         # Either aws-apm-setup or one of the workflow skills should describe

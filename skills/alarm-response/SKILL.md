@@ -46,8 +46,8 @@ Read these fields from the context provider (ARCHITECTURE.md context shape):
 
 ## MCP tool dependencies
 
-- `awslabs_cloudwatch-mcp-server` -- `describe_alarms`, `get_metric_data`, `start_query`, `get_query_results`
-- `awslabs_cloudwatch-applicationsignals-mcp-server` -- `list_services`, `list_service_operations`, `get_top_contributors`
+- `awslabs_cloudwatch-mcp-server` -- `get_active_alarms`, `get_alarm_history`, `get_metric_data`, `execute_log_insights_query`, `get_logs_insight_query_results`
+- `awslabs_cloudwatch-applicationsignals-mcp-server` -- `list_monitored_services`, `list_service_operations`, `get_top_contributors`
 - `awslabs_cloudtrail-mcp-server` -- `lookup_events`
 
 If any required MCP is not connected, run the `aws-apm-setup` skill before continuing.

@@ -218,7 +218,7 @@ CloudWatch `PutMetricAlarm` API.
 |---|---|---|---|---|---|---|
 | `alarm_name` | Alarm Name | text | Yes | `alerting-design` recommendation name convention: `<service>-<resource>-<metric>-<statistic>-<severity>` | Yes | `^[a-zA-Z0-9_\-\.]+$`, max 255 |
 | `alarm_description` | Description | textarea | Yes | Generated from investigation context + hypothesis | No | max 1024 |
-| `namespace` | Metric Namespace | text | Yes | From `describe_alarms` output or `alerting-design` recommendation | Yes | AWS namespace format |
+| `namespace` | Metric Namespace | text | Yes | From `get_active_alarms` output or `alerting-design` recommendation | Yes | AWS namespace format |
 | `metric_name` | Metric Name | text | Yes | From investigation context (alarm metric or recommendation) | Yes | non-empty |
 | `dimensions` | Dimensions | key-value pairs | Yes | From context provider `context.service` + alarm dimensions | Yes | at least 1 |
 | `statistic` | Statistic | select | Yes | From recommendation (`Sum`, `Average`, `p99`, `SampleCount`, `Minimum`, `Maximum`) | Yes | enum |

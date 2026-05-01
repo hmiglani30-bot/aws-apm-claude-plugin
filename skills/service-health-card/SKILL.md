@@ -49,12 +49,12 @@ If SLO state isn't available because no SLOs are configured, render an explicit
 Pull RED metrics in this order — fall through to the next source if the
 prior one returns no data. The card must show *which* source was used.
 
-1. **Application Signals** (preferred) — `list_services` →
+1. **Application Signals** (preferred) — `list_monitored_services` →
    `get_service_detail` for the matched service. Provides RED with
    normalized error/fault distinction, dependency map, and SLO context in
    one shape.
-2. **X-Ray trace summaries** — `query_sampled_traces` /
-   `get_trace_summaries` over the same window. Compute error rate from
+2. **X-Ray trace summaries** — `query_sampled_traces` over the same
+   window. Compute error rate from
    `http_status >= 500` plus `error/fault` flags, p99 from `duration_ms`.
    This catches services that route requests but lack ADOT instrumentation
    for App Signals SLIs. Surface the trace-error rate even when App
@@ -140,7 +140,7 @@ exhausted before the breach alarm fires.
 ---
 **Source:** `awslabs_cloudwatch-applicationsignals-mcp-server`, `awslabs_cloudtrail-mcp-server`
 **Time range:** last 5 min (current) vs same window 24h ago
-**MCP tools called:** `<list_services>`, `<get_service>`, `<list_operations>`, `<lookup_events>`
+**MCP tools called:** `<list_monitored_services>`, `<get_service_detail>`, `<list_service_operations>`, `<lookup_events>`
 **Confidence:** <Low | Medium | High>
 ```
 
