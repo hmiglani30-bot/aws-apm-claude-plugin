@@ -536,10 +536,19 @@ is shown.
 > need zero write permissions. See
 > [SECURITY.md → Read-only recommended install](SECURITY.md#read-only-recommended-install).
 
-### Plugin install
+### Distribution model
+
+There is **no centralized, Anthropic-hosted public plugin marketplace**.
+Plugins are distributed from individual GitHub repos (or zip archives), and
+each host — Claude Code or Cowork — installs them directly from that source.
+The `.claude-plugin/marketplace.json` shipped at the root of this repo lets
+Claude Code's `/plugin marketplace add <github-url>` flow discover and install
+the plugin; it is **not** a listing in any global directory.
+
+### Claude Code (CLI)
 
 ```bash
-# Add this marketplace, then install the plugin
+# Add this repo as a marketplace, then install the plugin
 /plugin marketplace add https://github.com/hmiglani30/aws-apm-claude-plugin
 /plugin install aws-apm@aws-apm-plugins
 ```
@@ -552,11 +561,63 @@ git clone https://github.com/hmiglani30/aws-apm-claude-plugin
 /plugin install aws-apm@aws-apm-plugins
 ```
 
+> Both forms are slash commands inside the Claude Code REPL. There is no
+> `claude plugin add ...` CLI subcommand outside the REPL.
+
 ### Cowork (desktop)
 
-In Cowork desktop, open the plugin marketplace, search for **AWS APM**, and
-click Install. The plugin format is identical — the same `.claude-plugin/plugin.json`,
-skills, commands, and hooks work across surfaces.
+Cowork uses the same plugin format as Claude Code (`.claude-plugin/plugin.json`,
+`skills/`, `commands/`, `hooks/`, and a root `.mcp.json`), but does **not** have
+an in-app marketplace browser and does not install directly from a GitHub URL.
+Two install paths are supported:
+
+**Option A — drop the plugin folder into the org-plugins directory.** Cowork
+auto-discovers any plugin folder placed in:
+
+| OS      | Path                                              |
+|---------|---------------------------------------------------|
+| macOS   | `/Library/Application Support/Claude/org-plugins/` |
+| Windows | `C:\ProgramData\Claude\org-plugins\`              |
+
+```bash
+# macOS example
+git clone https://github.com/hmiglani30/aws-apm-claude-plugin
+sudo cp -R aws-apm-claude-plugin "/Library/Application Support/Claude/org-plugins/aws-apm"
+# Then restart Cowork.
+```
+
+**Option B — upload a zip archive via Cowork settings.** Build a zip whose root
+contains `.claude-plugin/plugin.json`, `.mcp.json`, `skills/`, `commands/`, and
+`hooks/` (i.e. unzip-here layout, not a wrapper folder), then upload it from
+Cowork → **Customize** → upload custom plugin.
+
+```bash
+# From the repo root
+zip -r aws-apm.zip \
+  .claude-plugin .mcp.json skills commands hooks artifacts renderer \
+  schemas data renderer/templates
+# Upload aws-apm.zip via Cowork's plugin upload dialog.
+```
+
+> Cowork's plugin upload dialog currently accepts `.zip`. Some early docs
+> reference a `.plugin` extension, which is the same zip layout renamed —
+> upload as `.zip` for compatibility.
+
+**Cowork-specific prerequisites:**
+
+- Cowork executes MCP server commands inside its sandboxed Linux VM.
+  `uvx` is **not** preinstalled there. Either install it once in your Cowork
+  environment (`curl -LsSf https://astral.sh/uv/install.sh | sh`) so the four
+  `awslabs.*` MCP servers can launch, or rewrite `.mcp.json` to use a
+  Cowork-supported command.
+- AWS credentials must be reachable from inside the Cowork sandbox. The
+  `AWS_PROFILE`/`AWS_REGION` env values in `.mcp.json` are honored, but the
+  underlying credential chain (env vars, `~/.aws/credentials`, SSO) must be
+  available where Cowork runs the MCP server.
+- Hooks rely on the standard `${CLAUDE_PLUGIN_ROOT}` env var that hosts set
+  when invoking `hooks/hooks.json` commands. If a future Cowork release does
+  not set it, the action-safety gate will fail closed (the safer default) and
+  the `aws-apm-setup` skill will surface the gap.
 
 ### Configuring AWS profile and region
 
