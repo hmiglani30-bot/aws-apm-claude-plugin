@@ -31,13 +31,48 @@ new widget types or shells. See top-level `CLAUDE.md` rule 1.
 
 ## When this activates
 
-Triggers on any of:
-- A user pastes an alarm name, alarm ARN, or alarm notification
-- A user reports "we got paged" / "an alarm fired"
-- A composite or metric alarm transitioned to `ALARM` and the user wants to triage
+Activate ONLY when the user is responding to a specific fired alarm and
+wants to triage it. Concretely:
 
-If the alarm is on a metric that maps to an SLO that is *also* breaching, prefer
-`slo-breach-investigation` — it is the strict superset for SLO-driven pages.
+- A user pastes a specific alarm name, alarm ARN, or PagerDuty / OpsGenie /
+  SNS alarm notification
+- A user reports "we got paged" / "an alarm fired" / "got paged for `<name>`"
+- A composite or metric alarm transitioned to `ALARM` and the user wants
+  to know why (uses words like "triage", "investigate", "what fired it",
+  "why is it firing")
+
+If the alarm is on a metric that maps to an SLO that is *also* breaching,
+prefer `slo-breach-investigation` — it is the strict superset for
+SLO-driven pages.
+
+## When NOT to activate
+
+The 5-phase investigation takes ~60–90 seconds and pulls metrics, traces,
+logs, and CloudTrail. Sweep-style and inventory questions do not justify
+that fan-out. **Do not activate** for:
+
+- **Sweeps** — "any alarms firing?", "what's in ALARM?", "show me the
+  alarms". Answer with one direct
+  `mcp__awslabs_cloudwatch-mcp-server__get_active_alarms` call. If zero,
+  answer in one sentence ("No alarms in ALARM in `<region>` as of
+  `<ts>`."). If non-zero, render a compact list or a single `table`
+  widget for ≥ 5 alarms. Skip Phases 1–5.
+- **Inventory / config lookups** — "list my alarms", "describe alarm
+  `<name>`", "what's the threshold on `<name>`?". One `describe_alarms`
+  call, structured response, no triage.
+- **Write actions** — "create / delete / disable / modify an alarm".
+  Route through `create-alarm` (with the structured CONFIRM approval
+  block); do not triage.
+- **Design / planning** — "what alarms should I have?", "audit my
+  alarms", "alarm coverage". That is `alerting-design`, not
+  `alarm-response`.
+- **History / postmortem of a long-resolved alarm** — if the user is
+  writing a postmortem and just wants to know when an alarm fired,
+  `describe_alarm_history` is enough.
+
+If unsure, ask one clarifying question ("Are you triaging a fired alarm,
+or do you want a quick listing?") rather than running the full
+investigation.
 
 ## Context provider
 

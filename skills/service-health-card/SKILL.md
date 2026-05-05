@@ -15,6 +15,34 @@ metadata:
 
 Canonical "is this service OK right now?" view.
 
+## Text-only escape — for trivial yes/no questions
+
+Not every health question deserves the full card. When the user asks a
+**simple yes/no** ("is `<svc>` healthy?", "is `<svc>` up?", "anything
+wrong with `<svc>`?") and the answer fits in **≤ 100 words** with one
+verdict line + one or two supporting numbers, **respond text-only**.
+
+Concretely:
+
+- All RED metrics within ±20 % of baseline AND no SLO in
+  Warning/Breach → one sentence:
+  *"`<svc>` is healthy as of `<ts>` — error rate 0.3 % (24h baseline 0.3 %),
+  p99 175 ms (baseline 180 ms). All `<N>` SLOs in target. No alarms firing."*
+- Single signal off-baseline → two sentences: verdict + the one
+  number that explains it.
+
+The full Service Health Card artifact is appropriate when:
+- The user invoked `/cw-health-check` (fleet view, multiple cards expected).
+- An investigation skill (`error-spike-triage`, `latency-regression`,
+  `alarm-response`) is producing the canonical artifact for its workflow.
+- The user explicitly asked for the artifact ("show me the service
+  health card", "render the full health view").
+- There are ≥ 5 distinct data points worth surfacing (multiple
+  off-baseline metrics, multiple SLOs, recent CloudTrail changes, etc.).
+
+This mirrors hybrid-renderer Gate 4: lookup-shape questions stay text-only.
+The card is for investigation outputs, not for casual yes/no checks.
+
 ## Rendering — do not author HTML
 
 This skill defines the *grammar* of a Service Health Card, but the artifact

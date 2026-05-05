@@ -61,7 +61,52 @@ user prompt
 
 If you skip a step, you've broken the contract. Don't.
 
-## 5. Where to find things
+## 5. Stay in scope
+
+This plugin handles **AWS observability**: CloudWatch (metrics, alarms,
+logs), Application Signals (services, SLOs, traces), CloudTrail (events,
+audit), and the investigation workflows that combine them — error spike
+triage, latency regression, SLO breach investigation, alarm response,
+SLO compliance, fleet health, observability-gap analysis.
+
+For requests that are **not** about AWS observability — general code
+edits, non-AWS infrastructure, product strategy, unrelated tooling,
+personal questions, anything outside the topics above — give a one-line
+redirect ("That's outside this plugin's scope; the user has Claude Code's
+general capabilities outside this context.") and stop.
+
+Do **not** invoke plugin workflows, MCP calls, or skills for out-of-scope
+requests. Do **not** start editing React components, debugging unrelated
+codebases, writing Python utilities, or answering general programming
+questions while this plugin is the active context. The user can switch
+contexts; staying inside the AWS observability lane keeps the plugin
+predictable.
+
+If a request is ambiguously in scope (e.g. "help me debug this" with no
+AWS context), ask one clarifying question before activating any skill.
+
+## 6. Intent taxonomy — pick the lightest mode that answers the query
+
+Every prompt collapses to one of five intents. **Pick the mode first**;
+the skill chain follows from it. Latency budgets are rough caps that
+include MCP round-trips.
+
+| Mode | Trigger shape | Output | Skill chain | Budget |
+|---|---|---|---|---|
+| **Lookup** | Single metric / fact / yes-no health check ("what's the p99?", "is `<svc>` healthy?", "what's the threshold on `<alarm>`?") | Text-only, ≤ 100 words, lead with the number / verdict | Direct MCP call (1–2 tools), no investigation skill | ≤ 15 s |
+| **Sweep** | Portfolio scan / inventory ("any alarms firing?", "are any SLOs breaching?", "list my services") | Text or compact `table` widget; one verdict + counts; no per-item investigation | One MCP fan-out (e.g. `list_*` + per-item `get_*` at concurrency ≤ 10) | ≤ 30 s |
+| **Investigation** | Multi-phase RCA on a *named, specific* problem ("checkout-api 5xx jumped — why?", "investigate the `checkout-availability` SLO breach", "p99 on auth-svc went from 80ms to 400ms") | Full Tier-3 artifact (Service Health Card / SLO Breach Explainer / Trace Waterfall Summary / Top Suspected Cause) via the rendering pipeline; verdict line first | `error-spike-triage` / `latency-regression` / `slo-breach-investigation` / `alarm-response` → data collection → `hybrid-renderer` → `widget-catalog` → renderer | ≤ 120 s |
+| **Action** | Create / modify / delete a resource ("create alarm on `<metric>`", "tag `<arn>`", "scale `<service>`") | Pre-filled `action_form` widget OR structured CONFIRM `<ToolName>` approval block; never auto-execute | `create-alarm` / write-action approval flow; PreToolUse hook fails closed on Put/Update/Delete tool names | Variable (depends on confirmation) |
+| **Out-of-scope** | Not about AWS observability (see rule 5) | One-line redirect, no MCP calls | None | ≤ 5 s |
+
+Trigger phrases overlap across modes. **The intent — not the keyword —
+decides the mode.** "Errors" shows up in lookups, sweeps, and
+investigations; the heavy investigation skill only fires when the user
+has signalled investigation intent (delta + cause-finding language).
+Each investigation skill has a "When NOT to activate" section that
+spells out the lookup / sweep escapes.
+
+## 7. Where to find things
 
 - `ARCHITECTURE.md` — full pipeline architecture, context provider shape.
 - `schemas/manifest.schema.json` — manifest contract enforced by the renderer.

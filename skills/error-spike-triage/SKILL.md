@@ -29,12 +29,46 @@ new widget types or shells. See top-level `CLAUDE.md` rule 1.
 
 ## When this activates
 
-- Error rate jumped above baseline
-- Specific 5xx / 4xx pattern reported
-- An alarm on `ErrorCount` / `FaultRate` triggered
+Activate ONLY when the user has asked for investigation, triage, or
+root-cause analysis of an error situation that already shows a delta
+from baseline. Concretely:
+
+- Error rate jumped above baseline (delta is in the prompt or evident
+  from a cited metric)
+- Specific 5xx / 4xx pattern reported with cause-finding intent
+- An alarm on `ErrorCount` / `FaultRate` triggered and the user wants to
+  triage
+- The user used words like "investigate", "triage", "what's going on",
+  "why are errors up", "diagnose", or "root cause"
 
 If an availability SLO is breaching as a result, prefer
 `slo-breach-investigation` — it includes this workflow.
+
+## When NOT to activate
+
+The 6-phase triage takes ~60–90 seconds. Lookup-style and yes/no
+questions do not justify it. **Do not activate** for:
+
+- **Lookups** — "what's the error rate on `<svc>`?", "how many 5xx in
+  the last hour?", "show me errors for X". Answer text-only with one
+  `get_service` / `get_metric_data` call. ≤ 80 words. No Logs Insights,
+  no trace sampling, no CloudTrail correlation.
+- **Yes/no health checks** — "any errors right now?", "is `<svc>`
+  erroring?". Answer in one sentence after one MCP call.
+- **Sweeps / inventory** — "any services erroring?", "show me errors
+  across the fleet". Defer to a direct sweep using
+  `list_services` + `get_service`, or to `/cw-health-check`.
+- **Single-number cites without delta intent** — the user is reading a
+  dashboard and asking what a number is. Answer the question, don't
+  triage.
+- **Trigger-phrase overlap with no investigation intent** — words like
+  "errors", "5xx", "fault" appear in many non-incident contexts.
+  Activate only when the user is asking for cause, not just for the
+  number.
+
+If unsure, ask one clarifying question ("Do you want a quick number, or
+should I run the full triage?") rather than running the full 6-phase
+workflow.
 
 ## Context provider
 

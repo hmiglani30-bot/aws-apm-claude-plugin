@@ -57,8 +57,10 @@ const DIVERGENCE_TOKENS = [
 // canonical max workflow (slo-breach-investigation): ~11 sibling skills for
 // the operational chain (artifact, validator, ownership, deep-link, handoff
 // alternates, copy-to-incident, etc.) plus the mandatory `hybrid-renderer`
-// and `widget-catalog` rendering-lock refs. Anything above 14 is suspicious.
-const MAX_CROSS_SKILL_REFS = 14;
+// and `widget-catalog` rendering-lock refs, plus the two deferral pointers
+// added by the "When NOT to activate" section (`slo-burn-rate` and
+// `slo-compliance-report`). Anything above 15 is suspicious.
+const MAX_CROSS_SKILL_REFS = 15;
 
 // Skills below this size are healthy. Above MAX_LINES, the skill is a
 // maintenance burden and likely a divergence vector. Hard cap at HARD_LINES;

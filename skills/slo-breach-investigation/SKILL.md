@@ -31,14 +31,48 @@ new widget types or shells. See top-level `CLAUDE.md` rule 1.
 
 ## When this activates
 
-Triggers on any of:
-- An explicit SLO breach mention by the user
-- A burn-rate or error-budget concern
-- An ambiguous "service unhealthy" report where the service has SLOs configured
+Activate ONLY when the user has named a specific SLO (or implied one via
+a specific service that has a known SLO) and wants to know *why* it is
+breaching. Concretely:
 
-If it is unclear whether SLOs are configured, list SLOs first (Phase 1) before
-committing to this workflow. If no SLOs exist, hand off to `service-health-card` or
-`error-spike-triage`.
+- Explicit named-SLO breach: "investigate the `checkout-availability`
+  SLO breach", "why is `payment-latency` SLO burning?"
+- Burn-rate or error-budget concern on a specific SLO with cause-finding
+  intent
+- Ambiguous "service unhealthy" report where the service has SLOs
+  configured AND the user has indicated they want to investigate
+
+If it is unclear whether SLOs are configured, list SLOs first (Phase 1)
+before committing to this workflow. If no SLOs exist, hand off to
+`service-health-card` or `error-spike-triage`.
+
+## When NOT to activate
+
+This is the most expensive workflow in the plugin (~120-second budget).
+Activating it on a portfolio sweep is the worst-case latency regression.
+**Do not activate** for:
+
+- **Portfolio sweeps** — "are any SLOs breaching?", "which SLOs are at
+  risk?", "show me all SLOs". Defer to `slo-compliance-report` (the
+  reporting workflow) or run `list_slos` + `get_slo` per SLO with a
+  compact ranked list. The user wants the inventory + status, not a
+  per-SLO investigation.
+- **SLO inventory** — "list my SLOs", "what SLOs do I have?",
+  "describe `<slo>`". One `list_slos` / `get_slo` call, structured
+  response.
+- **Burn-rate math without investigation intent** — "what's the burn
+  rate on `<slo>`?". Defer to `slo-burn-rate` skill (computes the
+  numbers without running the full multi-phase RCA).
+- **No specific SLO named** — "any SLOs in trouble?" without a named SLO
+  is a sweep, not a drill-in. Even if the answer is "yes, one is
+  burning fast", the right next step is to surface that one and let
+  the user opt in to the full investigation.
+- **SLO design / target-tuning questions** — "should we tighten the
+  target?", "what target should we set?". Out of scope for this skill.
+
+If unsure, ask one clarifying question ("Do you want a portfolio
+overview or a per-SLO investigation?") rather than running the full
+multi-phase workflow.
 
 ## Context provider
 
