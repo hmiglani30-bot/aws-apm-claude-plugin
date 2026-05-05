@@ -34,12 +34,43 @@ Read these fields from the context provider (ARCHITECTURE.md context shape):
 
 ## When this activates
 
+Activate ONLY when the user is asking to identify a **code path, owner,
+file/function, or implementation cause** from a trace or span. Concretely:
+
 - Developer is staring at a failing or slow trace and wants to know where
-  in the code to look.
+  in the code to look ("map this trace to code", "which file is this", "what
+  function threw this", "span to source").
 - A recent investigation named a bad span but didn't say which class / method.
-- An on-call engineer hands a trace ID to a developer.
+- An on-call engineer hands a trace ID to a developer with the question
+  "which commit caused this?" or "find the function for this trace."
 - Pre-fix: developer wants to confirm they're editing the right code path.
 - Post-fix: developer wants to confirm new instrumentation closes the gap.
+
+## When NOT to activate
+
+This is a developer-workflow skill that produces a fix plan and reaches
+into the repo for class/method/commit attribution. It is NOT the right
+path for trace display, summary, or visualization. **Do not activate**
+for:
+
+- **Trace display / "open this trace"** — answer text-only with a single
+  `trace_waterfall` widget; do not run the repo search. A trace ID + "show me
+  the trace" / "open trace `<id>`" is a Lookup or a single-focus widget pass
+  with `trace_waterfall` as the dominant widget. No code attribution required.
+- **Trace summary / waterfall** — "summarize this trace", "where did the
+  time go?", "render the waterfall". Defer to `trace-waterfall-summary`
+  (the Tier-3 artifact skill) — it answers from span timing alone.
+- **Latency investigation that doesn't need code attribution** — when the
+  user wants to know *why* a service got slow but doesn't want a fix plan
+  yet, defer to `latency-regression`. That skill calls into
+  `trace-to-code` only after the slow span is identified.
+- **Generic Application Signals questions** — "what does this trace
+  mean?", "what services does this trace touch?". Those are answered by
+  the trace's own metadata + service map, not by code search.
+
+If unsure, ask one clarifying question ("Do you want the trace summary, or
+do you want me to map it to a specific file/function and produce a fix
+plan?") rather than running the full repo-search workflow.
 
 ## Required inputs
 

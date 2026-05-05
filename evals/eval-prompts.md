@@ -242,6 +242,83 @@ guarding write actions).
 > table.
 > **Latency budget:** ≤ 60 s for a fleet of ≤ 20 services.
 
+## Cohort F — Phrase variants (intent-routing breadth)
+
+The 12 prompts in cohorts A–D are illustrative; users phrase the same
+intent many ways. Cohort F is a wider sweep of variant phrasings that
+must route to the same intent mode as their canonical equivalent.
+Failure to match the listed mode is a hard fail on the
+**Right-sized response** dimension (per the rubric above).
+
+Each variant is graded only on intent + routing — output-shape
+specifics live with the cohort A–D entry it mirrors.
+
+### F1. Sweep variants (must NOT activate investigation skills)
+
+| # | Variant prompt | Mode | Routes to | Mirrors |
+|---|---|---|---|---|
+| F1.a | "alarm count?" | Sweep | `get_active_alarms` | A2 |
+| F1.b | "show alarm status" | Sweep | `get_active_alarms` (or `describe_alarms` for inventory) | A2 |
+| F1.c | "SLO scoreboard" | Sweep | `slo-compliance-report` (or `list_slos` + per-SLO `get_slo`) | A5 |
+| F1.d | "which SLOs are red?" | Sweep | `slo-compliance-report` | A5 |
+| F1.e | "how many services unhealthy?" | Sweep | `/cw-health-check` (compact summary) | D3 |
+
+**Anti-pattern for F1.\***: any of these activating
+`alarm-response`, `slo-breach-investigation`, or `error-spike-triage`
+is a fail. The activation guards on those skills must redirect.
+
+### F2. Lookup variants (must NOT render multi-widget artifacts)
+
+| # | Variant prompt | Mode | Routes to | Mirrors |
+|---|---|---|---|---|
+| F2.a | "is checkout okay?" | Lookup | `service-health-card` text-only branch | A1 |
+| F2.b | "show me errors for checkout" | Lookup | Direct `get_metric_data` / `get_service` | A3 |
+| F2.c | "open this trace" | Lookup | Single-focus widget pass with `trace_waterfall` | B4 (read-only variant) |
+
+**Anti-pattern for F2.\***: rendering a 5-stat-card dashboard for
+"is checkout okay?" or running the 6-phase error-spike-triage
+workflow on F2.b. F2.c must NOT activate `trace-to-code`.
+
+### F3. Investigation variants (delta + cause-finding intent)
+
+| # | Variant prompt | Mode | Routes to | Mirrors |
+|---|---|---|---|---|
+| F3.a | "checkout is failing, explain why" | Investigation | `error-spike-triage` | B1 |
+| F3.b | "checkout failed after deploy, investigate" | Investigation | `error-spike-triage` (with deploy correlation in Phase 4) | B1 |
+| F3.c | "map this trace to code" | Investigation | `trace-to-code` | (new) |
+
+**Pass criterion:** F3.a / F3.b activate `error-spike-triage` and produce
+the Service Health Card + Top Suspected Cause artifact. F3.c specifically
+activates `trace-to-code` (NOT `trace-waterfall-summary`) — its activation
+guard distinguishes "show me the trace" (lookup) from "map to code"
+(investigation with fix plan).
+
+### F4. Out-of-scope variants
+
+| # | Variant prompt | Mode | Routes to | Mirrors |
+|---|---|---|---|---|
+| F4.a | "can you fix my app code?" | Out-of-scope | One-line redirect (CLAUDE.md rules 5 + 6) | C2 |
+
+**Pass criterion:** ≤ 30-word redirect, no MCP calls, no skills activated.
+Any attempt to actually open the user's repo or start writing code is a
+hard fail.
+
+### Cohort F scoring
+
+Cohort F has 12 variants. Score against the rubric in the same way as
+A–D, but the manual reviewer specifically checks:
+
+1. The skill chain weight (lookup / sweep / investigation) matches the
+   variant's mode column.
+2. No heavy investigation skill activates on F1.\* or F2.\*.
+3. F3.c distinguishes itself from a plain trace display (F2.c) — the
+   `trace-to-code` activation guard is the only thing standing between
+   them.
+4. F4.a does not invoke any plugin workflow.
+
+These twelve variants are the breadth check; the cohort A–D twelve are
+the depth check.
+
 ## Cohort E — Product claim validation
 
 These evals score the artifact *itself*, not whether it was routed to.
