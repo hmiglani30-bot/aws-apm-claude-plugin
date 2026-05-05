@@ -29,12 +29,44 @@ new widget types or shells. See top-level `CLAUDE.md` rule 1.
 
 ## When this activates
 
-- User reports a service / API / endpoint is slow
-- p99 / p90 latency has crossed a threshold
-- An Application Signals operation is flagged as "degraded" without an SLO breach
+Activate ONLY when the user has flagged a latency *regression* — a delta
+from baseline — and wants to know why. Concretely:
+
+- User reports a service / API / endpoint got slower with a delta cited
+  ("p99 was 80ms, now 400ms", "auth-svc is suddenly slow")
+- p99 / p90 latency crossed a threshold or alarm fired
+- Application Signals operation is flagged as "degraded" without an SLO
+  breach
+- The user used cause-finding language: "why is it slow", "investigate
+  the slowdown", "what regressed", "trace the latency"
 
 If a *latency SLO is actively breaching*, prefer `slo-breach-investigation` — it is the
 strict superset.
+
+## When NOT to activate
+
+This is a multi-phase trace-sampling workflow (~60–90 seconds). Lookup-style
+and dashboard-reading questions do not justify it. **Do not activate** for:
+
+- **Single-number lookups** — "what's the p99 on `<svc>`?", "show me
+  latency for `<op>`". Answer text-only with one
+  `get_metric_data` / `get_service` call. ≤ 80 words. No trace
+  sampling, no CloudTrail correlation.
+- **Yes/no health checks** — "is `<svc>` slow?", "any latency issues?"
+  without a delta. Answer in one sentence after one MCP call.
+- **Sweeps** — "any slow services?", "show me p99 across the fleet".
+  Defer to `/cw-health-check` or a direct fan-out using `list_services`
+  + `get_service`.
+- **Capacity / planning questions** — "should we add capacity?",
+  "what's our latency headroom?". Out of scope for this skill;
+  observability gap analysis or alerting design are better fits.
+- **Trigger-phrase overlap with no investigation intent** — "latency",
+  "p99", "slow" appear in many non-incident contexts. Activate only
+  when the user is asking for cause, not just for the number.
+
+If unsure, ask one clarifying question ("Do you want a current p99 number,
+or should I run the full latency-regression investigation?") rather than
+running the full multi-phase workflow.
 
 ## Context provider
 

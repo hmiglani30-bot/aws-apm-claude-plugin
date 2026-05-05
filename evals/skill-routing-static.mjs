@@ -234,6 +234,48 @@ function checkTextOnlyEscape({ name, body }) {
   };
 }
 
+// Heavy investigation skills MUST surface an explicit "do not activate for
+// lookups / sweeps" escape, or the skill chain over-triggers on prompts that
+// belong in a lighter mode (per CLAUDE.md rule 6 intent taxonomy). The check
+// only applies to the four heavy investigation workflows; lighter skills
+// (renderer, catalog, ownership, deep-link) don't have an activation budget
+// big enough to warrant guarding.
+const ACTIVATION_GUARDED_SKILLS = [
+  "alarm-response",
+  "error-spike-triage",
+  "latency-regression",
+  "slo-breach-investigation",
+];
+
+function checkActivationGuard({ name, body }) {
+  if (!ACTIVATION_GUARDED_SKILLS.includes(name)) {
+    return { name: "activation_guard", pass: true, note: "n/a (not a heavy investigation skill)" };
+  }
+  // Accept any of the canonical headings. Match the ## heading specifically
+  // — a passing reference inside prose ("see When NOT to activate below")
+  // does not satisfy the requirement.
+  const headingPattern =
+    /^##\s+(?:When NOT to activate|Do not activate|Lookup escape|When this should NOT activate)\b/im;
+  const hasHeading = headingPattern.test(body);
+
+  // The section must also tell the model what to do instead — otherwise the
+  // guard is a prohibition without an escape route, which the model will
+  // ignore in practice. Look for at least one "defer to" / "answer text-only"
+  // / "route to" / "use <skill>" pattern within the body.
+  const hasDeferral =
+    /\b(?:defer to|answer text[- ]only|route (?:to|through)|use the\s+`[a-z-]+`|hand[- ]off to|prefer\s+`[a-z-]+`)\b/i.test(body);
+
+  const pass = hasHeading && hasDeferral;
+  const reasons = [];
+  if (!hasHeading) reasons.push('missing a "When NOT to activate" / "Do not activate" / "Lookup escape" heading');
+  if (!hasDeferral) reasons.push("section names no deferral target (text-only / sibling skill / direct MCP call)");
+  return {
+    name: "activation_guard",
+    pass,
+    note: pass ? "activation guard + deferral route present" : reasons.join("; "),
+  };
+}
+
 function runSkillChecks(skill) {
   const checks = [
     checkSize(skill),
@@ -241,6 +283,7 @@ function runSkillChecks(skill) {
     checkCrossSkillRefs(skill),
     checkRenderingLock(skill),
     checkTextOnlyEscape(skill),
+    checkActivationGuard(skill),
   ];
   const passed = checks.filter(c => c.pass).length;
   return { name: skill.name, checks, passed, total: checks.length };
@@ -274,7 +317,7 @@ async function main() {
     commands: { total: commandResults.length, all_pass: commandsPassed },
     per_check: {},
   };
-  const dims = ["size", "divergence_vocabulary", "cross_skill_refs", "rendering_lock", "text_only_escape"];
+  const dims = ["size", "divergence_vocabulary", "cross_skill_refs", "rendering_lock", "text_only_escape", "activation_guard"];
   for (const d of dims) {
     summary.per_check[d] = { pass: 0, fail: 0 };
     for (const r of skillResults) {
