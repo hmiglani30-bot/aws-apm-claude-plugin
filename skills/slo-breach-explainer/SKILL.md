@@ -3,7 +3,7 @@ name: slo-breach-explainer
 description: >
   Render the canonical "SLO Breach Explainer" artifact — burn rate, error budget
   remaining, breach window, top impacted operations, correlated deploys, and ranked
-  hypotheses, in a fixed visual grammar.
+  hypotheses, with a fixed layout.
   Trigger phrases: "SLO Breach Explainer", "render SLO breach card", "summarize SLO breach",
   "format SLO breach output", or invoked as the final artifact of `slo-breach-investigation`.
 metadata:
@@ -92,7 +92,7 @@ If any of these are missing, do not render — return to the parent skill to gat
 **Confidence in causal explanation:** <Low | Medium | High>
 ```
 
-## Visual grammar rules
+## Layout rules
 
 - **Always lead with status + breach start.** This is the on-call's first question.
 - **Burn rate table comes before operations.** Burn rate determines urgency.
@@ -112,7 +112,7 @@ this case.
 
 For Cowork (or any surface that renders HTML artifacts), use the artifact template at
 `artifacts/slo-breach-explainer.html` and populate the `{{PLACEHOLDERS}}` with actual
-data collected during the investigation. The template encodes the visual grammar:
+data collected during the investigation. The template encodes the layout:
 hero verdict at the top (severity icon, one-line summary, top hypothesis,
 confidence, recommended next action), then burn-rate bars, error-budget gauge,
 impacted-operation table, ranked hypotheses, first-class "Considered and ruled out"

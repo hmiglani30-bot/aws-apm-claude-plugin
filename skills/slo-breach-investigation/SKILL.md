@@ -21,6 +21,14 @@ CloudWatch, Application Signals, and CloudTrail MCP servers. The goal is to prod
 a structured **SLO Breach Explainer** artifact (see `slo-breach-explainer` skill) the
 on-call engineer can act on without leaving Claude.
 
+## Rendering — do not author HTML
+
+Delegate every visual artifact to the `hybrid-renderer` skill. Pass the data you
+collected; let `hybrid-renderer` + `widget-catalog` choose the manifest, and let
+`render-standalone.mjs` produce the HTML. Do not write `<html>` or any HTML
+markup yourself, do not narrate the pipeline at the user, and do not invent
+new widget types or shells. See top-level `CLAUDE.md` rule 1.
+
 ## When this activates
 
 Triggers on any of:

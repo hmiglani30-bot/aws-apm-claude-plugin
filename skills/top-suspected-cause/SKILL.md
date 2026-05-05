@@ -85,7 +85,7 @@ Rank by confidence first, then by user-impact-if-true:
 A hypothesis backed by **only one** evidence source caps at **Medium** confidence. High
 confidence requires ≥2 independent sources (metric + trace, deploy + log pattern, etc.).
 
-## Visual grammar rules
+## Layout rules
 
 - **Always show 2–4 hypotheses.** One is overconfident; five is noise.
 - **Confidence is bolded** so it's the second-readable element after the claim.

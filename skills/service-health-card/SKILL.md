@@ -2,8 +2,8 @@
 name: service-health-card
 description: >
   Render the canonical "Service Health Card" artifact — RED metrics (rate, errors,
-  duration) with SLO context, recent changes, and dependency status, in a fixed
-  visual grammar.
+  duration) with SLO context, recent changes, and dependency status, with a fixed
+  layout.
   Trigger phrases: "service health card", "summarize service health", "render service status",
   "service overview", "is service X healthy", or invoked as the final artifact of
   `error-spike-triage` and as a secondary artifact for `latency-regression`.
@@ -14,6 +14,15 @@ metadata:
 # Service Health Card (Tier 3 Artifact)
 
 Canonical "is this service OK right now?" view.
+
+## Rendering — do not author HTML
+
+This skill defines the *grammar* of a Service Health Card, but the artifact
+itself is rendered through the `hybrid-renderer` + `widget-catalog` pipeline,
+not by hand. Pass the verdict, RED metrics, SLO state, dependency rows, and
+recent-changes rows to `hybrid-renderer`; let it pick the manifest, and let
+`render-standalone.mjs` produce the HTML. Do not author `<html>` markup
+yourself. See top-level `CLAUDE.md` rule 1.
 
 ## Context provider
 
@@ -152,7 +161,7 @@ exhausted before the breach alarm fires.
 
 The verdict is derived deterministically from the data — do not stylize it.
 
-## Visual grammar rules
+## Layout rules
 
 - **Verdict comes first.** 3am scan should read in 2 seconds.
 - **24h baseline is the canonical comparison.** Avoid "vs last week" unless explicitly

@@ -91,7 +91,7 @@ gantt
 **Confidence in attribution:** <Low | Medium | High>
 ```
 
-## Visual grammar rules
+## Layout rules
 
 - **Self-time, not total time, drives the rank.** Total time double-counts children.
 - **Top 3 spans only.** More than 3 is noise — link to the full trace instead.

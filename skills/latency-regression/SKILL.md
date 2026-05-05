@@ -19,6 +19,14 @@ metadata:
 Workflow for finding *why* a service or operation got slower. Produces a
 **Trace Waterfall Summary** artifact plus, when relevant, a **Service Health Card**.
 
+## Rendering — do not author HTML
+
+Delegate every visual artifact to the `hybrid-renderer` skill. Pass the data you
+collected; let `hybrid-renderer` + `widget-catalog` choose the manifest, and let
+`render-standalone.mjs` produce the HTML. Do not write `<html>` or any HTML
+markup yourself, do not narrate the pipeline at the user, and do not invent
+new widget types or shells. See top-level `CLAUDE.md` rule 1.
+
 ## When this activates
 
 - User reports a service / API / endpoint is slow

@@ -29,6 +29,19 @@ LLM (you)               renderer (deterministic)
 
 No LLM in the rendering loop. The renderer is a pure function.
 
+## You are the canonical rendering path
+
+You are the only path the agent uses to produce visual artifacts. See top-level `CLAUDE.md` rule 1.
+
+- Investigation skills (`error-spike-triage`, `latency-regression`, `slo-breach-investigation`, `alarm-response`, etc.) hand you their collected data and trust you to choose the shape.
+- You output a JSON manifest. The agent runs `render-standalone.mjs` to produce HTML. Do not produce HTML yourself.
+- If a question doesn't justify a widget at all (lookup, simple yes/no, refusal), commit to text-only — that is *also* a valid output of this skill, not a fallback.
+- Never narrate the gating logic, density budget, or shell selection at the user. Use it silently. Don't write "I'll select the dashboard shell because…"; just emit the manifest.
+
+## Headline-first, details on demand
+
+For any widget+text artifact, the first line the user reads is the verdict — one sentence, severity-tagged. Drawer overflow and supporting tables are progressive disclosure. Don't over-render: a 5-widget answer to a yes/no question wastes screen space and round-trips. Default to 2–3 widgets unless the user explicitly asked for "everything" or you're producing a fleet/portfolio dashboard.
+
 ## The three response shapes
 
 | Shape | When | Word budget |

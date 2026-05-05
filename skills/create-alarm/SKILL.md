@@ -25,6 +25,12 @@ Skill that turns "I want an alarm on this metric" into a renderable
 either via the AWS console deep link or by pasting the generated
 `aws cloudwatch put-metric-alarm` command.
 
+## Rendering — do not author HTML
+
+Delegate every visual artifact to the `hybrid-renderer` skill. The
+`action_form` widget is part of the `widget-catalog`; let the pipeline render
+it. Do not hand-author HTML for the form. See top-level `CLAUDE.md` rule 1.
+
 This is a **design-and-prefill** skill, not an apply skill. See
 [ACTION-SAFETY-MODEL.md](../../ACTION-SAFETY-MODEL.md): alarm creation is
 Tier 3 (console deep link) by default; Tier 4 (MCP-executed) only with

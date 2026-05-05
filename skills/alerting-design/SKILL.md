@@ -27,6 +27,14 @@ what to compose, what to route where. Produces an **Alerting Plan**
 artifact ranked by priority, each item with a copy-paste IaC snippet
 and a CloudWatch console deep link.
 
+## Rendering — do not author HTML
+
+Delegate every visual artifact to the `hybrid-renderer` skill. Pass the data
+you collected; let `hybrid-renderer` + `widget-catalog` choose the manifest,
+and let `render-standalone.mjs` produce the HTML. Do not write `<html>` or
+any HTML markup yourself, do not narrate the pipeline at the user, and do not
+invent new widget types or shells. See top-level `CLAUDE.md` rule 1.
+
 ## When this activates
 
 - Pre-production cutover: "we're about to launch — what alarms do we

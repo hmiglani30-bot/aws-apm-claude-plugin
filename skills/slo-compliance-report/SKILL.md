@@ -21,6 +21,14 @@ End-to-end workflow for producing a **portfolio-wide SLO compliance report** -- 
 non-incident, periodic / on-demand reporting view that summarizes SLO health across
 every service in the account.
 
+## Rendering — do not author HTML
+
+Delegate every visual artifact to the `hybrid-renderer` skill. Pass the
+ranked SLO list, burn-rate numbers, and per-service rollups; let
+`hybrid-renderer` + `widget-catalog` choose the manifest, and let
+`render-standalone.mjs` produce the HTML. Do not write `<html>` or any HTML
+markup yourself. See top-level `CLAUDE.md` rule 1.
+
 ## Context provider
 
 Read these fields from the context provider (ARCHITECTURE.md context shape):
