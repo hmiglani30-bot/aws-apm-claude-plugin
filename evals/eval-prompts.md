@@ -242,6 +242,93 @@ guarding write actions).
 > table.
 > **Latency budget:** ≤ 60 s for a fleet of ≤ 20 services.
 
+## Cohort E — Product claim validation
+
+These evals score the artifact *itself*, not whether it was routed to.
+They check three product-level claims the plugin makes:
+
+1. **Artifact necessity** — does the model render an artifact only when
+   the prompt actually warrants one?
+2. **Shareability** — can the rendered artifact stand alone without the
+   conversation context?
+3. **Deep-link correctness** — do the embedded "Open in CloudWatch"
+   links go where they say they go?
+
+These are scored on the same 7-dimension rubric as cohorts A–D, plus
+the cohort-specific checks below.
+
+### E1. Artifact necessity
+
+| Scenario | Expected artifact? | Pass criterion |
+|---|---|---|
+| **A1 / A3 (lookups)** | NO | Response is text-only. No HTML file created under `.aws-apm/artifacts/`. No manifest authored. |
+| **A2 / A5 (sweeps with 0 hits)** | NO | One-line text answer ("No alarms in ALARM in `<region>`"). No multi-widget render. |
+| **A2 / A5 (sweeps with ≥ 5 hits)** | YES (compact) | A single `table` widget, ≤ 200 words of text. Not the full investigation artifact shape. |
+| **B1–B4 (investigations)** | YES (full) | Tier-3 artifact via `hybrid-renderer` → `render-standalone.mjs`. Verdict line above the artifact. |
+| **C1 (write action)** | YES (form) | A single `action_form` widget pre-filled with the proposed write, plus the structured CONFIRM `<ToolName>` block. No execution before confirmation. |
+| **C2 (out-of-scope)** | NO | One-line redirect, no MCP calls, no artifact. |
+| **C3 (self-introspection)** | NO | ≤ 80-word text answer. Pointer to `ARCHITECTURE.md`. |
+| **D3 (fleet health check)** | YES | Stacked-dashboard artifact; sorted by severity; Unhealthy gets full RED tables, Healthy gets a compact table. |
+
+**Necessity fail modes:**
+- Rendering a multi-widget artifact for a yes/no question (A1).
+- Rendering a `stat_card` for a single-number lookup (A3).
+- Auto-rendering a per-SLO investigation artifact for a portfolio sweep (A5).
+- Authoring an HTML file under `.aws-apm/artifacts/` for an out-of-scope prompt (C2).
+
+### E2. Shareability checks
+
+A rendered artifact must be self-contained. If the user copies the HTML
+file and pastes it into Slack, email, or a postmortem doc, every cell
+below must hold without the conversation context. Score each rendered
+artifact against the checklist:
+
+| # | Check | Pass criterion |
+|---|---|---|
+| S1 | **Title** | Hero / `<title>` names the service, the SLO, or the trace ID. Not "Service Health Card" by itself. |
+| S2 | **Timestamp** | ISO-8601 UTC `generated_at` plus the *data window* the artifact covers (e.g. "last 30 min vs 24h baseline"). Both, not one. |
+| S3 | **Account + region** | Both rendered in the metadata footer. Pulled from `context.account` / `context.region`. Required for multi-account / multi-region setups. |
+| S4 | **Source MCP servers** | Footer lists the MCP servers that produced the data (e.g. `awslabs_cloudwatch-applicationsignals-mcp-server`). Required to attribute and to debug data divergence. |
+| S5 | **MCP tools called** | Footer lists the specific tools (e.g. `list_slos`, `get_slo`, `lookup_events`) so the artifact is reproducible. |
+| S6 | **Confidence** | Low / Medium / High with one-sentence justification. Capped at Medium when any data source was unavailable. |
+| S7 | **"Open in CloudWatch" link block** | At least one deep link is present, and it works (see E3). |
+| S8 | **Renders standalone** | Open the HTML file with the browser, no internet, no other tabs. CSS, fonts, status icons all render. The renderer ships its own CSS — there is no external CDN dependency. |
+| S9 | **No `{{PLACEHOLDER}}` strings** | No unfilled template placeholders survive into the output. Treat any `{{` / `}}` in rendered HTML as a fail. |
+| S10 | **Copyable summary** | The verdict + key finding lines are plain text inside the artifact (not baked into an SVG / image). The user can select-copy them into a Slack message. |
+| S11 | **No sensitive data leaked** | PII (emails, user IDs, customer IDs, account numbers), tokens, JWTs, and IP addresses in user contexts are redacted to `<redacted-*>` per `error-spike-triage` Redaction section. The artifact must NOT contain anything that would harm a customer if forwarded. |
+| S12 | **No conversation context required** | The artifact does not contain phrases like "as I mentioned earlier", "see above", "the user asked", or "earlier in this conversation". Every claim is self-explanatory. |
+
+**Shareability fail modes:**
+- Hero says "Healthy" but the metadata footer is empty.
+- Generated_at is "now" with no data window — reader cannot tell what window the numbers cover.
+- Region is in the URL of one deep link but missing from the footer.
+- A raw user email or `requestId` appears in a log sample.
+
+### E3. Deep-link correctness
+
+Every "Open in CloudWatch" link the artifact emits must satisfy:
+
+| # | Check | Pass criterion |
+|---|---|---|
+| L1 | **Link target matches anchor text** | An anchor labelled "SLO detail — checkout-availability" must point at the SLO detail page for that exact SLO, not the SLO list. Anchor labelled "Trace 1-66348f12" must point at that exact trace in X-Ray. |
+| L2 | **Region in URL = region in footer** | The `region=` query param (or path segment) on every link must equal `context.region`. A link to us-east-1 in an artifact tagged `us-west-2` is a fail. |
+| L3 | **Time window preserved** | For surfaces that take a time range (Logs Insights query links, metric graph links, alarm history links), the URL embeds the artifact's `time_window.start` / `.end` — never `now-15m` substituted at click time. |
+| L4 | **Surface-appropriate target** | Alarm link → CloudWatch Alarms detail. SLO link → Application Signals SLO detail. Trace link → X-Ray Trace detail. Logs link → Logs Insights with the query pre-filled. CloudTrail link → CloudTrail Event search. Wrong target type is a fail. |
+| L5 | **Human-readable anchor** | Anchor text describes the surface, not the URL. "SLO detail — `<name>`" or "Logs Insights for `<window>`" — not bare URLs. |
+| L6 | **No "now" views in investigation links** | An investigation artifact's links must point at the *frozen* incident window, not "the past 1h relative to viewing time". Otherwise the link rots the moment the investigation ends. |
+
+These checks run against the deep-link generators in the
+`open-in-cloudwatch` skill — every artifact-rendering skill is
+required to use that skill rather than concatenating URLs by hand.
+The `open-in-cloudwatch` skill handles region embedding, time-window
+preservation, and surface-routing centrally.
+
+**Deep-link fail modes:**
+- Anchor "SLO detail — checkout-availability" → URL points at `/slo` (the list, not the detail).
+- Region missing from URL — link defaults to the user's last-used console region instead of the data's region.
+- Time window relativized — `start=now-1h` instead of the absolute window.
+- Trace link points at the X-Ray service map instead of the trace itself.
+
 ## Running these evals
 
 There is no automated harness for natural-language prompts in this repo.
